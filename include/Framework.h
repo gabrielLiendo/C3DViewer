@@ -1,4 +1,5 @@
 #pragma once
+
 class MyGlWindow
 {
 public:
@@ -22,8 +23,13 @@ public:
 
         // OpenGL options
         glEnable(GL_DEPTH_TEST);
+
+        setCallbacks();
+        ui = UI(window);
+        ui.init();
     }
 
+    // Set the required callback functions
     void setCallbacks()
     {
         MyGlWindow* myWindow = this;
@@ -35,7 +41,7 @@ public:
                 static_cast<MyGlWindow*>(glfwGetWindowUserPointer(window))->mouse_callback(xpos, ypos);
             });
 
-            // Set the required callback functions
+            
         glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mode) 
             {
                 static_cast<MyGlWindow*>(glfwGetWindowUserPointer(window))->key_callback(key, scancode, action, mode);
@@ -211,6 +217,9 @@ public:
 
             glBindVertexArray(0);
 
+            // Render UI frame
+            ui.render();
+
             // Swap the screen buffers
             glfwSwapBuffers(window);
         }
@@ -218,6 +227,8 @@ public:
 
     void terminate()
     {
+        ui.terminate();
+
         glfwDestroyWindow(window);
         glfwTerminate();
     }
@@ -225,6 +236,8 @@ public:
 private:
     // Pointer to window
     GLFWwindow* window;
+    UI ui;
+
 
     // Window dimensions
     const GLuint WIDTH = 800, HEIGHT = 600;
@@ -242,4 +255,8 @@ private:
 
     bool firstMouse = true;
     bool keys[1024];
+
+    bool show_demo_window = true;
+    bool show_another_window = false;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 };

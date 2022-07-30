@@ -1,33 +1,33 @@
 #pragma once
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl3.h"
-
-class UIImGUI
+class UI
 {
 public:
-    UIImGUI(GLFWwindow** window)
+    UI()
+    {
+
+    }
+
+    UI(GLFWwindow* window)
     {
         this->window = window;
     }
 
+    // Setup Dear ImGui context and style
 	void init()
 	{
-        // Setup Dear ImGui context
+        
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+        io.FontDefault = io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Regular.ttf", 16.0f);
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
-        //ImGui::StyleColorsClassic();
 
         // Setup Platform/Renderer backends
-        const char* glsl_version = "#version 130";
-        ImGui_ImplGlfw_InitForOpenGL(*window, true);
-        ImGui_ImplOpenGL3_Init(glsl_version);
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 130");
 
         // Load Fonts
         // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -56,11 +56,26 @@ public:
             ImGui::ShowDemoWindow(&show_demo_window);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+        if(ImGui::Begin("Hello, world!", 0, ImGuiWindowFlags_MenuBar))
         {
             static float f = 0.0f;
             static int counter = 0;
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+            if (ImGui::BeginMenuBar())
+            {
+                if (ImGui::BeginMenu("File"))
+                {
+                    if (ImGui::MenuItem("Load Object", "L"))
+                        loadObj();
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Help"))
+                {
+                    ImGui::MenuItem("Shortcuts", " ");
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenuBar();
+            }
 
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
@@ -78,10 +93,41 @@ public:
             ImGui::End();
         }
 
+        // 3. Show another simple window.
+        if (show_another_window)
+        {
+            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Text("Hello from another window!");
+            if (ImGui::Button("Close Me"))
+                show_another_window = false;
+            ImGui::End();
+        }
+
         // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
+
+    void loadObj()
+    {
+        // File Variables
+        char const* lTheOpenFileName, * lFilterPatterns[1] = { "*.obj"};
+        FILE* lIn;
+        char lBuffer[1024];
+
+        lTheOpenFileName = tinyfd_openFileDialog("Open", "", 1, lFilterPatterns, NULL, 0);
+
+        if (!lTheOpenFileName)
+            return;
+
+        std::ifstream infile(lTheOpenFileName);
+        std::string line;
+        while (std::getline(infile, line))
+        {
+            std::istringstream iss(line);
+            std::cout << iss.str() << std::endl;
+        }
+    }
 
 	void terminate()
 	{
@@ -92,7 +138,7 @@ public:
 	}
 
 private:
-    GLFWwindow** window;
+    GLFWwindow* window;
 
     // Our state
     bool show_demo_window = true;

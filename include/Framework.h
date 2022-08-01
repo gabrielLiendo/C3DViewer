@@ -156,7 +156,7 @@ public:
                 glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
                 basic_shader.Use();
-                currentMesh.draw();               
+                currentModel.draw();               
             }
                
             // Render UI frame

@@ -16,8 +16,6 @@
 #include <algorithm>
 #include "tinyfiledialogs.h"
 
-
-
 // GLM Mathematics
 #define GLM_FORCE_RADIANS// force everything in radian
 #include <glm/glm.hpp>
@@ -26,7 +24,9 @@
 
 // Other includes
 #include "Shader.h"
-#include "3DObject.h"
+#include "3D_utils.h"
+#include "Mesh.h"
+#include "Model.h"
 #include "ObjLoader.h"
 #include "UI.h"
 #include "Framework.h"

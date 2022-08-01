@@ -35,7 +35,9 @@
     <None Include="shaders\color_shader.vs" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\3DObject.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="include\3D_utils.h" />
+    <ClInclude Include="include\Mesh.h" />
     <ClInclude Include="include\Framework.h" />
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\GLFW\glfw3.h" />
@@ -52,7 +54,7 @@
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\tinyfiledialogs.h" />
     <ClInclude Include="include\UI.h" />
-    <ClInclude Include="ObjLoader.h" />
+    <ClInclude Include="include\ObjLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

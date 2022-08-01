@@ -10,9 +10,13 @@
 #include <GLFW/glfw3.h>
 
 #include <fstream>
+#include <sstream>
 #include <string>
-
+#include <vector>
+#include <algorithm>
 #include "tinyfiledialogs.h"
+
+
 
 // GLM Mathematics
 #define GLM_FORCE_RADIANS// force everything in radian
@@ -23,11 +27,9 @@
 // Other includes
 #include "Shader.h"
 #include "3DObject.h"
+#include "ObjLoader.h"
 #include "UI.h"
 #include "Framework.h"
-
-
-using namespace std;
 
 int main()
 {

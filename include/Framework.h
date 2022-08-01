@@ -105,72 +105,13 @@ public:
     {
         // Build and compile our shader program
         Shader basic_shader("shaders/color_shader.vs", "shaders/color_shader.frag");
-
-        // Set up vertex data (and buffer(s)) and attribute pointers
-        GLfloat cube_vertices[] =
-        {
-            // back
-            0.5,0.5,-0.5, 0.0f,  0.0f, -1.0f, 1,0,0,
-            0.5,-0.5,-0.5, 0.0f,  0.0f, -1.0f,1,0,0,
-           -0.5,0.5,-0.5,  0.0f,  0.0f, -1.0f,1,0,0,
-           -0.5,0.5,-0.5,0.0f,  0.0f, -1.0f,1,0,0,
-            0.5,-0.5,-0.5, 0.0f,  0.0f, -1.0f,1,0,0,
-           -0.5,-0.5,-0.5, 0.0f,  0.0f, -1.0f,1,0,0,
-
-           // front 
-          -0.5,0.5,0.5,  0.0f,  0.0f,  1.0f,0,1,0,
-          -0.5,-0.5,0.5,  0.0f,  0.0f,  1.0f,0,1,0,
-           0.5,-0.5,0.5,  0.0f,  0.0f,  1.0f,0,1,0,
-          -0.5,0.5,0.5,  0.0f,  0.0f,  1.0f,0,1,0,
-           0.5,-0.5,0.5, 0.0f,  0.0f,  1.0f,0,1,0,
-           0.5,0.5,0.5,  0.0f,  0.0f,  1.0f,0,1,0,
-
-           // left
-           -0.5,0.5,-0.5, -1.0f,  0.0f,  0.0f,0,0,1,
-           -0.5,-0.5,-0.5, -1.0f,  0.0f,  0.0f,0,0,1,
-           -0.5,-0.5,0.5, -1.0f,  0.0f,  0.0f,0,0,1,
-           -0.5,0.5,-0.5, -1.0f,  0.0f,  0.0f,0,0,1,
-           -0.5,-0.5,0.5, -1.0f,  0.0f,  0.0f,0,0,1,
-           -0.5,0.5,0.5, -1.0f,  0.0f,  0.0f,0,0,1,
-
-
-
-           // right
-            0.5,0.5,0.5, 1.0f,  0.0f,  0.0f, 1,0,1,
-            0.5,-0.5,0.5, 1.0f,  0.0f,  0.0f,1,0,1,
-            0.5,-0.5,-0.5, 1.0f,  0.0f,  0.0f,1,0,1,
-            0.5,0.5,0.5, 1.0f,  0.0f,  0.0f,1,0,1,
-            0.5,-0.5,-0.5, 1.0f,  0.0f,  0.0f,1,0,1,
-            0.5,0.5,-0.5, 1.0f,  0.0f,  0.0f,1,0,1,
-
-
-            // bottom
-           -0.5,-0.5,0.5, 0.0f, -1.0f,  0.0f,1,1,0,
-           -0.5,-0.5,-0.5, 0.0f, -1.0f,  0.0f,1,1,0,
-            0.5,-0.5,-0.5,0.0f, -1.0f,  0.0f,1,1,0,
-           -0.5,-0.5,0.5, 0.0f, -1.0f,  0.0f,1,1,0,
-            0.5,-0.5,-0.5, 0.0f, -1.0f,  0.0f,1,1,0,
-            0.5,-0.5,0.5, 0.0f, -1.0f,  0.0f,1,1,0,
-
-
-            // top
-            -0.5,0.5,-0.5, 0.0f,  1.0f,  0.0f, 1,1,1,
-            -0.5,0.5,0.5, 0.0f,  1.0f,  0.0f, 1,1,1,
-             0.5,0.5,0.5, 0.0f,  1.0f,  0.0f, 1,1,1,
-            -0.5,0.5,-0.5,  0.0f,  1.0f,  0.0f, 1,1,1,
-             0.5,0.5,0.5, 0.0f,  1.0f,  0.0f,1,1,1,
-             0.5,0.5,-0.5, 0.0f,  1.0f,  0.0f,1,1,1,
-        };
-
-        My3DObject cube(cube_vertices, sizeof(cube_vertices));
-
-        basic_shader.Use();
+        
         // Get the uniform locations
-        GLint objectColorLoc = glGetUniformLocation(basic_shader.Program, "objectColor");
+        //GLint objectColorLoc = glGetUniformLocation(basic_shader.Program, "objectColor");
         GLint modelLoc = glGetUniformLocation(basic_shader.Program, "model");
         GLint viewLoc = glGetUniformLocation(basic_shader.Program, "view");
         GLint projLoc = glGetUniformLocation(basic_shader.Program, "projection");
-
+       
         while (!glfwWindowShouldClose(window))
         {
             // Calculate deltatime of current frame
@@ -192,31 +133,32 @@ public:
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
             static float x_angle = 0.0f;
             x_angle += deltaTime;
 
-            // Create camera transformations
-            glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            glm::mat4 projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
-            glm::mat4 model =
-                glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zDist)) *
-                glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                glm::rotate(glm::mat4(1.0f), x_angle, glm::vec3(1.0f, 0.0f, 0.0f)) *
-                glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+            if (draw)
+            {
+                // Create camera transformations
+                glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+                glm::mat4 projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
+                glm::mat4 model =
+                    glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zDist)) *
+                    glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f)) *
+                    glm::rotate(glm::mat4(1.0f), x_angle, glm::vec3(1.0f, 0.0f, 0.0f)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-            // Use cooresponding shader when setting uniforms/drawing objects
-            glUniform3f(objectColorLoc, 1.0f, 1.0f, 1.0f);
+                // Use cooresponding shader when setting uniforms/drawing objects
+                //glUniform3f(objectColorLoc, 1.0f, 1.0f, 1.0f);
 
-            // Pass the matrices to the shader
-            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-            glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                // Pass the matrices to the shader
+                glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+                glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+                glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-            cube.draw();
-
-            glBindVertexArray(0);
-
+                basic_shader.Use();
+                currentMesh.draw();               
+            }
+               
             // Render UI frame
             ui.render();
 
@@ -237,10 +179,10 @@ private:
     // Pointer to window
     GLFWwindow* window;
     UI ui;
-
+  
 
     // Window dimensions
-    const GLuint WIDTH = 800, HEIGHT = 600;
+    const GLuint WIDTH = 1600, HEIGHT = 1600;
 
     // Camera
     GLfloat lastX = WIDTH / 2.0;

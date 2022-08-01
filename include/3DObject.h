@@ -1,11 +1,11 @@
 #pragma once
-class My3DObject
+class Model
 {
 public:
     int size;
 
     // data =  x,y,z,nx,ny,nz,x,y,z,nx,ny,nz, .... 
-    My3DObject(GLfloat* data, int size)
+    Model(GLfloat* data, int size)
     {
         this->size = size;
         // First, set the container's VAO (and VBO)
@@ -18,10 +18,10 @@ public:
         glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 
         // Position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
         glEnableVertexAttribArray(0);
         // Normal attribute
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
         glEnableVertexAttribArray(1);
         // Color attribute
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));

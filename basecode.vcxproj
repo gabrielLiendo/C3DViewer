@@ -52,6 +52,7 @@
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\tinyfiledialogs.h" />
     <ClInclude Include="include\UI.h" />
+    <ClInclude Include="ObjLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

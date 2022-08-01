@@ -110,23 +110,15 @@ public:
 
     void loadObj()
     {
-        // File Variables
-        char const* lTheOpenFileName, * lFilterPatterns[1] = { "*.obj"};
         FILE* lIn;
-        char lBuffer[1024];
-
+        char const* lTheOpenFileName, * lFilterPatterns[1] = { "*.obj"};
+      
         lTheOpenFileName = tinyfd_openFileDialog("Open", "", 1, lFilterPatterns, NULL, 0);
 
         if (!lTheOpenFileName)
             return;
 
-        std::ifstream infile(lTheOpenFileName);
-        std::string line;
-        while (std::getline(infile, line))
-        {
-            std::istringstream iss(line);
-            std::cout << iss.str() << std::endl;
-        }
+        objloader.load(lTheOpenFileName);
     }
 
 	void terminate()
@@ -139,6 +131,7 @@ public:
 
 private:
     GLFWwindow* window;
+    ObjLoader objloader;
 
     // Our state
     bool show_demo_window = true;

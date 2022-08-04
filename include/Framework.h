@@ -161,7 +161,7 @@ public:
                
             // Render UI frame
             ui.render();
-
+            // glPolygonOffset -- Z-Fighting, borde sobre el relleno, sumarle 1 bit al z
             // Swap the screen buffers
             glfwSwapBuffers(window);
         }

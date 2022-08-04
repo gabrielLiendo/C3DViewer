@@ -20,7 +20,7 @@ private:
 	std::vector<vec3> normals;
 	//std::vector<vec2> text_coords;
 
-	void readModel()
+	Model readModel()
 	{
 		std::vector<Mesh> meshes;
 
@@ -29,7 +29,6 @@ private:
 
 		while (std::getline(infile, line))
 		{
-			std::cout << line << std::endl;
 			ss.clear();
 			ss.str(line);
 
@@ -46,22 +45,21 @@ private:
 		infile.close();
 		positions.clear();
 		normals.clear();
+
+		return Model(meshes);
 	}
 
 	Mesh readMesh()
 	{
-		std::cout << "LEER MESH" << std::endl;
-	
-		std::vector<Vertex> face;
-		std::vector<Vertex> vertices;
+		std::vector<Vertex> face, vertices;
 
 		std::stringstream ss, sv;
 		std::string line, prefix, vertex;
 		
-		//vec2 v2;
 		vec3 v3;
+		//vec2 v2;
 
-		unsigned int n, count, index, posindex, textcoordindex, normalindex;
+		unsigned int n, count, index, posindex, normalindex /*, textcoordindex*/ ;
 
 		while (std::getline(infile, line))
 		{
@@ -93,13 +91,12 @@ private:
 			else if (prefix == "f")
 			{
 				face.clear();
-				n = 0;
 				while (ss >> vertex)
 				{
 					sv.clear();
 					sv.str(vertex);
 					count = 0;
-					posindex = 0; textcoordindex = 0; normalindex = 0;
+					posindex = 0; normalindex = 0 /*, textcoordindex = 0 */;
 					while(sv)
 					{
 						while(sv.peek() == '/')
@@ -110,27 +107,37 @@ private:
 						sv >> index;
 						if (count == 0)
 							posindex = index;
-						else if (count == 1)
-							textcoordindex = index;
+						/*else if (count == 1)
+							textcoordindex = index;*/
 						else if (count == 2)
 							normalindex = index;
-						else
-						{
-							std::cout << "Invalid vertex" << std::endl;
-						}
 					}
-					vertices.push_back({ positions[posindex - 1], normals[normalindex - 1], {1.0,1.0,0.0} });
+					face.push_back({ positions[posindex - 1], normals[normalindex - 1], {0.8,0.8,0.8} });
 				}
-		
-				if (n > 3)
-					std::cout << "triangulizar !" << std::endl;
+				
+				if (face.size() > 3)
+					face = triangulate(face);
+				
+				for (int i = 0; i < face.size(); i++)
+					vertices.push_back(face[i]);
 			}
 		}
 
-		std::cout << positions.size() << std::endl;
-		std::cout << normals.size() << std::endl;
-		std::cout << vertices.size() << std::endl;
-
 		return Mesh(vertices);
+	}
+
+	std::vector<Vertex> triangulate(std::vector<Vertex> face)
+	{
+		std::vector<Vertex> vertices;
+
+		vertices.push_back(face[0]);
+		vertices.push_back(face[1]);
+		vertices.push_back(face[3]);
+
+		vertices.push_back(face[1]);
+		vertices.push_back(face[2]);
+		vertices.push_back(face[3]);
+
+		return vertices;
 	}
 };

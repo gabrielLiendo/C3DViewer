@@ -27,6 +27,10 @@ public:
         setCallbacks();
         ui = UI(window);
         ui.init();
+
+        // Create default material
+        materials.push_back({ "Default", { 0.7, 0.7, 0.7 } });
+        default_mtl = &materials[0];
     }
 
     // Set the required callback functions
@@ -144,8 +148,13 @@ public:
                 glm::mat4 model =
                     glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zDist)) *
                     glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                    glm::rotate(glm::mat4(1.0f), x_angle, glm::vec3(1.0f, 0.0f, 0.0f)) *
                     glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+
+                /*  glm::mat4 model =
+                    glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zDist)) *
+                    glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f)) *
+                    glm::rotate(glm::mat4(1.0f), x_angle, glm::vec3(1.0f, 0.0f, 0.0f)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));*/
 
                 // Use cooresponding shader when setting uniforms/drawing objects
                 //glUniform3f(objectColorLoc, 1.0f, 1.0f, 1.0f);

@@ -2,9 +2,11 @@
 class Mesh
 {
 public:
-	Mesh(std::vector<Vertex> vertices)
+	Mesh(std::string name, std::vector<Vertex> vertices, Material* mtl)
 	{
+		this->name = name;
 		this->vertices = vertices;
+		this->mtl = mtl;
 		initMesh();
 	}
 
@@ -15,9 +17,12 @@ public:
 	}
 
 private:
-	unsigned int VAO, VBO;
+	std::string name;
 	std::vector<Vertex> vertices;
+	Material* mtl;
 
+	unsigned int VAO, VBO;
+	
 	void initMesh()
 	{
 		// Gen and bind container's VAO
@@ -34,11 +39,11 @@ private:
 		glEnableVertexAttribArray(0);
 
 		// Normal attribute
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Normal));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
 		glEnableVertexAttribArray(1);
 
 		// Color attribute
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Color));
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, color));
 		glEnableVertexAttribArray(2);
 	}
 

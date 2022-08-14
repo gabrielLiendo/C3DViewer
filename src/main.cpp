@@ -24,9 +24,11 @@
 
 // Other includes
 #include "Shader.h"
-#include "3D_utils.h"
+#include "Utils.h"
+#include "Material.h"
 #include "Mesh.h"
 #include "Model.h"
+#include "MtlLoader.h"
 #include "ObjLoader.h"
 #include "UI.h"
 #include "Framework.h"

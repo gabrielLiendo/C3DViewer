@@ -20,23 +20,22 @@ private:
 	std::vector<vec3> normals;
 	//std::vector<vec2> text_coords;
 
+	std::string line, prefix;
+	std::stringstream ss;
+
 	Model readModel()
 	{
 		std::vector<Mesh> meshes;
 
-		std::stringstream ss;
-		std::string line, prefix;
-
 		while (std::getline(infile, line))
 		{
+			//std::cout << line << std::endl;
 			ss.clear();
 			ss.str(line);
 
 			ss >> prefix;
 			if (prefix == "o")
-			{
 				meshes.push_back(readMesh());
-			}
 		}
 
 		currentModel = Model(meshes);
@@ -51,26 +50,30 @@ private:
 
 	Mesh readMesh()
 	{
-		std::vector<Vertex> face, vertices;
+		unsigned int n, count, index, posindex, normalindex /*, textcoordindex*/;
 
-		std::stringstream ss, sv;
-		std::string line, prefix, vertex;
+		std::vector<Vertex> vertices, face;
+		std::stringstream sv;
+		std::string name, vertex, mtl_name = "Default";
 		
 		vec3 v3;
 		//vec2 v2;
 
-		unsigned int n, count, index, posindex, normalindex /*, textcoordindex*/ ;
-
+		ss >> name;
 		while (std::getline(infile, line))
 		{
+			//std::cout << line << std::endl;
 			ss.clear();
 			ss.str(line);
 
 			ss >> prefix;
 			if (prefix == "o")
-			{
+			{	
+				int size = line.size();
 				infile.putback('\n');
-				infile.putback('o');
+				for (int i = 0; i < size; i++)
+					infile.putback(line[size - i - 1]);
+			
 				break;
 			}
 			if (prefix == "v")
@@ -88,6 +91,8 @@ private:
 				ss >> v2.x >> v2.y;
 				text_coords.push_back(v2);
 			}*/
+			else if (prefix == "usemtl")
+				ss >> mtl_name;
 			else if (prefix == "f")
 			{
 				face.clear();
@@ -95,8 +100,7 @@ private:
 				{
 					sv.clear();
 					sv.str(vertex);
-					count = 0;
-					posindex = 0; normalindex = 0 /*, textcoordindex = 0 */;
+					count = 0; posindex = 0; normalindex = 0 /*, textcoordindex = 0 */;
 					while(sv)
 					{
 						while(sv.peek() == '/')
@@ -112,7 +116,7 @@ private:
 						else if (count == 2)
 							normalindex = index;
 					}
-					face.push_back({ positions[posindex - 1], normals[normalindex - 1], {0.8,0.8,0.8} });
+					face.push_back({ positions[posindex - 1], normals[normalindex - 1]});
 				}
 				
 				if (face.size() > 3)
@@ -123,7 +127,21 @@ private:
 			}
 		}
 
-		return Mesh(vertices);
+		Material* mtl = default_mtl;
+		for (int i = 0; i < materials.size(); i++)
+		{
+			if (materials[i].name == mtl_name)
+				mtl = &materials[i];
+		}
+		
+		for (int i = 0; i < vertices.size(); i++)
+		{
+			vertices[i].color.x = mtl->kd.x;
+			vertices[i].color.y = mtl->kd.y;
+			vertices[i].color.z = mtl->kd.z;
+		}
+
+		return Mesh(name, vertices, mtl);
 	}
 
 	std::vector<Vertex> triangulate(std::vector<Vertex> face)

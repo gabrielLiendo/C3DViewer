@@ -111,14 +111,23 @@ public:
     void loadObj()
     {
         FILE* lIn;
-        char const* lTheOpenFileName, * lFilterPatterns[1] = { "*.obj"};
+        char const* objFileName, * lFilterPatterns[1] = { "*.obj"};
       
-        lTheOpenFileName = tinyfd_openFileDialog("Open", "", 1, lFilterPatterns, NULL, 0);
+        objFileName = tinyfd_openFileDialog("Open", "", 1, lFilterPatterns, NULL, 0);
 
-        if (!lTheOpenFileName)
+        if (!objFileName)
             return;
+ 
+        std::string mtlFileName = objFileName;
+        mtlFileName = mtlFileName.substr(0, mtlFileName.size() - 3) + "mtl";
 
-        objloader.load(lTheOpenFileName);
+        mtlLoader.load(mtlFileName.c_str());
+
+        /*for (int i = 0; i < materials.size(); i++)
+        {
+            std::cout << materials[i].name << " " << materials[i].kd.x << " " << materials[i].kd.y << " " << materials[i].kd.z << std::endl;
+        }*/
+        objloader.load(objFileName);
     }
 
 	void terminate()
@@ -132,6 +141,7 @@ public:
 private:
     GLFWwindow* window;
     ObjLoader objloader;
+    MtlLoader mtlLoader;
 
     // Our state
     bool show_demo_window = true;

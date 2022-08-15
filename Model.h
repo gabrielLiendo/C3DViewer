@@ -2,6 +2,7 @@
 class Model
 {
 public:
+	std::vector<Mesh> meshes;
 	Model() = default;
 	Model(std::vector<Mesh> meshes)
 	{
@@ -17,8 +18,11 @@ public:
 
 private:
 	int n;
-	std::vector<Mesh> meshes;
+	
 };
+
+std::vector<Model> models;
+
 
 bool draw = false;
 Model currentModel;

@@ -11,7 +11,9 @@ public:
 		if (!infile.is_open())
 			return false;
 
-		readModel();
+		draw = true;
+
+		models.push_back(readModel());
 	}
 
 private:
@@ -37,10 +39,7 @@ private:
 			if (prefix == "o")
 				meshes.push_back(readMesh());
 		}
-
-		currentModel = Model(meshes);
-		draw = true;
-
+		
 		infile.close();
 		positions.clear();
 		normals.clear();

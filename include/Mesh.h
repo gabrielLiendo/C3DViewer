@@ -2,6 +2,7 @@
 class Mesh
 {
 public:
+	std::string name;
 	Mesh(std::string name, std::vector<Vertex> vertices, Material* mtl)
 	{
 		this->name = name;
@@ -17,7 +18,7 @@ public:
 	}
 
 private:
-	std::string name;
+	
 	std::vector<Vertex> vertices;
 	Material* mtl;
 

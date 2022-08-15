@@ -22,7 +22,7 @@ public:
 
     static void modelHeader(Model* obj, int i)
     {
-        std::string label = "Object " + std::to_string(i + 1);
+        std::string label = "Object" + std::to_string(i + 1);
         if (ImGui::TreeNode(label.c_str()))
         {
             for (int i = 0; i < obj->meshes.size(); i++)
@@ -41,6 +41,8 @@ public:
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         io.FontDefault = io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Regular.ttf", 16.0f);
+
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
@@ -94,10 +96,12 @@ public:
                 ImGui::EndMenuBar();
             }
 
-            if (ImGui::CollapsingHeader("Objects"))
+            if (ImGui::Begin("Objects"))
             {
                 for (int i = 0; i < models.size(); i++)
                     modelHeader(&models[i], i);
+                
+                ImGui::End();
             }   
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

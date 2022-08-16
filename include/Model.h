@@ -3,7 +3,9 @@ class Model
 {
 public:
 	std::vector<Mesh> meshes;
+
 	Model() = default;
+
 	Model(std::vector<Mesh> meshes)
 	{
 		this->meshes = meshes;
@@ -15,10 +17,8 @@ public:
 		for (int i = 0; i < n; i++)
 			meshes[i].draw();
 	}
-
 private:
 	int n;
-	
 };
 
 std::vector<Model> models;

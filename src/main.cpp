@@ -26,6 +26,7 @@
 #include "Shader.h"
 #include "Utils.h"
 #include "Material.h"
+#include "BoundingBox.h"
 #include "Mesh.h"
 #include "Model.h"
 #include "MtlLoader.h"

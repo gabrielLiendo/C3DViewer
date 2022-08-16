@@ -89,19 +89,19 @@ public:
         // Camera controls
         if (keys[GLFW_KEY_W])
         {
-            zDist += delta;
+            CameraPos.z += delta;
         }
         if (keys[GLFW_KEY_S])
         {
-            zDist -= delta;
+            CameraPos.z -= delta;
         }
         if (keys[GLFW_KEY_A])
         {
-            angle -= delta;
+            CameraPos.x -= delta;
         }
         if (keys[GLFW_KEY_D])
         {
-            angle += delta;
+            CameraPos.x += delta;
         }
     }
 
@@ -116,6 +116,8 @@ public:
         GLint viewLoc = glGetUniformLocation(basic_shader.Program, "view");
         GLint projLoc = glGetUniformLocation(basic_shader.Program, "projection");
        
+        GLuint renderedTexture;
+
         while (!glfwWindowShouldClose(window))
         {
             // Calculate deltatime of current frame
@@ -140,34 +142,55 @@ public:
             static float x_angle = 0.0f;
             x_angle += deltaTime;
 
+
             if (draw)
             {
                 // Create camera transformations
-                glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-                glm::mat4 projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
-                glm::mat4 model =
-                    glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zDist)) *
-                    glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                    glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+                /*
+                glm::mat4 CameraMatrix = glm::lookAt(
+                        cameraPosition, // the position of your camera, in world space
+                        cameraTarget,   // where you want to look at, in world space
+                        upVector        // probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
 
-                /*  glm::mat4 model =
-                    glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zDist)) *
-                    glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                    glm::rotate(glm::mat4(1.0f), x_angle, glm::vec3(1.0f, 0.0f, 0.0f)) *
-                    glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));*/
+                glm::mat4 projectionMatrix = glm::perspective(
+                    glm::radians(FoV), // The vertical Field of View, in radians: the amount of "zoom". Think "camera lens". Usually between 90° (extra wide) and 30° (quite zoomed in)
+                    4.0f / 3.0f,       // Aspect Ratio. Depends on the size of your window. Notice that 4/3 == 800/600 == 1280/960, sounds familiar ?
+                    0.1f,              // Near clipping plane. Keep as big as possible, or you'll get precision issues.
+                    100.0f             // Far clipping plane. Keep as little as possible.
+                */
+
+
+                glm::mat4 view = glm::lookAt(CameraPos, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+                glm::mat4 projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
+                glm::mat4 model;
 
                 // Use cooresponding shader when setting uniforms/drawing objects
                 //glUniform3f(objectColorLoc, 1.0f, 1.0f, 1.0f);
 
+                basic_shader.Use();
+
                 // Pass the matrices to the shader
                 glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
                 glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-                glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-                basic_shader.Use();
+               
 
                 for (int i = 0; i < models.size(); i++)
-                    models[i].draw();
+                {
+                    for (int j = 0; j < models[i].meshes.size(); j++)
+                    {
+                        model = models[i].meshes[j].getModelTransformation();
+                        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                        models[i].meshes[j].draw();
+                    }
+                }
+
+                if (selectedMesh)
+                {
+                    model = selectedMesh->boundingBox.getModelTransformation();
+                    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                    selectedMesh->boundingBox.draw();
+                }
             }
                
             // Render UI frame
@@ -198,12 +221,12 @@ private:
     // Camera
     GLfloat lastX = WIDTH / 2.0;
     GLfloat lastY = HEIGHT / 2.0;
+    glm::vec3 CameraPos = glm::vec3(0.0, 0.0, 2.0);
 
     // Deltatime
     GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
     GLfloat lastFrame = 0.0f;  	// Time of last frame
 
-    GLfloat zDist = -3.0f;
     GLfloat angle = 0.0f;
 
     bool firstMouse = true;

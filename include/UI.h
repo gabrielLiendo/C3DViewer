@@ -12,25 +12,48 @@ public:
         this->window = window;
     }
 
-    static void meshHeader(Mesh* mesh)
+    void objectsWindow()
     {
-        if (ImGui::TreeNode(mesh->name.c_str()))
-        {
-            ImGui::TreePop();
+        if (ImGui::Begin("Objects"))
+        {   
+            static int selected = -1;
+            int m = models.size(), index = 0;
+            for (int i = 0; i < m; i++)
+            {
+                std::string label = "Object " + std::to_string(i + 1);
+                if (ImGui::TreeNode(label.c_str()))
+                {   
+                    int n = models[i].meshes.size();
+                    for (int j = 0; j < n; j++)
+                    {
+                        if (ImGui::Selectable(models[i].meshes[j].name.c_str(), selected == index))
+                        {
+                            selected = index;
+                            selectedMesh = &models[i].meshes[j];
+                        }
+                        index++;
+                    }
+
+                    ImGui::TreePop();
+                }
+            }
+                
+            if (ImGui::Begin("Properties"))
+            {
+                if (ImGui::TreeNode("Transformation"))
+                {
+                    ImGui::TreePop();
+                }
+                if (ImGui::TreeNode("Material"))
+                {
+                    ImGui::TreePop();
+                }
+                ImGui::End();
+            }
+            ImGui::End();
         }
     }
 
-    static void modelHeader(Model* obj, int i)
-    {
-        std::string label = "Object" + std::to_string(i + 1);
-        if (ImGui::TreeNode(label.c_str()))
-        {
-            for (int i = 0; i < obj->meshes.size(); i++)
-                meshHeader(&obj->meshes[i]);
-
-            ImGui::TreePop();
-        }
-    }
 
     // Setup Dear ImGui context and style
 	void init()
@@ -78,14 +101,19 @@ public:
             ImGui::ShowDemoWindow(&show_demo_window);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-        if(ImGui::Begin("Scene", 0, ImGuiWindowFlags_MenuBar))
+        if(ImGui::Begin("Main", 0, ImGuiWindowFlags_MenuBar))
         {
             if (ImGui::BeginMenuBar())
             {
                 if (ImGui::BeginMenu("File"))
                 {
-                    if (ImGui::MenuItem("Load Object", "L"))
+                    if (ImGui::MenuItem("Load Object"))
                         loadObj();
+
+                    ImGui::MenuItem("Load Scene");
+
+                    ImGui::MenuItem("Save Scene");
+
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("Help"))
@@ -96,27 +124,16 @@ public:
                 ImGui::EndMenuBar();
             }
 
-            if (ImGui::Begin("Objects"))
-            {
-                for (int i = 0; i < models.size(); i++)
-                    modelHeader(&models[i], i);
-                
-                ImGui::End();
-            }   
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
 
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
+
+        objectsWindow();
+       
+
+
 
         // Rendering
         ImGui::Render();

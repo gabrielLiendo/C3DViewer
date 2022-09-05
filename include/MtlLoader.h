@@ -27,16 +27,17 @@ private:
 			ss.str(line);
 
 			ss >> prefix;
-			if (prefix == "newmtl")
+			if (prefix == "newmtl") 
 				materials.push_back(readMaterial());
+				
 		}
 	}
 
-	Material readMaterial()
+	std::shared_ptr <Material> readMaterial()
 	{	
 		int illum;
 		float ns, ni, d;
-		vec3 ka, kd, ks, ke;
+		glm::vec3 ka, kd, ks, ke;
 		std::string name;
 
 		ss >> name;
@@ -75,6 +76,6 @@ private:
 		}
 
 		
-		return Material(name, kd);
+		return std::make_shared<Material>(name, kd);
 	}
 };

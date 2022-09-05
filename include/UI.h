@@ -12,42 +12,85 @@ public:
         this->window = window;
     }
 
+    static void DrawVec3Control(const std::string label, glm::vec3& values, float v_min, float v_max)
+    {
+        ImGui::BeginTable(label.c_str(), 4, ImGuiTableFlags_NoPadOuterX);
+        ImGui::TableNextRow();
+
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text(label.c_str());
+
+        ImGui::TableSetColumnIndex(1);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+        ImGui::Button("X");
+        ImGui::PopStyleColor(3);
+        ImGui::SameLine();
+        ImGui::DragFloat("##X", &values.x, 0.05f, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::TableSetColumnIndex(2);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+        ImGui::Button("Y");
+        ImGui::PopStyleColor(3);
+        ImGui::SameLine();
+        ImGui::DragFloat("##Y", &values.y, 0.05f, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::TableSetColumnIndex(3);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+        ImGui::Button("Z");
+        ImGui::PopStyleColor(3);
+        ImGui::SameLine();
+        ImGui::DragFloat("##Z", &values.z, 0.05f, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::EndTable();
+    }
+
     void objectsWindow()
     {
         if (ImGui::Begin("Objects"))
         {   
             static int selected = -1;
-            int m = models.size(), index = 0;
+            int m = objects.size();
             for (int i = 0; i < m; i++)
             {
-                std::string label = "Object " + std::to_string(i + 1);
-                if (ImGui::TreeNode(label.c_str()))
-                {   
-                    int n = models[i].meshes.size();
-                    for (int j = 0; j < n; j++)
-                    {
-                        if (ImGui::Selectable(models[i].meshes[j].name.c_str(), selected == index))
-                        {
-                            selected = index;
-                            selectedMesh = &models[i].meshes[j];
-                        }
-                        index++;
-                    }
-
-                    ImGui::TreePop();
-                }
+                 if (ImGui::Selectable(objects[i].name.c_str(), selected == i))
+                 {
+                     selected = i;
+                     selectedObject = &objects[i];
+                 }
             }
                 
             if (ImGui::Begin("Properties"))
             {
                 if (ImGui::TreeNode("Transformation"))
-                {
+                {   
+                    if (selectedObject)
+                    {
+                        DrawVec3Control("Translate", *selectedObject->getTranslationFactor(), -max_float, max_float);
+                        DrawVec3Control("Scale", *selectedObject->getScaleFactor(), -10.0f, 10.0f);
+                    }
                     ImGui::TreePop();
                 }
+                /*
                 if (ImGui::TreeNode("Material"))
                 {
+                    
+                    if (selectedObject)
+                    {
+                        std::string mtlName = selectedObject->mtl->name;
+                        ImGui::Text("Diffuse");
+                        ImGui::SameLine();
+                        ImGui::ColorEdit3("Diffuse", glm::value_ptr(*selectedMesh->mtl->getDiffuse()), ImGuiColorEditFlags_NoLabel);
+                        
+                    }
                     ImGui::TreePop();
                 }
+                */
                 ImGui::End();
             }
             ImGui::End();
@@ -58,7 +101,6 @@ public:
     // Setup Dear ImGui context and style
 	void init()
 	{
-        
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -151,15 +193,25 @@ public:
             return;
  
         std::string mtlFileName = objFileName;
-        mtlFileName = mtlFileName.substr(0, mtlFileName.size() - 3) + "mtl";
+        mtlFileName = mtlFileName.substr(0, mtlFileName.size() - 4) + ".mtl";
 
         mtlLoader.load(mtlFileName.c_str());
 
-        /*for (int i = 0; i < materials.size(); i++)
+        /*
+        for (int i = 0; i < materials.size(); i++)
         {
-            std::cout << materials[i].name << " " << materials[i].kd.x << " " << materials[i].kd.y << " " << materials[i].kd.z << std::endl;
+            std::cout << materials[i].name << " " << materials[i].getDiffuse()->x << " " << materials[i].getDiffuse()->y << " " << materials[i].getDiffuse()->z << std::endl;
         }*/
+
         objloader.load(objFileName);
+
+        std::string objName = objFileName;
+        std::size_t found = objName.find_last_of("/\\");
+        objName = objName.substr(found + 1);
+        objName = objName.substr(0, objName.size() - 4);
+        objects.back().setName(objName);
+        
+
     }
 
 	void terminate()
@@ -179,4 +231,7 @@ private:
     bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    // Limit values
+    float max_float = std::numeric_limits<float>::max();
 };

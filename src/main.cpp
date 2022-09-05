@@ -12,8 +12,12 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstddef>
 #include <vector>
+#include <list>
 #include <algorithm>
+#include <memory>
+#include <limits>
 #include "tinyfiledialogs.h"
 
 // GLM Mathematics
@@ -28,7 +32,7 @@
 #include "Material.h"
 #include "BoundingBox.h"
 #include "Mesh.h"
-#include "Model.h"
+#include "Object.h"
 #include "MtlLoader.h"
 #include "ObjLoader.h"
 #include "UI.h"

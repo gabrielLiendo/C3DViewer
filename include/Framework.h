@@ -28,9 +28,6 @@ public:
         ui = UI(window);
         ui.init();
 
-        // Create default material
-        materials.push_back({ "Default", { 0.7, 0.7, 0.7 } });
-        default_mtl = &materials[0];
     }
 
     // Set the required callback functions
@@ -115,6 +112,7 @@ public:
         GLint modelLoc = glGetUniformLocation(basic_shader.Program, "model");
         GLint viewLoc = glGetUniformLocation(basic_shader.Program, "view");
         GLint projLoc = glGetUniformLocation(basic_shader.Program, "projection");
+        GLint colorLoc = glGetUniformLocation(basic_shader.Program, "color");
        
         GLuint renderedTexture;
 
@@ -163,6 +161,7 @@ public:
                 glm::mat4 view = glm::lookAt(CameraPos, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
                 glm::mat4 projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
                 glm::mat4 model;
+                glm::vec3 color, boxColor;
 
                 // Use cooresponding shader when setting uniforms/drawing objects
                 //glUniform3f(objectColorLoc, 1.0f, 1.0f, 1.0f);
@@ -173,23 +172,30 @@ public:
                 glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
                 glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-               
 
-                for (int i = 0; i < models.size(); i++)
+                for (int i = 0; i < objects.size(); i++)
                 {
-                    for (int j = 0; j < models[i].meshes.size(); j++)
+                    model = objects[i].getModelTransformation();
+                    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+                    //std::cout << objects[i].name << std::endl;
+                    for (int j = 0; j < objects[i].meshes.size(); j++)
                     {
-                        model = models[i].meshes[j].getModelTransformation();
-                        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-                        models[i].meshes[j].draw();
+                        //std::cout << objects[i].meshes[j].mtl->name << std::endl;
+                        color = objects[i].meshes[j].mtl->getDiffuse();
+                        //std::cout << color.x << " " << color.y << " " << color.z << std::endl;
+                        glUniform3f(colorLoc, color.x, color.y, color.z);
+                        objects[i].meshes[j].draw();
                     }
                 }
 
-                if (selectedMesh)
+                if (selectedObject)
                 {
-                    model = selectedMesh->boundingBox.getModelTransformation();
+                    model = selectedObject->boundingBox.getModelTransformation();
+                    boxColor = *selectedObject->boundingBox.getBoxColor();
+                    glUniform3f(colorLoc, boxColor.x, boxColor.y, boxColor.z);
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-                    selectedMesh->boundingBox.draw();
+                    selectedObject->boundingBox.draw();
                 }
             }
                

@@ -13,7 +13,7 @@ public:
 
 		draw = true;
 
-		models.push_back(readModel());
+		objects.push_back(readObject());
 	}
 
 private:
@@ -25,7 +25,7 @@ private:
 	std::string line, prefix;
 	std::stringstream ss;
 
-	Model readModel()
+	Object readObject()
 	{
 		std::vector<Mesh> meshes;
 
@@ -44,7 +44,7 @@ private:
 		positions.clear();
 		normals.clear();
 
-		return Model(meshes);
+		return Object(meshes);
 	}
 
 	Mesh readMesh()
@@ -72,7 +72,7 @@ private:
 				infile.putback('\n');
 				for (int i = 0; i < size; i++)
 					infile.putback(line[size - i - 1]);
-			
+
 				break;
 			}
 			if (prefix == "v")
@@ -129,15 +129,8 @@ private:
 		Material* mtl = default_mtl;
 		for (int i = 0; i < materials.size(); i++)
 		{
-			if (materials[i].name == mtl_name)
-				mtl = &materials[i];
-		}
-		
-		for (int i = 0; i < vertices.size(); i++)
-		{
-			vertices[i].color.x = mtl->kd.x;
-			vertices[i].color.y = mtl->kd.y;
-			vertices[i].color.z = mtl->kd.z;
+			if ((* materials[i]).name == mtl_name)
+				mtl = &(* materials[i]);
 		}
 
 		return Mesh(name, vertices, mtl);

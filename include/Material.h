@@ -3,21 +3,20 @@ class Material
 {
 public:
 	std::string name;
-	vec3 kd;
-
-	Material(std::string name, vec3 diffuse)
+	
+	Material(std::string name, glm::vec3 diffuse)
 	{
 		this->name = name;
-		this->kd = diffuse;
+		this->diffuse = diffuse;
 	}
 
-	void setDiffuse(vec3 diffuse)
+	glm::vec3 getDiffuse()
 	{
-		this->kd = diffuse;
+		return diffuse;
 	}
 
 private:
-	
+	glm::vec3 diffuse;
 	/*
 	vec3 ambient;
 	vec3 specular;
@@ -29,5 +28,5 @@ private:
 	*/
 };
 
-std::vector<Material> materials;
+std::vector<std::shared_ptr<Material>> materials;
 Material* default_mtl;

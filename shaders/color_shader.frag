@@ -1,9 +1,10 @@
 #version 330 core
 
-in vec3 diffuse;  
-out vec4 frag_color;
+uniform vec3 diffuseColor;
+
+out vec4 fragColor;
 
 void main()
 {
-	frag_color = vec4(diffuse, 1.0f);
+	fragColor = vec4(diffuseColor, 1.0f);
 } 

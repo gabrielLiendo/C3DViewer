@@ -21,6 +21,12 @@ public:
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 	}
 	
+	void drawVertex()
+	{
+		bind();
+		glDrawArrays(GL_POINTS, 0, vertices.size());
+	}
+
 private:
 	unsigned int VAO, VBO;
 	

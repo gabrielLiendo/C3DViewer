@@ -4,16 +4,12 @@ class ObjLoader
 public:
 	ObjLoader() = default;
 
-	bool load(const char* file_name)
+	Object load(const char* file_name)
 	{
 		infile = std::ifstream (file_name);
-
-		if (!infile.is_open())
-			return false;
-
 		draw = true;
 
-		objects.push_back(readObject());
+		return readObject();
 	}
 
 private:
@@ -27,6 +23,7 @@ private:
 
 	Object readObject()
 	{
+		vec3 v3;
 		std::vector<Mesh> meshes;
 
 		while (std::getline(infile, line))
@@ -36,8 +33,18 @@ private:
 			ss.str(line);
 
 			ss >> prefix;
-			if (prefix == "o")
+			if (prefix == "o" || prefix == "g")
 				meshes.push_back(readMesh());
+			else if (prefix == "v")
+			{
+				ss >> v3.x >> v3.y >> v3.z;
+				positions.push_back(v3);
+			}
+			else if (prefix == "vn")
+			{
+				ss >> v3.x >> v3.y >> v3.z;
+				normals.push_back(v3);
+			}
 		}
 		
 		infile.close();
@@ -66,7 +73,7 @@ private:
 			ss.str(line);
 
 			ss >> prefix;
-			if (prefix == "o")
+			if (prefix == "o" || prefix == "g")
 			{	
 				int size = line.size();
 				infile.putback('\n');

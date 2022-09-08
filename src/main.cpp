@@ -33,6 +33,7 @@
 #include "BoundingBox.h"
 #include "Mesh.h"
 #include "Object.h"
+#include "Camera.h"
 #include "MtlLoader.h"
 #include "ObjLoader.h"
 #include "UI.h"

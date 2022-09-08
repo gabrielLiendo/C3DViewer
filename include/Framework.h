@@ -13,6 +13,7 @@ public:
         //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+        glfwWindowHint(GLFW_SAMPLES, 4);
 
         // Create a GLFWwindow object that we can use for GLFW's functions
         window = glfwCreateWindow(WIDTH, HEIGHT, "Proyecto 2 CG1 - UCV", nullptr, nullptr);
@@ -25,9 +26,10 @@ public:
         glEnable(GL_DEPTH_TEST);
 
         setCallbacks();
-        ui = UI(window);
-        ui.init();
 
+        bgColor = glm::vec3(0.0f, 0.0f, 0.0f);
+        ui = UI(window, &bgColor);
+        ui.init();
     }
 
     // Set the required callback functions
@@ -84,21 +86,13 @@ public:
     void do_movement(GLfloat delta)
     {
         // Camera controls
-        if (keys[GLFW_KEY_W])
+        if (keys[GLFW_KEY_UP])
         {
-            CameraPos.z += delta;
+            camera.changePosZ(delta);
         }
-        if (keys[GLFW_KEY_S])
+        else if (keys[GLFW_KEY_DOWN])
         {
-            CameraPos.z -= delta;
-        }
-        if (keys[GLFW_KEY_A])
-        {
-            CameraPos.x -= delta;
-        }
-        if (keys[GLFW_KEY_D])
-        {
-            CameraPos.x += delta;
+            camera.changePosZ(-delta);
         }
     }
 
@@ -106,16 +100,20 @@ public:
     {
         // Build and compile our shader program
         Shader basic_shader("shaders/color_shader.vs", "shaders/color_shader.frag");
+        Shader normals_shader("shaders/normals_shader.vs", "shaders/normals_shader.frag", "shaders/normals_shader.geom");
         
         // Get the uniform locations
-        //GLint objectColorLoc = glGetUniformLocation(basic_shader.Program, "objectColor");
-        GLint modelLoc = glGetUniformLocation(basic_shader.Program, "model");
-        GLint viewLoc = glGetUniformLocation(basic_shader.Program, "view");
-        GLint projLoc = glGetUniformLocation(basic_shader.Program, "projection");
-        GLint colorLoc = glGetUniformLocation(basic_shader.Program, "color");
-       
-        GLuint renderedTexture;
+        int modelLoc = glGetUniformLocation(basic_shader.Program, "model");
+        int viewLoc = glGetUniformLocation(basic_shader.Program, "view");
+        int projLoc = glGetUniformLocation(basic_shader.Program, "projection");
+        int colorLoc = glGetUniformLocation(basic_shader.Program, "diffuseColor");
 
+        int modelLoc_ns = glGetUniformLocation(normals_shader.Program, "model");
+        int viewLoc_ns = glGetUniformLocation(normals_shader.Program, "view");
+        int projLoc_ns = glGetUniformLocation(normals_shader.Program, "projection");
+        int colorLoc_ns = glGetUniformLocation(normals_shader.Program, "normalsColor");
+        int scaleLoc_ns = glGetUniformLocation(normals_shader.Program, "normalScale");
+       
         while (!glfwWindowShouldClose(window))
         {
             // Calculate deltatime of current frame
@@ -134,12 +132,11 @@ public:
             do_movement(deltaTime);
 
             // Clear the colorbuffer
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             static float x_angle = 0.0f;
             x_angle += deltaTime;
-
 
             if (draw)
             {
@@ -157,11 +154,10 @@ public:
                     100.0f             // Far clipping plane. Keep as little as possible.
                 */
 
-
-                glm::mat4 view = glm::lookAt(CameraPos, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+                glm::mat4 view = glm::lookAt(*camera.getPosition(), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
                 glm::mat4 projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
                 glm::mat4 model;
-                glm::vec3 color, boxColor;
+                glm::vec3 boxColor, normalsColor;
 
                 // Use cooresponding shader when setting uniforms/drawing objects
                 //glUniform3f(objectColorLoc, 1.0f, 1.0f, 1.0f);
@@ -172,30 +168,42 @@ public:
                 glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
                 glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-
                 for (int i = 0; i < objects.size(); i++)
                 {
                     model = objects[i].getModelTransformation();
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-                    //std::cout << objects[i].name << std::endl;
-                    for (int j = 0; j < objects[i].meshes.size(); j++)
+                    objects[i].draw(colorLoc);
+
+                    if (*objects[i].getNormalsBool())
                     {
-                        //std::cout << objects[i].meshes[j].mtl->name << std::endl;
-                        color = objects[i].meshes[j].mtl->getDiffuse();
-                        //std::cout << color.x << " " << color.y << " " << color.z << std::endl;
-                        glUniform3f(colorLoc, color.x, color.y, color.z);
-                        objects[i].meshes[j].draw();
+                        normals_shader.Use();
+
+                        // Pass the matrices to the shader
+                        glUniformMatrix4fv(modelLoc_ns, 1, GL_FALSE, glm::value_ptr(model));
+                        glUniformMatrix4fv(viewLoc_ns, 1, GL_FALSE, glm::value_ptr(view));
+                        glUniformMatrix4fv(projLoc_ns, 1, GL_FALSE, glm::value_ptr(projection));
+                        normalsColor = *objects[i].getNormalsColor();
+                        glUniform3f(colorLoc_ns, normalsColor.x, normalsColor.y, normalsColor.z);
+                        glUniform1f(scaleLoc_ns, objects[i].getScaleNormal());
+                        objects[i].drawNormals();
+
+                        basic_shader.Use();
+
+                        // Pass the matrices to the shader
+                        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+                        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+                        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
                     }
                 }
 
                 if (selectedObject)
                 {
-                    model = selectedObject->boundingBox.getModelTransformation();
-                    boxColor = *selectedObject->boundingBox.getBoxColor();
+                    model = selectedObject->getBoxModel();
+                    boxColor = *selectedObject->getBoxColor();
                     glUniform3f(colorLoc, boxColor.x, boxColor.y, boxColor.z);
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-                    selectedObject->boundingBox.draw();
+                    selectedObject->drawBoundingBox();
                 }
             }
                
@@ -225,10 +233,10 @@ private:
     const GLuint WIDTH = 1600, HEIGHT = 1600;
 
     // Camera
+   
     GLfloat lastX = WIDTH / 2.0;
     GLfloat lastY = HEIGHT / 2.0;
-    glm::vec3 CameraPos = glm::vec3(0.0, 0.0, 2.0);
-
+   
     // Deltatime
     GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
     GLfloat lastFrame = 0.0f;  	// Time of last frame
@@ -241,4 +249,6 @@ private:
     bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    glm::vec3 bgColor;
 };

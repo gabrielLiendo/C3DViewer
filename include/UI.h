@@ -2,17 +2,15 @@
 class UI
 {
 public:
-    UI()
-    {
+    UI() = default;
 
-    }
-
-    UI(GLFWwindow* window)
+    UI(GLFWwindow* window, glm::vec3* bgColor)
     {
         this->window = window;
+        this->bgColor = bgColor;
     }
 
-    static void DrawVec3Control(const std::string label, glm::vec3& values, float v_min, float v_max)
+    static void DrawVec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max)
     {
         ImGui::BeginTable(label.c_str(), 4, ImGuiTableFlags_NoPadOuterX);
         ImGui::TableNextRow();
@@ -27,7 +25,7 @@ public:
         ImGui::Button("X");
         ImGui::PopStyleColor(3);
         ImGui::SameLine();
-        ImGui::DragFloat("##X", &values.x, 0.05f, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::DragFloat("##X", &values.x, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
 
         ImGui::TableSetColumnIndex(2);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
@@ -36,7 +34,7 @@ public:
         ImGui::Button("Y");
         ImGui::PopStyleColor(3);
         ImGui::SameLine();
-        ImGui::DragFloat("##Y", &values.y, 0.05f, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::DragFloat("##Y", &values.y, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
 
         ImGui::TableSetColumnIndex(3);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
@@ -45,7 +43,7 @@ public:
         ImGui::Button("Z");
         ImGui::PopStyleColor(3);
         ImGui::SameLine();
-        ImGui::DragFloat("##Z", &values.z, 0.05f, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::DragFloat("##Z", &values.z, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
 
         ImGui::EndTable();
     }
@@ -53,47 +51,126 @@ public:
     void objectsWindow()
     {
         if (ImGui::Begin("Objects"))
-        {   
+        {
             static int selected = -1;
-            int m = objects.size();
-            for (int i = 0; i < m; i++)
+
+
+            if (ImGui::Selectable("Camera", selected == 0))
             {
-                 if (ImGui::Selectable(objects[i].name.c_str(), selected == i))
-                 {
-                     selected = i;
-                     selectedObject = &objects[i];
-                 }
+                selected = 0;
+                selectedCamera = true;
+                selectedObject = nullptr;
             }
-                
-            if (ImGui::Begin("Properties"))
+
+            int m = objects.size();
+            for (int i = 1; i < m + 1; i++)
             {
-                if (ImGui::TreeNode("Transformation"))
-                {   
-                    if (selectedObject)
-                    {
-                        DrawVec3Control("Translate", *selectedObject->getTranslationFactor(), -max_float, max_float);
-                        DrawVec3Control("Scale", *selectedObject->getScaleFactor(), -10.0f, 10.0f);
-                    }
-                    ImGui::TreePop();
-                }
-                /*
-                if (ImGui::TreeNode("Material"))
+                if (ImGui::Selectable(objects[i - 1].getName().c_str(), selected == i))
                 {
-                    
-                    if (selectedObject)
-                    {
-                        std::string mtlName = selectedObject->mtl->name;
-                        ImGui::Text("Diffuse");
-                        ImGui::SameLine();
-                        ImGui::ColorEdit3("Diffuse", glm::value_ptr(*selectedMesh->mtl->getDiffuse()), ImGuiColorEditFlags_NoLabel);
-                        
-                    }
+                    selected = i;
+                    selectedObject = &objects[i - 1];
+                }
+            }
+
+            ImGui::End();
+        }
+            
+        if (ImGui::Begin("Rendering"))
+        {
+
+            if (selectedObject)
+            {
+                ImGui::Text("Enable Z-buffer");
+                ImGui::SameLine();
+                ImGui::Checkbox("##z-buffer", selectedObject->getZBufferBool());
+
+                ImGui::Text("Enable Back-face Culling");
+                ImGui::SameLine();
+                ImGui::Checkbox("##backCulling", selectedObject->getCullFaceBool());
+
+                ImGui::Text("Enable Antialiasing");
+                ImGui::SameLine();
+                ImGui::Checkbox("##antialiasing", selectedObject->getMultisampleBool());
+
+                if (ImGui::TreeNode("Vertices"))
+                {
+                    ImGui::Text("Show Vertices");
+                    ImGui::SameLine();
+                    ImGui::Checkbox("##Vertices", selectedObject->getVerticesBool());
+                    ImGui::Text("Vertex size");
+                    ImGui::SameLine();
+                    ImGui::DragInt("##vertexSize", selectedObject->getPointSize(), 1);
+                    ImGui::Text("Color");
+                    ImGui::SameLine();
+                    ImGui::ColorEdit3("##VerticesColor", glm::value_ptr(*selectedObject->getVerticesColor()), ImGuiColorEditFlags_NoLabel);
                     ImGui::TreePop();
                 }
-                */
-                ImGui::End();
+
+                if (ImGui::TreeNode("Normals"))
+                {
+                    ImGui::Text("Show Normals");
+                    ImGui::SameLine();
+                    ImGui::Checkbox("##VNormals", selectedObject->getNormalsBool());
+                    ImGui::Text("Color");
+                    ImGui::SameLine();
+                    ImGui::ColorEdit3("##NormalsColor", glm::value_ptr(*selectedObject->getNormalsColor()), ImGuiColorEditFlags_NoLabel);
+                    ImGui::TreePop();
+                }
+
+                if (ImGui::TreeNode("Wireframe"))
+                {
+                    ImGui::Text("Show Wireframe");
+                    ImGui::SameLine();
+                    ImGui::Checkbox("##Wireframe", selectedObject->getWireframeBool());
+                    ImGui::Text("Color");
+                    ImGui::SameLine();
+                    ImGui::ColorEdit3("##WireColor", glm::value_ptr(*selectedObject->getWireframeColor()), ImGuiColorEditFlags_NoLabel);
+                    ImGui::TreePop();
+                }
             }
             ImGui::End();
+        }
+
+        if (ImGui::Begin("Properties"))
+        {
+            if (selectedObject)
+            {
+               if (ImGui::TreeNode("Transformation"))
+               {
+                   DrawVec3Control("Scale", *selectedObject->getScaleFactor(), 0.05, -10.0f, 10.0f);
+                   DrawVec3Control("Rotation", *selectedObject->getRotationFactor(), 10.0f, -360.0f, 360.0f);
+                   DrawVec3Control("Translation", *selectedObject->getTranslationFactor(), 0.05, -max_float, max_float);
+
+                   ImGui::TreePop();
+               }
+               if (ImGui::TreeNode("Bounding Box"))
+               {
+                   ImGui::Text("Color");
+                   ImGui::SameLine();
+                   ImGui::ColorEdit3("##Color", glm::value_ptr(*selectedObject->getBoxColor()));
+                   ImGui::TreePop();
+               }
+            }
+            else if (selectedCamera)
+            {
+                 glm::vec3* position = camera.getPosition();
+                 DrawVec3Control("Position", *position, 0.05, -max_float, max_float);
+            }
+
+             /*
+             if (ImGui::TreeNode("Material"))
+             {
+                if (selectedObject)
+                {
+                    std::string mtlName = selectedObject->mtl->name;
+                    ImGui::Text("Diffuse");
+                    ImGui::SameLine();
+                    ImGui::ColorEdit3("Diffuse", glm::value_ptr(*selectedMesh->mtl->getDiffuse()), ImGuiColorEditFlags_NoLabel);
+                }
+                ImGui::TreePop();
+             }
+             */
+             ImGui::End();
         }
     }
 
@@ -143,7 +220,7 @@ public:
             ImGui::ShowDemoWindow(&show_demo_window);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-        if(ImGui::Begin("Main", 0, ImGuiWindowFlags_MenuBar))
+        if(ImGui::Begin("Scene", 0, ImGuiWindowFlags_MenuBar))
         {
             if (ImGui::BeginMenuBar())
             {
@@ -166,16 +243,15 @@ public:
                 ImGui::EndMenuBar();
             }
 
+            ImGui::Text("Background Color");
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##bgColor", glm::value_ptr(*bgColor), ImGuiColorEditFlags_NoLabel);
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
 
-
         objectsWindow();
-       
-
-
 
         // Rendering
         ImGui::Render();
@@ -203,15 +279,14 @@ public:
             std::cout << materials[i].name << " " << materials[i].getDiffuse()->x << " " << materials[i].getDiffuse()->y << " " << materials[i].getDiffuse()->z << std::endl;
         }*/
 
-        objloader.load(objFileName);
+        objects.push_back(objloader.load(objFileName));
 
         std::string objName = objFileName;
         std::size_t found = objName.find_last_of("/\\");
         objName = objName.substr(found + 1);
         objName = objName.substr(0, objName.size() - 4);
         objects.back().setName(objName);
-        
-
+     
     }
 
 	void terminate()
@@ -227,10 +302,12 @@ private:
     ObjLoader objloader;
     MtlLoader mtlLoader;
 
+    // App state
+    glm::vec3 *bgColor;
+
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Limit values
     float max_float = std::numeric_limits<float>::max();

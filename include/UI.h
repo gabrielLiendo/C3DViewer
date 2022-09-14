@@ -210,6 +210,51 @@ public:
         //IM_ASSERT(font != NULL);
 	}
 
+    void deleteAllObjects()
+    {
+        selectedObject = nullptr;
+        objects.clear();
+        materials.clear();
+    }
+
+    Object loadObject()
+    {
+        std::vector<Mesh> meshes;
+        std::string name, objPath, mtlPath;
+
+        glm::vec3 normalize, scale, translation, angles;
+        glm::vec3 wireframeColor, vertexColor, normalsColor, boxColor;
+        glm::vec3 boxCenter, boxSize, vmin, vmax;
+        bool useDepthTest, useCullFace, useMultisample, showWireframe, showVertices, showNormals;
+        int pointSize;
+
+        ss >> name;
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> objPath;
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> normalize.x >> normalize.y >> normalize.z;
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> scale.x >> scale.y >> scale.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> translation.x >> translation.y >> translation.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> angles.x >> angles.y >> angles.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> useDepthTest >> useCullFace >> useMultisample >> showWireframe >> showVertices >> showNormals; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> pointSize; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> wireframeColor.x >> wireframeColor.y >> wireframeColor.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vertexColor.x >> vertexColor.y >> vertexColor.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> normalsColor.x >> normalsColor.y >> normalsColor.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> boxColor.x >> boxColor.y >> boxColor.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> boxCenter.x >> boxCenter.y >> boxCenter.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> boxSize.x >> boxSize.y >> boxSize.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vmin.x >> vmin.y >> vmin.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vmax.x >> vmax.y >> vmax.z;  
+
+        mtlPath = objPath.substr(0, objPath.size() - 4) + ".mtl";
+        mtlLoader.load((mtlPath).c_str());
+        meshes = objloader.loadMeshes((objPath).c_str());
+
+        return Object(meshes, objPath, name, normalize, scale, translation, angles, useDepthTest, useCullFace, useMultisample,
+            showWireframe, showVertices, showNormals, pointSize, wireframeColor, vertexColor, normalsColor, boxColor,
+            boxCenter, boxSize, vmin, vmax);
+    }
+
+   
 	void render()
 	{
         // Start the Dear ImGui frame
@@ -230,9 +275,12 @@ public:
                     if (ImGui::MenuItem("Load Object"))
                         loadObj();
 
-                    ImGui::MenuItem("Load Scene");
+                    if (ImGui::MenuItem("Load Scene"))
+                        loadScene();
 
-                    ImGui::MenuItem("Save Scene");
+                    if (ImGui::MenuItem("Save Scene"))
+                        saveScene();
+
 
                     ImGui::EndMenu();
                 }
@@ -247,6 +295,10 @@ public:
             ImGui::Text("Background Color");
             ImGui::SameLine();
             ImGui::ColorEdit3("##bgColor", glm::value_ptr(*bgColor), ImGuiColorEditFlags_NoLabel);
+
+            if (ImGui::Button("Delete All Figures"))
+                deleteAllObjects();
+
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
@@ -280,7 +332,7 @@ public:
             std::cout << materials[i].name << " " << materials[i].getDiffuse()->x << " " << materials[i].getDiffuse()->y << " " << materials[i].getDiffuse()->z << std::endl;
         }*/
 
-        objects.push_back(objloader.load(objFileName));
+        objects.push_back(Object(objloader.loadMeshes(objFileName), objFileName));
 
 
         std::string objName = objFileName;
@@ -295,6 +347,60 @@ public:
 
     void saveScene()
     {
+        char const* lTheSaveFileName;
+        char const* lFilterPatterns[2] = { "*.txt", "*.text" };
+        FILE* lIn;
+
+        lTheSaveFileName = tinyfd_saveFileDialog("Save As", "Scene.txt", 2, lFilterPatterns, nullptr);
+
+        if (!lTheSaveFileName)
+            return;
+
+        lIn = fopen(lTheSaveFileName, "w");
+
+        if (!lIn)
+        {
+            tinyfd_messageBox("Error", "Can not open this file in write mode", "Ok", "Error", 1);
+            return;
+        }
+
+        std::ofstream outfile;
+        outfile.open(lTheSaveFileName);
+        outfile << "bg " << bgColor->x << " " << bgColor->y << " " << bgColor->z << "\n";
+
+        for (int i = 0; i < objects.size(); i++)
+        {
+            objects[i].getInfo(outfile);
+        }
+
+        outfile.close();
+    }
+
+    void loadScene()
+    {
+        FILE* lIn;
+        char const* sceneFileName, * lFilterPatterns[2] = { "*.txt", "*.text" };
+
+        deleteAllObjects();
+
+        sceneFileName = tinyfd_openFileDialog("Open Scene", "", 2, lFilterPatterns, NULL, 0);
+
+        if (!sceneFileName)
+            return;
+
+        infile = std::ifstream(sceneFileName);
+
+
+        std::getline(infile, line); std::cout << line << std::endl;  ss.clear(); ss.str(line);  ss >> prefix >> bgColor->x >> bgColor->y >> bgColor->z;
+        
+        while (std::getline(infile, line))
+        {
+            ss.clear(); ss.str(line);
+
+            ss >> prefix;
+            if (prefix == "o")
+                objects.push_back(loadObject());
+        }
 
     }
 
@@ -311,6 +417,9 @@ private:
     ObjLoader objloader;
     MtlLoader mtlLoader;
 
+    std::ifstream infile;
+    std::string line, prefix;
+    std::stringstream ss;
 
     // App state
     glm::vec3 *bgColor;

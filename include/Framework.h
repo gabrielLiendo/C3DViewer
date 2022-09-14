@@ -28,7 +28,7 @@ public:
         setCallbacks();
 
         
-        bgColor = glm::vec3(0.0f, 0.0f, 0.0f);
+        bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
         ui = UI(window, &bgColor);
         ui.init();
     }
@@ -69,8 +69,6 @@ public:
             else if (action == GLFW_RELEASE)
                 keys[key] = false;
         }
-
-
     }
 
     void button_callback(int button, int action, int mods)
@@ -142,10 +140,13 @@ public:
         if (firstMouse)
         {
             lastX = xpos;
-            lastY = height - ypos - 1;
+            lastY = ypos;
             firstMouse = false;
         }
-       
+
+        lastX = xpos;
+        lastY = ypos;
+
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
         {
             return;
@@ -187,8 +188,7 @@ public:
         GLfloat yoffset = lastY - ypos;
 
         */
-        
-
+       
        
         // `write your drag code here`
     }

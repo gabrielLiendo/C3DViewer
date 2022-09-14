@@ -4,13 +4,13 @@ class OBB
 public:
     OBB() = default;
 
-    OBB(glm::vec3 vmin, glm::vec3 vmax, glm::vec3 size)
+    OBB(glm::vec3 vmin, glm::vec3 vmax, glm::vec3 size, glm::vec3 center, glm::vec3 color)
     {
         this->vmin = vmin;
         this->vmax = vmax;
         this->size = size;
-
-        center = glm::vec3((vmin.x + vmax.x)/ 2, (vmin.y + vmax.y)/ 2, (vmin.z + vmax.z) * 2);
+        this->center = center;
+        this->color = color;
 
         initMesh();
     }
@@ -52,6 +52,15 @@ public:
         return &vmax;
     }
 
+    void getInfo(std::ofstream& outfile)
+    {
+        outfile << "bc " << color.x << " " << color.y << " " << color.z << "\n";
+        outfile << "bcenter " << center.x << " " << center.y << " " << center.z << "\n";
+        outfile << "bsize " << size.x << " " << size.y << " " << size.z << "\n";
+        outfile << "b_vmin " << vmin.x << " " << vmin.y << " " << vmin.z << "\n";
+        outfile << "b_vmax " << vmax.x << " " << vmax.y << " " << vmax.z << "\n";
+    }
+
 private:
     // Cube 1x1x1, centered on origin
     float vertices[120] =
@@ -90,10 +99,10 @@ private:
 
     // Model Tranformation
     glm::vec3 center, size;
-    glm::vec3 color = {1.0, 1.0, 1.0};
-
-    glm::vec3 vmin, vmax;
-    float min_x, max_x, min_y, max_y, min_z, max_z;
+    
+    // Properties
+    glm::vec3 vmin, vmax, color;
+   
     unsigned int VAO, VBO;
 
     void initMesh()

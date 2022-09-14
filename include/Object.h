@@ -4,9 +4,10 @@ class Object
 public:
 	Object() = default;
 
-	Object(std::vector<Mesh> meshes)
+	Object(std::vector<Mesh> meshes, std::string path)
 	{
 		name = "";
+		this->path = path;
 		this->meshes = meshes;
 	
 		// Set bounding box's corners values
@@ -48,11 +49,12 @@ public:
 
 		// Create bounding box
 		glm::vec3 size = glm::vec3(size_x, size_y, size_z);
-		boundingBox = OBB(glm::vec3(min_x, min_y, min_z),
-							glm::vec3(max_x, max_y, max_z), size);
+		glm::vec3 center = glm::vec3((min_x + max_x) / 2, (min_y + max_y) / 2, (min_z + max_z) * 2);
+		boundingBox = OBB(glm::vec3(min_x, min_y, min_z), glm::vec3(max_x, max_y, max_z), 
+							size, center, { 1.0, 1.0, 1.0 });
 
-		std::cout << min_x << " " << min_y << " " << min_z << std::endl;
-		std::cout << max_x << " " << max_y << " " << max_z << std::endl;
+		//std::cout << min_x << " " << min_y << " " << min_z << std::endl;
+		//std::cout << max_x << " " << max_y << " " << max_z << std::endl;
 
 		useDepthTest = true;
 		useCullFace = false;
@@ -65,6 +67,35 @@ public:
 		wireframeColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		verticesColor = glm::vec3(0.0f, 0.0f, 0.0f);
 		normalsColor = glm::vec3(0.0f, 1.0f, 0.0f);
+	}
+
+	Object(std::vector<Mesh> meshes, std::string path, std::string name, glm::vec3 normalize, glm::vec3 scale, glm::vec3 translation, glm::vec3 angles,
+		bool useDepthTest, bool useCullFace, bool useMultisample, bool showWireframe, bool showVertices, bool showNormals,
+		int pointSize, glm::vec3 wireframeColor, glm::vec3 verticesColor, glm::vec3 normalsColor, glm::vec3 boxColor,
+		glm::vec3 boxCenter, glm::vec3 boxSize, glm::vec3 vmin, glm::vec3 vmax)
+	{
+		this->meshes = meshes;
+		this->path = path;
+		this->name = name;
+		this->normalize = normalize;
+		this->scale = scale;
+		this->translation = translation;
+		this->angles = angles;
+
+		this->useDepthTest = useDepthTest;
+		this->useCullFace = useCullFace;
+		this->useMultisample = useMultisample;
+		this->showWireframe = showWireframe;
+		this->showVertices = showVertices;
+		this->showNormals = showNormals;
+
+		this->pointSize = pointSize;
+		this->wireframeColor = wireframeColor;
+		this->verticesColor = verticesColor;
+		this->normalsColor = normalsColor;
+
+		this->boundingBox = OBB(vmin, vmax, boxSize, boxCenter, boxColor);
+
 	}
 
 	void setName(std::string name) 
@@ -99,7 +130,8 @@ public:
 			glm::rotate(glm::mat4(1.0f), glm::radians(angles.x), glm::vec3(1.0f, 0.0f, 0.0f)) *
 			glm::rotate(glm::mat4(1.0f), glm::radians(angles.y), glm::vec3(0.0f, 1.0f, 0.0f)) *
 			glm::rotate(glm::mat4(1.0f), glm::radians(angles.z), glm::vec3(0.0f, 0.0f, 1.0f)) *
-			glm::scale(glm::mat4(1.0f), scale);
+			glm::scale(glm::mat4(1.0f), scale) * 
+			glm::scale(glm::mat4(1.0f), normalize);
 	}
 
 	glm::mat4 getBoxModel()
@@ -115,6 +147,16 @@ public:
 	glm::vec3* getNormalsColor()
 	{
 		return &normalsColor;
+	}
+
+	glm::vec3* getWireframeColor()
+	{
+		return &wireframeColor;
+	}
+
+	glm::vec3* getVerticesColor()
+	{
+		return &verticesColor;
 	}
 
 	float getScaleNormal()
@@ -155,16 +197,6 @@ public:
 	bool* getMultisampleBool()
 	{
 		return &useMultisample;
-	}
-
-	glm::vec3* getWireframeColor()
-	{
-		return &wireframeColor;
-	}
-
-	glm::vec3* getVerticesColor()
-	{
-		return &verticesColor;
 	}
 
 	void draw(int colorLoc)
@@ -241,10 +273,6 @@ public:
 
 		glm::vec4 aabb_min = ModelMatrix * glm::vec4(*boundingBox.getMin(), 1.0);
 		glm::vec4 aabb_max = ModelMatrix * glm::vec4(*boundingBox.getMax(), 1.0);
-
-		
-
-		
 
 		float tMin = 0.0f;
 		float tMax = 100000.0f;
@@ -352,9 +380,27 @@ public:
 		intersection_distance = tMin;
 		return true;
 	}
+
+	void getInfo(std::ofstream &outfile)
+	{
+		outfile << "o " << name << "\n";
+		outfile << "p " << path << "\n";
+		outfile << "n " << normalize.x << " " << normalize.y << " " << normalize.z << "\n";
+		outfile << "s " << scale.x << " " << scale.y << " " << scale.z << "\n";
+		outfile << "t " << translation.x << " " << translation.y << " " << translation.z << "\n";
+		outfile << "a " << angles.x << " " << angles.y << " " << angles.z << "\n";
+		outfile << "rs " << useDepthTest << " " << useCullFace << " " << useMultisample
+				<< " " << showWireframe << " " << showVertices << " " << showNormals << "\n";
+		outfile << "pt " << pointSize << "\n";
+		outfile << "wc " << wireframeColor.x << " " << wireframeColor.y << " " << wireframeColor.z << "\n";
+		outfile << "vc " << verticesColor.x << " " << verticesColor.y << " " << verticesColor.z << "\n";
+		outfile << "nc " << normalsColor.x << " " << normalsColor.y << " " << normalsColor.z << "\n";
+		boundingBox.getInfo(outfile);
+	}
+
 private:
 	// Object basic components
-	std::string name;
+	std::string name, path;
 	std::vector<Mesh> meshes;
 
 	// Model Tranformation
@@ -367,12 +413,11 @@ private:
 	bool useDepthTest;
 	bool useCullFace;
 	bool useMultisample;
-
-	int pointSize;
 	bool showWireframe;
-	bool showVertices;
+	bool showVertices; int pointSize;
 	bool showNormals;
 
+	// Colors
 	glm::vec3 wireframeColor;
 	glm::vec3 verticesColor;
 	glm::vec3 normalsColor;

@@ -4,12 +4,12 @@ class ObjLoader
 public:
 	ObjLoader() = default;
 
-	Object load(const char* file_name)
+	std::vector<Mesh> loadMeshes(const char* file_name)
 	{
 		infile = std::ifstream (file_name);
 		draw = true;
 
-		return readObject();
+		return readMeshes();
 	}
 
 private:
@@ -21,7 +21,7 @@ private:
 	std::string line, prefix;
 	std::stringstream ss;
 
-	Object readObject()
+	std::vector<Mesh> readMeshes()
 	{
 		vec3 v3;
 		std::vector<Mesh> meshes;
@@ -51,7 +51,7 @@ private:
 		positions.clear();
 		normals.clear();
 
-		return Object(meshes);
+		return meshes;
 	}
 
 	Mesh readMesh()

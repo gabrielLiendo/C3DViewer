@@ -30,7 +30,7 @@
 #include "Shader.h"
 #include "Utils.h"
 #include "Material.h"
-#include "BoundingBox.h"
+#include "OBB.h"
 #include "Mesh.h"
 #include "Object.h"
 #include "Camera.h"

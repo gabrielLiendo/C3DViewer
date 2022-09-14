@@ -52,9 +52,6 @@ public:
     {
         if (ImGui::Begin("Objects"))
         {
-            static int selected = -1;
-
-
             if (ImGui::Selectable("Camera", selected == 0))
             {
                 selected = 0;
@@ -174,6 +171,10 @@ public:
         }
     }
 
+    void setSelected(int selected)
+    {
+        this->selected = selected;
+    }
 
     // Setup Dear ImGui context and style
 	void init()
@@ -281,12 +282,20 @@ public:
 
         objects.push_back(objloader.load(objFileName));
 
+
         std::string objName = objFileName;
         std::size_t found = objName.find_last_of("/\\");
         objName = objName.substr(found + 1);
         objName = objName.substr(0, objName.size() - 4);
         objects.back().setName(objName);
-     
+        
+        selected = objects.size();
+        selectedObject = &objects.back();
+    }
+
+    void saveScene()
+    {
+
     }
 
 	void terminate()
@@ -302,10 +311,12 @@ private:
     ObjLoader objloader;
     MtlLoader mtlLoader;
 
+
     // App state
     glm::vec3 *bgColor;
 
     // Our state
+    int selected = -1;
     bool show_demo_window = true;
     bool show_another_window = false;
 

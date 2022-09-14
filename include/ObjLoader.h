@@ -133,11 +133,17 @@ private:
 			}
 		}
 
-		Material* mtl = default_mtl;
+		Material* mtl = nullptr;
 		for (int i = 0; i < materials.size(); i++)
 		{
 			if ((* materials[i]).name == mtl_name)
 				mtl = &(* materials[i]);
+		}
+		
+		if (!mtl)
+		{
+			std::cout << "El material " << mtl_name << " no fue encontrado." << std::endl;
+			mtl = &default_mtl;
 		}
 
 		return Mesh(name, vertices, mtl);

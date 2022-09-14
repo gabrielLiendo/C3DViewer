@@ -11,13 +11,23 @@ public:
 		return &position;
 	}
 
+	void changePosX(float delta)
+	{
+		position.x += delta;
+	}
+
+	void changePosY(float delta)
+	{
+		position.y += delta;
+	}
+
 	void changePosZ(float delta)
 	{
 		position.z += delta;
 	}
-
-private:
 	glm::vec3 position;
+private:
+	
 };
 
 Camera camera;

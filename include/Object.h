@@ -227,6 +227,7 @@ public:
 				glUniform3f(colorLoc, color.x, color.y, color.z);
 				meshes[i].draw();
 			}
+
 		}
 		glDisable(GL_POLYGON_OFFSET_FILL);
 

@@ -10,9 +10,9 @@ public:
 		this->diffuse = diffuse;
 	}
 
-	glm::vec3 getDiffuse()
+	glm::vec3 *getDiffuse()
 	{
-		return diffuse;
+		return &diffuse;
 	}
 
 private:

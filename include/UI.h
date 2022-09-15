@@ -147,6 +147,31 @@ public:
                    ImGui::ColorEdit3("##Color", glm::value_ptr(*selectedObject->getBoxColor()));
                    ImGui::TreePop();
                }
+               if (ImGui::TreeNode("Meshes Materials"))
+               {
+                   std::vector<Mesh> *meshes = selectedObject->getMeshes();
+                   
+                   for (int i = 0; i < meshes->size(); i++)
+                   {
+                       Mesh *m = &(*meshes)[i];
+
+                       if (ImGui::TreeNode(m->getName().c_str()))
+                       {
+                           ImGui::Text("Show Mesh");
+                           ImGui::SameLine();
+                           ImGui::Checkbox("##showMesh", m->getShow());
+                           ImGui::Text("Material Name: ");
+                           ImGui::SameLine();
+                           std::string mtlName = m->mtl->name;
+                           ImGui::Text(mtlName.c_str());
+                           ImGui::Text("Diffuse");
+                           ImGui::SameLine();
+                           ImGui::ColorEdit3("Diffuse", glm::value_ptr(*m->mtl->getDiffuse()), ImGuiColorEditFlags_NoLabel);
+                           ImGui::TreePop();
+                       }
+                   }
+                   ImGui::TreePop();
+               }
             }
             else if (selectedCamera)
             {
@@ -154,20 +179,7 @@ public:
                  DrawVec3Control("Position", *position, 0.05, -max_float, max_float);
             }
 
-             /*
-             if (ImGui::TreeNode("Material"))
-             {
-                if (selectedObject)
-                {
-                    std::string mtlName = selectedObject->mtl->name;
-                    ImGui::Text("Diffuse");
-                    ImGui::SameLine();
-                    ImGui::ColorEdit3("Diffuse", glm::value_ptr(*selectedMesh->mtl->getDiffuse()), ImGuiColorEditFlags_NoLabel);
-                }
-                ImGui::TreePop();
-             }
-             */
-             ImGui::End();
+            ImGui::End();
         }
     }
 
@@ -217,6 +229,11 @@ public:
         materials.clear();
     }
 
+    void deleteSelected()
+    {
+        selectedObject = nullptr;
+    }
+
     Object loadObject()
     {
         std::vector<Mesh> meshes;
@@ -254,7 +271,6 @@ public:
             boxCenter, boxSize, vmin, vmax);
     }
 
-   
 	void render()
 	{
         // Start the Dear ImGui frame
@@ -266,39 +282,34 @@ public:
             ImGui::ShowDemoWindow(&show_demo_window);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-        if(ImGui::Begin("Scene", 0, ImGuiWindowFlags_MenuBar))
+        if(ImGui::Begin("Scene"))
         {
-            if (ImGui::BeginMenuBar())
+            if (ImGui::TreeNode("Manage Scene"))
             {
-                if (ImGui::BeginMenu("File"))
-                {
-                    if (ImGui::MenuItem("Load Object"))
-                        loadObj();
+                if (ImGui::Button("Load Scene"))
+                    loadScene();
+   
+                if (ImGui::Button("Save Scene"))
+                    saveScene();
 
-                    if (ImGui::MenuItem("Load Scene"))
-                        loadScene();
-
-                    if (ImGui::MenuItem("Save Scene"))
-                        saveScene();
-
-
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Help"))
-                {
-                    ImGui::MenuItem("Shortcuts", " ");
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMenuBar();
+                ImGui::TreePop();
             }
+
+            if (ImGui::TreeNode("Manage Objects"))
+            {
+                if (ImGui::Button("Load Object"))
+                    loadObj();
+                if (ImGui::Button("Delete Selected Object"))
+                    deleteSelected();
+                if (ImGui::Button("Delete All Objects"))
+                    deleteAllObjects();
+
+                ImGui::TreePop();
+            }           
 
             ImGui::Text("Background Color");
             ImGui::SameLine();
             ImGui::ColorEdit3("##bgColor", glm::value_ptr(*bgColor), ImGuiColorEditFlags_NoLabel);
-
-            if (ImGui::Button("Delete All Figures"))
-                deleteAllObjects();
-
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();

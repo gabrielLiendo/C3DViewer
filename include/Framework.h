@@ -24,10 +24,12 @@ public:
 
         // OpenGL options
         glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
 
         setCallbacks();
 
-        
+        glViewport(0, 0, width, height);
+
         bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
         ui = UI(window, &bgColor);
         ui.init();
@@ -86,21 +88,10 @@ public:
             // do your drag here
             std::cout << "CLICK " << lastX << " " << lastY << std::endl;
 
-            glm::mat4 M = glm::inverse(view);
-            glm::vec4 ex = M * glm::vec4(((float)lastX / (float)width - 0.5f) * 2.0f, // [0,1024] -> [-1,1]
-                ((float)lastY / (float)height - 0.5f) * 2.0f, // [0, 768] -> [-1,1]
-                -1.0, // The near plane maps to Z=-1 in Normalized Device Coordinates
-                1.0f
-            );
-
-            double normalizedX = -1.0 + 2.0 * (double)lastX / width;
-            double normalizedY = -(1.0 - 2.0 * (double)lastY / height);
-
-            //std::cout << ex.x << " " << ex.y << std::endl;
-
             float intersection_distance;
             glm::vec3 ray_origin, ray_direction;
-            ScreenPosToWorldRay(lastX, lastY, ray_origin, ray_direction);
+
+            ScreenPosToWorldRay(ray_origin, ray_direction);
 
             std::vector<ObjectDistance> intersectedObjects;
 
@@ -140,12 +131,12 @@ public:
         if (firstMouse)
         {
             lastX = xpos;
-            lastY = ypos;
+            lastY = height - ypos;
             firstMouse = false;
         }
 
         lastX = xpos;
-        lastY = ypos;
+        lastY = height - ypos;
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
         {
@@ -188,7 +179,8 @@ public:
         GLfloat yoffset = lastY - ypos;
 
         */
-       
+        
+
        
         // `write your drag code here`
     }
@@ -208,36 +200,20 @@ public:
       
     }
 
-    void ScreenPosToWorldRay(
-        int lastX, int lastY,             // Mouse position, in pixels, from bottom-left corner of the window
-        glm::vec3& out_origin,              // Ouput : Origin of the ray. /!\ Starts at the near plane, so if you want the ray to start at the camera's position instead, ignore this.
-        glm::vec3& out_direction            // Ouput : Direction, in world space, of the ray that goes "through" the mouse.
-    ) {
+    void ScreenPosToWorldRay(glm::vec3& out_origin, glm::vec3& out_direction) 
+    {
+        // Ouput : Origin of the ray. /!\ Starts at the near plane, so if you want the ray to start at the camera's position instead, ignore this.
+        // Ouput : Direction, in world space, of the ray that goes "through" the mouse.
 
-        // The ray Start and End positions, in Normalized Device Coordinates (Have you read Tutorial 4 ?)
-        glm::vec4 lRayStart_NDC(
-            ((float)lastX / (float)width - 0.5f) * 2.0f, // [0,1024] -> [-1,1]
-            ((float)lastY / (float)height - 0.5f) * 2.0f, // [0, 768] -> [-1,1]
-            -1.0, // The near plane maps to Z=-1 in Normalized Device Coordinates
-            1.0f
-        );
+        // The ray Start and End positions, in Normalized Device Coordinates
+        float normalizedX = ((float)lastX / (float)width - 0.5f) * 2.0f;
+        float notmalizedY = ((float)lastY / (float)height - 0.5f) * 2.0f;
 
-        glm::vec4 lRayEnd_NDC(
-            ((float)lastX / (float)width - 0.5f) * 2.0f,
-            ((float)lastY / (float)height - 0.5f) * 2.0f,
-            0.0,
-            1.0f
-        );
+        glm::vec4 lRayStart_NDC(normalizedX, notmalizedY, -1.0, 1.0f);
+        glm::vec4 lRayEnd_NDC(normalizedX, notmalizedY, 0.0, 1.0f);
 
-        // The Projection matrix goes from Camera Space to NDC.
-        // So inverse(ProjectionMatrix) goes from NDC to Camera Space.
-        glm::mat4 InverseProjectionMatrix = glm::inverse(projection);
-
-        // The View Matrix goes from World Space to Camera Space.
-        // So inverse(ViewMatrix) goes from Camera Space to World Space.
-        glm::mat4 InverseViewMatrix = glm::inverse(view);
-
-        // Faster way (just one inverse)
+        // Inverse(ProjectionMatrix) goes from NDC to Camera Space.
+        // Inverse(ViewMatrix) goes from Camera Space to World Space.
         glm::mat4 M = glm::inverse(projection * view);
         glm::vec4 lRayStart_world = M * lRayStart_NDC; lRayStart_world/=lRayStart_world.w;
         glm::vec4 lRayEnd_world   = M * lRayEnd_NDC  ; lRayEnd_world  /=lRayEnd_world.w;
@@ -318,10 +294,10 @@ public:
 
              for (int i = 0; i < objects.size(); i++)
              {
-                 objModel = objects[i].getModelTransformation();
-                 glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(objModel));
+                  objModel = objects[i].getModelTransformation();
+                  glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(objModel));
 
-                 objects[i].draw(colorLoc);
+                  objects[i].draw(colorLoc);
 
                   if (*objects[i].getNormalsBool())
                   {

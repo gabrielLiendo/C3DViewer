@@ -12,6 +12,7 @@ public:
         this->center = center;
         this->color = color;
 
+        halfLenghts = glm::vec3(size.x / 2, size.y / 2, size.z / 2);
         initMesh();
     }
 
@@ -24,6 +25,16 @@ public:
     glm::vec3* getBoxColor()
     {
         return &color;
+    }
+
+    glm::vec3 getHalfLenghts()
+    {
+        return halfLenghts;
+    }
+
+    glm::vec3 getCenter()
+    {
+        return center;
     }
 
     glm::mat4 getModelTransformation()
@@ -50,6 +61,16 @@ public:
     glm::vec3* getMax()
     {
         return &vmax;
+    }
+
+    void setMin(glm::vec3 vmin)
+    {
+        this->vmin = vmin;
+    }
+
+    void setMax(glm::vec3 vmax)
+    {
+        this->vmax = vmax;
     }
 
     void getInfo(std::ofstream& outfile)
@@ -98,7 +119,7 @@ private:
     };
 
     // Model Tranformation
-    glm::vec3 center, size;
+    glm::vec3 center, size, halfLenghts;
     
     // Properties
     glm::vec3 vmin, vmax, color;

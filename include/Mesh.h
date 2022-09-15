@@ -11,8 +11,19 @@ public:
 		this->name = name;
 		this->vertices = vertices;
 		this->mtl = mtl;
+		showTriangles = true;
 
 		initMesh();
+	}
+
+	bool* getShow()
+	{
+		return &showTriangles;
+	}
+
+	std::string getName()
+	{
+		return name;
 	}
 
 	void draw()
@@ -29,6 +40,7 @@ public:
 
 private:
 	unsigned int VAO, VBO;
+	bool showTriangles;
 	
 	void initMesh()
 	{

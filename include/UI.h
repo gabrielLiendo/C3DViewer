@@ -77,17 +77,21 @@ public:
 
             if (selectedObject)
             {
-                ImGui::Text("Enable Z-buffer");
-                ImGui::SameLine();
-                ImGui::Checkbox("##z-buffer", selectedObject->getZBufferBool());
+                if (ImGui::TreeNodeEx("Options", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    ImGui::Text("Enable Z-buffer");
+                    ImGui::SameLine();
+                    ImGui::Checkbox("##z-buffer", selectedObject->getZBufferBool());
 
-                ImGui::Text("Enable Back-face Culling");
-                ImGui::SameLine();
-                ImGui::Checkbox("##backCulling", selectedObject->getCullFaceBool());
+                    ImGui::Text("Enable Back-face Culling");
+                    ImGui::SameLine();
+                    ImGui::Checkbox("##backCulling", selectedObject->getCullFaceBool());
 
-                ImGui::Text("Enable Antialiasing");
-                ImGui::SameLine();
-                ImGui::Checkbox("##antialiasing", selectedObject->getMultisampleBool());
+                    ImGui::Text("Enable Antialiasing");
+                    ImGui::SameLine();
+                    ImGui::Checkbox("##antialiasing", selectedObject->getMultisampleBool());
+                    ImGui::TreePop();
+                }
 
                 if (ImGui::TreeNode("Vertices"))
                 {
@@ -189,8 +193,8 @@ public:
     }
 
     // Setup Dear ImGui context and style
-	void init()
-	{
+    void init()
+    {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -205,22 +209,7 @@ public:
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 130");
-
-        // Load Fonts
-        // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-        // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-        // - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-        // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-        // - Read 'docs/FONTS.md' for more instructions and details.
-        // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-        //io.Fonts->AddFontDefault();
-        //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-        //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-        //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-        //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-        //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-        //IM_ASSERT(font != NULL);
-	}
+    }
 
     void deleteAllObjects()
     {
@@ -244,10 +233,10 @@ public:
     Object loadObject()
     {
         std::vector<Mesh> meshes;
-        std::string name, objPath, mtlPath;
+        std::string name, mtl, objPath, mtlPath;
 
         glm::vec3 normalize, scale, translation, angles;
-        glm::vec3 wireframeColor, vertexColor, normalsColor, boxColor;
+        glm::vec3 wireframeColor, vertexColor, normalsColor, boxColor, diffuseColor;
         glm::vec3 boxCenter, boxSize, vmin, vmax;
         bool useDepthTest, useCullFace, useMultisample, showWireframe, showVertices, showNormals;
         int pointSize;
@@ -273,6 +262,35 @@ public:
         mtlLoader.load((mtlPath).c_str());
         meshes = objloader.loadMeshes((objPath).c_str());
 
+        while (std::getline(infile, line))
+        {
+            ss.clear(); ss.str(line);
+
+            ss >> prefix;
+            if (prefix == "o")
+            {
+                int size = line.size();
+                infile.putback('\n');
+                for (int i = 0; i < size; i++)
+                    infile.putback(line[size - i - 1]);
+
+                break;
+            }
+            if (prefix == "mtl")
+            {
+                ss >> mtl;
+                std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> diffuseColor.x >> diffuseColor.y >> diffuseColor.z;
+                for (int i = materials.size() - 1; i >= 0 ; i--)
+                {
+                    if ((*materials[i]).name == mtl)
+                    {
+                        (*materials[i]).setDiffuse(diffuseColor);
+                        break;
+                    }
+                }
+            }
+        }
+
         return Object(meshes, objPath, name, normalize, scale, translation, angles, useDepthTest, useCullFace, useMultisample,
             showWireframe, showVertices, showNormals, pointSize, wireframeColor, vertexColor, normalsColor, boxColor,
             boxCenter, boxSize, vmin, vmax);
@@ -291,16 +309,6 @@ public:
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         if(ImGui::Begin("Scene"))
         {
-            if (ImGui::TreeNode("Manage Scene"))
-            {
-                if (ImGui::Button("Load Scene"))
-                    loadScene();
-   
-                if (ImGui::Button("Save Scene"))
-                    saveScene();
-
-                ImGui::TreePop();
-            }
 
             if (ImGui::TreeNode("Manage Objects"))
             {
@@ -312,13 +320,33 @@ public:
                     deleteAllObjects();
 
                 ImGui::TreePop();
-            }           
+            }
 
-            ImGui::Text("Background Color");
-            ImGui::SameLine();
-            ImGui::ColorEdit3("##bgColor", glm::value_ptr(*bgColor), ImGuiColorEditFlags_NoLabel);
+            if (ImGui::TreeNode("Configure Scene"))
+            {
+                if (ImGui::Button("Load Scene"))
+                    loadScene();
+   
+                if (ImGui::Button("Save Scene"))
+                    saveScene();
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Background"))
+            {
+                ImGui::Text("Color");
+                ImGui::SameLine();
+                ImGui::ColorEdit3("##bgColor", glm::value_ptr(*bgColor), ImGuiColorEditFlags_NoLabel);
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Framerate"))
+            {
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+                ImGui::TreePop();
+            }
+
             ImGui::End();
         }
 
@@ -343,15 +371,7 @@ public:
         mtlFileName = mtlFileName.substr(0, mtlFileName.size() - 4) + ".mtl";
 
         mtlLoader.load(mtlFileName.c_str());
-
-        /*
-        for (int i = 0; i < materials.size(); i++)
-        {
-            std::cout << materials[i].name << " " << materials[i].getDiffuse()->x << " " << materials[i].getDiffuse()->y << " " << materials[i].getDiffuse()->z << std::endl;
-        }*/
-
         objects.push_back(Object(objloader.loadMeshes(objFileName), objFileName));
-
 
         std::string objName = objFileName;
         std::size_t found = objName.find_last_of("/\\");
@@ -382,8 +402,10 @@ public:
             return;
         }
 
+        glm::vec3 camPos = *camera.getPosition();
         std::ofstream outfile;
         outfile.open(lTheSaveFileName);
+        outfile << "camera " << camPos.x << " " << camPos.y << " " << camPos.z << "\n";
         outfile << "bg " << bgColor->x << " " << bgColor->y << " " << bgColor->z << "\n";
 
         for (int i = 0; i < objects.size(); i++)
@@ -406,10 +428,12 @@ public:
         if (!sceneFileName)
             return;
 
+        glm::vec3 camPos;
         infile = std::ifstream(sceneFileName);
 
-
-        std::getline(infile, line); std::cout << line << std::endl;  ss.clear(); ss.str(line);  ss >> prefix >> bgColor->x >> bgColor->y >> bgColor->z;
+        std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> camPos.x >> camPos.y >> camPos.z;
+        camera.setPos(camPos);
+        std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> bgColor->x >> bgColor->y >> bgColor->z;
         
         while (std::getline(infile, line))
         {

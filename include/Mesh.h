@@ -38,6 +38,14 @@ public:
 		glDrawArrays(GL_POINTS, 0, vertices.size());
 	}
 
+	void getInfo(std::ofstream& outfile)
+	{
+		glm::vec3 diffuse = *mtl->getDiffuse();
+		outfile << "om " << name << "\n";
+		outfile << "mtl " << mtl->name << "\n";
+		outfile << "d " << diffuse.x << " " << diffuse.y  << " " << diffuse.z << "\n";
+	}
+
 private:
 	unsigned int VAO, VBO;
 	bool showTriangles;

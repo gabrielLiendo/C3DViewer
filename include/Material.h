@@ -15,6 +15,11 @@ public:
 		return &diffuse;
 	}
 
+	void setDiffuse(glm::vec3 diffuse)
+	{
+		this->diffuse = diffuse;
+	}
+
 private:
 	glm::vec3 diffuse;
 	/*

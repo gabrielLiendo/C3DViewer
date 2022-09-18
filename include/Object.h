@@ -57,8 +57,8 @@ public:
 		//std::cout << max_x << " " << max_y << " " << max_z << std::endl;
 
 		useDepthTest = true;
-		useCullFace = false;
-		useMultisample = false;
+		useCullFace = true;
+		useMultisample = true;
 
 		pointSize = 3;
 		showWireframe = false;
@@ -101,6 +101,16 @@ public:
 	void setName(std::string name) 
 	{
 		this->name = name;
+	}
+
+	void addXRot(float xoffset)
+	{
+		angles.x += xoffset;
+	}
+
+	void addYRot(float yoffset)
+	{
+		angles.y += yoffset;
 	}
 
 	std::string getName()
@@ -346,6 +356,9 @@ public:
 		outfile << "vc " << verticesColor.x << " " << verticesColor.y << " " << verticesColor.z << "\n";
 		outfile << "nc " << normalsColor.x << " " << normalsColor.y << " " << normalsColor.z << "\n";
 		boundingBox.getInfo(outfile);
+
+		for (int i = 0; i < meshes.size(); i++)
+			meshes[i].getInfo(outfile);
 	}
 
 	std::vector<Mesh>* getMeshes()

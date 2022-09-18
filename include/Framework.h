@@ -85,9 +85,6 @@ public:
         ImGuiIO& io = ImGui::GetIO();
 
         if (lbutton_down && !io.WantCaptureMouse) {
-            // do your drag here
-            std::cout << "CLICK " << lastX << " " << lastY << std::endl;
-
             float intersection_distance;
             glm::vec3 ray_origin, ray_direction;
 
@@ -127,62 +124,47 @@ public:
     }
 
     void mouse_callback(double xpos, double ypos)
-    {
-        if (firstMouse)
-        {
-            lastX = xpos;
-            lastY = height - ypos;
-            firstMouse = false;
-        }
+    { 
+       ImGuiIO& io = ImGui::GetIO();
 
-        lastX = xpos;
-        lastY = height - ypos;
+       if (!io.WantCaptureMouse)
+       {
+           if (firstMouse)
+           {
+               lastX = xpos;
+               lastY = height - ypos;
+               firstMouse = false;
 
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-        {
-            return;
-        }
+               //std::cout << "CLICK " << lastX << " " << lastY << std::endl;
+           }
+           else
+           {
+               float xoffset = xpos - lastX;
+               float yoffset = (height - ypos) - lastY;
 
-        /*
-        if (!selectedObject)
-        { 
-            double xoffset = xpos - lastX;
-            double yoffset = lastY - ypos ;
+               //std::cout << "DRAG OFFSET " << xoffset << " " << yoffset << std::endl;
 
-            std::cout << xpos << " " << lastX << " " << xoffset  << std::endl;
-            std::cout << ypos  << " " << lastY << " " << yoffset  << std::endl;
+               if (selectedObject)
+               {
+                   selectedObject->addXRot(- yoffset * 0.25);
+                   selectedObject->addYRot(xoffset * 0.25);
+               }
+               else
+               {
+                   camera.changePosX(xoffset * 0.05);
+                   camera.changePosY(yoffset * 0.05);
+               }
 
-            lastX = xpos;
-            lastY = height - ypos - 1;
+               lastX = xpos;
+               lastY = height - ypos;
+           }
 
-            //object_rotation.y += xoffset; // If i use yoffset the rotation flips
-            //object_rotation.x += yoffset;
-
-            //rotation_angle += (xoffset + yoffset) * 0.25f;
-
-           
-
-            //camera.changePosX(xoffset*0.25);
-            //camera.changePosY(yoffset*0.25);
-
-            std::cout << "BEFORE: " << camera.position.x << " " << camera.position.y << " " << std::endl;
-
-            camera.changePosX(xoffset*0.25);
-            camera.changePosY(yoffset*0.25);
-
-            std::cout << "After: " << camera.position.x << " " << camera.position.y << " " << std::endl;
-            
-        }
-
-        GLfloat xoffset = xpos - lastX;
-        // Reversed since y-coordinates go from bottom to left
-        GLfloat yoffset = lastY - ypos;
-
-        */
-        
-
-       
-        // `write your drag code here`
+           if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+           {
+               firstMouse = true;
+               //std::cout << "RELEASED " << xpos << " " << ypos << std::endl;
+           }
+       }
     }
 
     void do_movement(GLfloat delta)
@@ -196,8 +178,6 @@ public:
         {
             camera.changePosZ(delta);
         }
-
-      
     }
 
     void ScreenPosToWorldRay(glm::vec3& out_origin, glm::vec3& out_direction) 

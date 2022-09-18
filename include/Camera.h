@@ -11,14 +11,19 @@ public:
 		return &position;
 	}
 
-	void changePosX(float delta)
+	void setPos(glm::vec3 position)
 	{
-		position.x += delta;
+		this->position = position;
 	}
 
-	void changePosY(float delta)
+	void changePosX(float xoffset)
 	{
-		position.y += delta;
+		position.x += xoffset;
+	}
+
+	void changePosY(float yoffset)
+	{
+		position.y += yoffset;
 	}
 
 	void changePosZ(float delta)

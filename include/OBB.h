@@ -1,94 +1,15 @@
 #pragma once
-class OBB
+struct OBB
 {
-public:
-    OBB() = default;
+    glm::vec3 vmin, vmax, color;       // Properties
+    glm::vec3 center, extents;         // Model Tranformation
 
-    OBB(glm::vec3 vmin, glm::vec3 vmax, glm::vec3 size, glm::vec3 center, glm::vec3 color)
-    {
-        this->vmin = vmin;
-        this->vmax = vmax;
-        this->size = size;
-        this->center = center;
-        this->color = color;
-
-        halfLenghts = glm::vec3(size.x / 2, size.y / 2, size.z / 2);
-        initMesh();
-    }
-
-    void draw()
-    {
-        bind();
-        glDrawArrays(GL_LINE_STRIP, 0, 20);
-    }
-
-    glm::vec3* getBoxColor()
-    {
-        return &color;
-    }
-
-    glm::vec3 getHalfLenghts()
-    {
-        return halfLenghts;
-    }
-
-    glm::vec3 getCenter()
-    {
-        return center;
-    }
-
-    glm::mat4 getModelTransformation()
-    {
-        return
-            glm::translate(glm::mat4(1.0f), center)*
-            glm::scale(glm::mat4(1.0f), size);
-    }
-
-    float scaleNormal(glm::mat4 model)
-    {
-        glm::vec4 v1 = model * glm::vec4(vmin, 1.0);
-        glm::vec4 v2 = model * glm::vec4(vmax, 1.0);
-
-        float diagonal = sqrt(glm::length(v2 - v1));
-        return diagonal * 0.05;
-    }
-
-    glm::vec3* getMin()
-    {
-        return &vmin;
-    }
-
-    glm::vec3* getMax()
-    {
-        return &vmax;
-    }
-
-    void setMin(glm::vec3 vmin)
-    {
-        this->vmin = vmin;
-    }
-
-    void setMax(glm::vec3 vmax)
-    {
-        this->vmax = vmax;
-    }
-
-    void getInfo(std::ofstream& outfile)
-    {
-        outfile << "bc " << color.x << " " << color.y << " " << color.z << "\n";
-        outfile << "bcenter " << center.x << " " << center.y << " " << center.z << "\n";
-        outfile << "bsize " << size.x << " " << size.y << " " << size.z << "\n";
-        outfile << "b_vmin " << vmin.x << " " << vmin.y << " " << vmin.z << "\n";
-        outfile << "b_vmax " << vmax.x << " " << vmax.y << " " << vmax.z << "\n";
-    }
-
-private:
     // Cube 1x1x1, centered on origin
     float vertices[120] =
     {
         // back
        -0.5, 0.5,-0.5,  0.0f,  0.0f, -1.0f,
-        0.5, 0.5,-0.5,  0.0f,  0.0f, -1.0f, 
+        0.5, 0.5,-0.5,  0.0f,  0.0f, -1.0f,
         0.5,-0.5,-0.5,  0.0f,  0.0f, -1.0f,
        -0.5,-0.5,-0.5,  0.0f,  0.0f, -1.0f,
 
@@ -97,7 +18,7 @@ private:
        -0.5,0.5,0.5,   -1.0f,  0.0f,  0.0f,
        -0.5,0.5,-0.5,  -1.0f,  0.0f,  0.0f,
         -0.5,-0.5,-0.5, -1.0f,  0.0f,  0.0f,
-     
+
         // top
        -0.5,0.5,-0.5, 0.0f,  1.0f,  0.0f,
        -0.5,0.5,0.5,  0.0f,  1.0f,  0.0f,
@@ -118,14 +39,52 @@ private:
         0.5,-0.5,0.5,  0.0f,  0.0f,  1.0f,
     };
 
-    // Model Tranformation
-    glm::vec3 center, size, halfLenghts;
-    
-    // Properties
-    glm::vec3 vmin, vmax, color;
-   
     unsigned int VAO, VBO;
 
+    OBB() = default;
+
+    OBB(glm::vec3 vmin, glm::vec3 vmax, glm::vec3 color)
+    {
+        this->vmin = vmin;
+        this->vmax = vmax;
+        this->color = color;
+
+        center = (vmax + vmin) * 0.5f;
+        extents = glm::vec3((vmax.x - vmin.x), (vmax.y - vmin.y), (vmax.z - vmin.z)) * 0.5f;
+
+        initMesh();
+    }
+
+    void draw()
+    {
+        bind();
+        glDrawArrays(GL_LINE_STRIP, 0, 20);
+    }
+
+    glm::mat4 getModelTransformation()
+    {
+        return
+            glm::translate(glm::mat4(1.0f), center)*
+            glm::scale(glm::mat4(1.0f), extents * 2.0f);
+    }
+
+    float scaleNormal(glm::mat4 model)
+    {
+        glm::vec4 v1 = model * glm::vec4(vmin, 1.0);
+        glm::vec4 v2 = model * glm::vec4(vmax, 1.0);
+
+        float diagonal = sqrt(glm::length(v2 - v1));
+        return diagonal * 0.05;
+    }
+
+    void getInfo(std::ofstream& outfile)
+    {
+        outfile << "bc " << color.x << " " << color.y << " " << color.z << "\n";
+        outfile << "b_vmin " << vmin.x << " " << vmin.y << " " << vmin.z << "\n";
+        outfile << "b_vmax " << vmax.x << " " << vmax.y << " " << vmax.z << "\n";
+    }
+
+private:
     void initMesh()
     {
         // Gen and bind container's VAO

@@ -39,40 +39,16 @@ public:
 		angles = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		// Normalize mesh into unitary parallelepiped
-		size_x = max_x - min_x;
-		size_y = max_y - min_y;
-		size_z = max_z - min_z;
-
-		scaleFactor = std::max(std::max(size_x, size_y), size_z);
+		scaleFactor = std::max(std::max(max_x - min_x, max_y - min_y), max_z - min_z);
 		normalize = glm::vec3(1/ scaleFactor, 1/ scaleFactor, 1/ scaleFactor);
 
-
 		// Create bounding box
-		glm::vec3 size = glm::vec3(size_x, size_y, size_z);
-		glm::vec3 center = glm::vec3((min_x + max_x) / 2, (min_y + max_y) / 2, (min_z + max_z) * 2);
-		boundingBox = OBB(glm::vec3(min_x, min_y, min_z), glm::vec3(max_x, max_y, max_z), 
-							size, center, { 1.0, 1.0, 1.0 });
-
-		//std::cout << min_x << " " << min_y << " " << min_z << std::endl;
-		//std::cout << max_x << " " << max_y << " " << max_z << std::endl;
-
-		useDepthTest = true;
-		useCullFace = true;
-		useMultisample = true;
-
-		pointSize = 3;
-		showWireframe = false;
-		showVertices = false;
-		showNormals = false;
-		wireframeColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		verticesColor = glm::vec3(0.0f, 0.0f, 0.0f);
-		normalsColor = glm::vec3(0.0f, 1.0f, 0.0f);
+		boundingBox = OBB(glm::vec3(min_x, min_y, min_z), glm::vec3(max_x, max_y, max_z), { 1.0, 1.0, 1.0 });
 	}
 
 	Object(std::vector<Mesh> meshes, std::string path, std::string name, glm::vec3 normalize, glm::vec3 scale, glm::vec3 translation, glm::vec3 angles,
 		bool useDepthTest, bool useCullFace, bool useMultisample, bool showWireframe, bool showVertices, bool showNormals,
-		int pointSize, glm::vec3 wireframeColor, glm::vec3 verticesColor, glm::vec3 normalsColor, glm::vec3 boxColor,
-		glm::vec3 boxCenter, glm::vec3 boxSize, glm::vec3 vmin, glm::vec3 vmax)
+		int pointSize, glm::vec3 wireframeColor, glm::vec3 verticesColor, glm::vec3 normalsColor, glm::vec3 boxColor, glm::vec3 vmin, glm::vec3 vmax)
 	{
 		this->meshes = meshes;
 		this->path = path;
@@ -94,7 +70,7 @@ public:
 		this->verticesColor = verticesColor;
 		this->normalsColor = normalsColor;
 
-		this->boundingBox = OBB(vmin, vmax, boxSize, boxCenter, boxColor);
+		this->boundingBox = OBB(vmin, vmax, boxColor);
 
 	}
 
@@ -111,6 +87,13 @@ public:
 	void addYRot(float yoffset)
 	{
 		angles.y += yoffset;
+	}
+
+	void changeXTranslation(float newXTranslation) {
+		float xoffset = newXTranslation - translation.x;
+		std::cout << boundingBox.center.x << " " << xoffset << std::endl;
+ 		translation.x = newXTranslation;
+		boundingBox.center.x = newXTranslation;
 	}
 
 	std::string getName()
@@ -140,7 +123,8 @@ public:
 			glm::rotate(glm::mat4(1.0f), glm::radians(angles.x), glm::vec3(1.0f, 0.0f, 0.0f)) *
 			glm::rotate(glm::mat4(1.0f), glm::radians(angles.y), glm::vec3(0.0f, 1.0f, 0.0f)) *
 			glm::rotate(glm::mat4(1.0f), glm::radians(angles.z), glm::vec3(0.0f, 0.0f, 1.0f)) *
-			glm::scale(glm::mat4(1.0f), scale);
+			glm::scale(glm::mat4(1.0f), scale)* 
+			glm::scale(glm::mat4(1.0f), normalize);
 	}
 
 	glm::mat4 getBoxModel()
@@ -150,7 +134,7 @@ public:
 
 	glm::vec3* getBoxColor()
 	{
-		return boundingBox.getBoxColor();
+		return &boundingBox.color;
 	}
 
 	glm::vec3* getNormalsColor()
@@ -278,33 +262,30 @@ public:
 
 	bool TestRayOBBIntersection(glm::vec3 ray_origin, glm::vec3 ray_direction, float& intersection_distance) 
 	{
-		glm::mat4 ModelMatrix = getModelTransformation();
-
-		glm::vec3 aabb_min = *boundingBox.getMin();
-		glm::vec3 aabb_max = *boundingBox.getMax();
-		
-		//std::cout << aabb_min.x << " " << aabb_min.y << " " << aabb_min.z << std::endl;
-		//std::cout << aabb_max.x << " " << aabb_max.y << " " << aabb_max.z << std::endl;
-
 		float tMin = 0.0f;
 		float tMax = std::numeric_limits<double>::infinity();
 
-		glm::vec3 OBBposition_worldspace(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z);
+		glm::mat4 ModelMatrix = getModelTransformation();
 
-		glm::vec3 delta = OBBposition_worldspace - ray_origin;
+		glm::vec3 min = glm::vec3(ModelMatrix * glm::vec4(boundingBox.vmin, 1.0));
+		glm::vec3 max = glm::vec3(ModelMatrix * glm::vec4(boundingBox.vmax, 1.0));
+		glm::vec3 size = glm::vec3((max.x - min.x) / 2, (max.y - min.y) / 2, (max.z - min.z) / 2);
+		glm::vec3 center = glm::vec3(ModelMatrix * glm::vec4(boundingBox.center, 1.0f));
+		
+		glm::vec3 delta = center - ray_origin; //vector pointing from the origin of the ray to the OBB,
 
-		// 3 tests intersections with the 2 planes perpendicular to the OBB's axes
-		for (int i = 0; i < 3; i++)
+		std::cout << size.x << " " << size.y << " " << size.z << std::endl;
+
+		// Test intersection with the 2 planes perpendicular to the OBB's X axis
 		{
-			glm::vec3 axis = glm::vec3(ModelMatrix[i].x, ModelMatrix[i].y, ModelMatrix[i].z) / scale[i];
-
-			float e = glm::dot(axis, delta);
-			float f = glm::dot(axis, ray_direction);
+			glm::vec3 xaxis(ModelMatrix[0].x, ModelMatrix[0].y, ModelMatrix[0].z);
+			float e = glm::dot(xaxis, delta);
+			float f = glm::dot(ray_direction, xaxis);
 
 			if (fabs(f) > 0.001f) { // Standard case
 
-				float t1 = (e + aabb_min.x) / f; // Intersection with the "left" plane
-				float t2 = (e + aabb_max.x) / f; // Intersection with the "right" plane
+				float t1 = (e + size.y) / f; // Intersection with the "left" plane
+				float t2 = (e - size.y) / f; // Intersection with the "right" plane
 				// t1 and t2 now contain distances betwen ray origin and ray-plane intersections
 
 				// We want t1 to represent the nearest intersection, 
@@ -313,31 +294,85 @@ public:
 					float w = t1; t1 = t2; t2 = w; // swap t1 and t2
 				}
 
+				// tMax is the nearest "far" intersection (amongst the X,Y and Z planes pairs)
+				if (t2 < tMax)
+					tMax = t2;
 				// tMin is the farthest "near" intersection (amongst the X,Y and Z planes pairs)
 				if (t1 > tMin)
 					tMin = t1;
 
-				// tMax is the nearest "far" intersection (amongst the X,Y and Z planes pairs)
-				if (t2 < tMax)
-					tMax = t2;
-		
 				// And here's the trick :
 				// If "far" is closer than "near", then there is NO intersection.
 				// See the images in the tutorials for the visual explanation.
-				if (tMax < tMin || tMax < 0)
+				if (tMax < tMin)
 					return false;
+
 			}
 			else { // Rare case : the ray is almost parallel to the planes, so they don't have any "intersection"
-				if (-e + aabb_min.x > 0.0f || -e + aabb_max.x < 0.0f)
+				if (-e + size.y > 0.0f || -e + size.y < 0.0f)
 					return false;
 			}
 		}
 
-		if(tMin > 0)
-			intersection_distance = tMin;
-		else
-			intersection_distance = tMax;
 
+		// Test intersection with the 2 planes perpendicular to the OBB's Y axis
+		// Exactly the same thing than above.
+		{
+			glm::vec3 yaxis(ModelMatrix[1].x, ModelMatrix[1].y, ModelMatrix[1].z);
+			float e = glm::dot(yaxis, delta);
+			float f = glm::dot(ray_direction, yaxis);
+
+			if (fabs(f) > 0.001f) {
+
+				float t1 = (e + size.x) / f;
+				float t2 = (e - size.x) / f;
+
+				if (t1 > t2) { float w = t1; t1 = t2; t2 = w; }
+
+				if (t2 < tMax)
+					tMax = t2;
+				if (t1 > tMin)
+					tMin = t1;
+				if (tMin > tMax)
+					return false;
+
+			}
+			else {
+				if (-e + size.x > 0.0f || -e + size.x < 0.0f)
+					return false;
+			}
+		}
+
+
+		// Test intersection with the 2 planes perpendicular to the OBB's Z axis
+		// Exactly the same thing than above.
+		{
+			glm::vec3 zaxis(ModelMatrix[2].x, ModelMatrix[2].y, ModelMatrix[2].z);
+			float e = glm::dot(zaxis, delta);
+			float f = glm::dot(ray_direction, zaxis);
+
+			if (fabs(f) > 0.001f) {
+
+				float t1 = (e + size.y) / f;
+				float t2 = (e - size.y) / f;
+
+				if (t1 > t2) { float w = t1; t1 = t2; t2 = w; }
+
+				if (t2 < tMax)
+					tMax = t2;
+				if (t1 > tMin)
+					tMin = t1;
+				if (tMin > tMax)
+					return false;
+
+			}
+			else {
+				if (-e + size.y > 0.0f || -e + size.y < 0.0f)
+					return false;
+			}
+		}
+
+		intersection_distance = tMin;
 		return true;
 	}
 
@@ -366,6 +401,9 @@ public:
 		return &meshes;
 	}
 
+	// Model Tranformation
+	glm::vec3 normalize, scale, translation, angles;
+
 	// Bounding box
 	OBB boundingBox;
 private:
@@ -373,21 +411,18 @@ private:
 	std::string name, path;
 	std::vector<Mesh> meshes;
 
-	// Model Tranformation
-	glm::vec3 normalize, scale, translation, angles;
-
 	// Rendering State
-	bool useDepthTest;
-	bool useCullFace;
-	bool useMultisample;
-	bool showWireframe;
-	bool showVertices; int pointSize;
-	bool showNormals;
+	bool useDepthTest = true;
+	bool useCullFace = true;
+	bool useMultisample = true;
+	bool showWireframe = false;
+	bool showVertices = false; int pointSize = 3;
+	bool showNormals = false;
 
 	// Colors
-	glm::vec3 wireframeColor;
-	glm::vec3 verticesColor;
-	glm::vec3 normalsColor;
+	glm::vec3 wireframeColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 verticesColor = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 normalsColor = glm::vec3(0.0f, 1.0f, 0.0f);
 };
 
 struct ObjectDistance

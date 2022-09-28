@@ -30,7 +30,6 @@ public:
 
         glViewport(0, 0, width, height);
 
-        bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
         ui = UI(window, &bgColor);
         ui.init();
     }
@@ -75,13 +74,7 @@ public:
 
     void button_callback(int button, int action, int mods)
     {
-        if (button == GLFW_MOUSE_BUTTON_LEFT) {
-            if (GLFW_PRESS == action)
-                lbutton_down = true;
-            else if (GLFW_RELEASE == action)
-                lbutton_down = false;
-        }
-
+        /*
         ImGuiIO& io = ImGui::GetIO();
 
         if (lbutton_down && !io.WantCaptureMouse) {
@@ -120,7 +113,7 @@ public:
             else {
                 selectedObject = nullptr;
             }
-        }
+        }*/
     }
 
     void mouse_callback(double xpos, double ypos)
@@ -134,15 +127,11 @@ public:
                lastX = xpos;
                lastY = height - ypos;
                firstMouse = false;
-
-               //std::cout << "CLICK " << lastX << " " << lastY << std::endl;
            }
            else
            {
                float xoffset = xpos - lastX;
                float yoffset = (height - ypos) - lastY;
-
-               //std::cout << "DRAG OFFSET " << xoffset << " " << yoffset << std::endl;
 
                if (selectedObject)
                {
@@ -151,8 +140,8 @@ public:
                }
                else
                {
-                   camera.changePosX(xoffset * 0.05);
-                   camera.changePosY(yoffset * 0.05);
+                   camera.changePosX(xoffset * 0.01);
+                   camera.changePosY(yoffset * 0.01);
                }
 
                lastX = xpos;
@@ -160,10 +149,7 @@ public:
            }
 
            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-           {
                firstMouse = true;
-               //std::cout << "RELEASED " << xpos << " " << ypos << std::endl;
-           }
        }
     }
 
@@ -180,30 +166,30 @@ public:
         }
     }
 
-    void ScreenPosToWorldRay(glm::vec3& out_origin, glm::vec3& out_direction) 
+    void ScreenPosToWorldRay(glm::vec3& ray_origin, glm::vec3& ray_direction) 
     {
-        // Ouput : Origin of the ray. /!\ Starts at the near plane, so if you want the ray to start at the camera's position instead, ignore this.
+        // Ouput : Origin of the ray. 
         // Ouput : Direction, in world space, of the ray that goes "through" the mouse.
 
-        // The ray Start and End positions, in Normalized Device Coordinates
-        float normalizedX = ((float)lastX / (float)width - 0.5f) * 2.0f;
-        float notmalizedY = ((float)lastY / (float)height - 0.5f) * 2.0f;
+        // Transform to Normalized Device Coordinates
+        float normalizedX = (2.0f*(float)lastX / (float)width) - 1.0f;
+        float normalizedY = (2.0f*(float)lastY / (float)height) - 1.0f;
 
-        glm::vec4 lRayStart_NDC(normalizedX, notmalizedY, -1.0, 1.0f);
-        glm::vec4 lRayEnd_NDC(normalizedX, notmalizedY, 0.0, 1.0f);
+        // Transform to Homogeneous Clip Coordinates
+        glm::vec4 lRayStart_NDC(normalizedX, normalizedY, -1.0, 1.0f);
+        glm::vec4 lRayEnd_NDC(normalizedX, normalizedY, 0.0, 1.0f);
 
         // Inverse(ProjectionMatrix) goes from NDC to Camera Space.
         // Inverse(ViewMatrix) goes from Camera Space to World Space.
         glm::mat4 M = glm::inverse(projection * view);
-        glm::vec4 lRayStart_world = M * lRayStart_NDC; lRayStart_world/=lRayStart_world.w;
-        glm::vec4 lRayEnd_world   = M * lRayEnd_NDC  ; lRayEnd_world  /=lRayEnd_world.w;
-
+        glm::vec4 lRayStart_world = M * lRayStart_NDC;     lRayStart_world/=lRayStart_world.w;
+        glm::vec4 lRayEnd_world   = M * lRayEnd_NDC  ;     lRayEnd_world  /=lRayEnd_world.w;
 
         glm::vec3 lRayDir_world(lRayEnd_world - lRayStart_world);
         lRayDir_world = glm::normalize(lRayDir_world);
 
-        out_origin = glm::vec3(lRayStart_world);
-        out_direction = glm::normalize(lRayDir_world);
+        ray_origin = glm::vec3(lRayStart_world);
+        ray_direction = glm::normalize(lRayDir_world);
     }
 
     void run()
@@ -331,30 +317,24 @@ private:
     GLFWwindow* window;
     UI ui;
   
-
     // Window dimensions
-    const GLuint width = 1600, height = 800;
+    const int width = 1600, height = 800;
 
-    // Camera
+    // Mouse Position
     float xoffset = 0,  yoffset = 0; 
-    GLfloat lastX = width / 2.0;
-    GLfloat lastY = height / 2.0;
+    float lastX = width / 2.0;
+    float lastY = height / 2.0;
    
     // Deltatime
-    GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
-    GLfloat lastFrame = 0.0f;  	// Time of last frame
+    float deltaTime = 0.0f;	// Time between current frame and last frame
+    float lastFrame = 0.0f; // Time of last frame
 
-    GLfloat angle = 0.0f;
+    float angle = 0.0f;
 
     bool firstMouse = true;
-    bool lbutton_down = true;
     bool keys[1024];
 
-    bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-    glm::vec3 bgColor;
+    glm::vec3 bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
     glm::mat4 view, projection;
 
     // Limit values

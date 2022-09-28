@@ -100,7 +100,7 @@ public:
                     ImGui::Checkbox("##Vertices", selectedObject->getVerticesBool());
                     ImGui::Text("Vertex size");
                     ImGui::SameLine();
-                    ImGui::DragInt("##vertexSize", selectedObject->getPointSize(), 1);
+                    ImGui::DragInt("##vertexSize", selectedObject->getPointSize(), 1, 1);
                     ImGui::Text("Color");
                     ImGui::SameLine();
                     ImGui::ColorEdit3("##VerticesColor", glm::value_ptr(*selectedObject->getVerticesColor()), ImGuiColorEditFlags_NoLabel);
@@ -140,7 +140,7 @@ public:
                {
                    DrawVec3Control("Scale", *selectedObject->getScaleFactor(), 0.05, -10.0f, 10.0f);
                    DrawVec3Control("Rotation", *selectedObject->getRotationFactor(), 10.0f, -360.0f, 360.0f);
-                   DrawVec3Control("Translation", *selectedObject->getTranslationFactor(), 0.05, -max_float, max_float);
+                   DrawVec3Control("Translation", selectedObject->translation, 0.05, -max_float, max_float);
 
                    ImGui::TreePop();
                }
@@ -237,7 +237,7 @@ public:
 
         glm::vec3 normalize, scale, translation, angles;
         glm::vec3 wireframeColor, vertexColor, normalsColor, boxColor, diffuseColor;
-        glm::vec3 boxCenter, boxSize, vmin, vmax;
+        glm::vec3 vmin, vmax;
         bool useDepthTest, useCullFace, useMultisample, showWireframe, showVertices, showNormals;
         int pointSize;
 
@@ -252,9 +252,7 @@ public:
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> wireframeColor.x >> wireframeColor.y >> wireframeColor.z; 
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vertexColor.x >> vertexColor.y >> vertexColor.z; 
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> normalsColor.x >> normalsColor.y >> normalsColor.z; 
-        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> boxColor.x >> boxColor.y >> boxColor.z; 
-        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> boxCenter.x >> boxCenter.y >> boxCenter.z; 
-        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> boxSize.x >> boxSize.y >> boxSize.z; 
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> boxColor.x >> boxColor.y >> boxColor.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vmin.x >> vmin.y >> vmin.z; 
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vmax.x >> vmax.y >> vmax.z;  
 
@@ -292,8 +290,7 @@ public:
         }
 
         return Object(meshes, objPath, name, normalize, scale, translation, angles, useDepthTest, useCullFace, useMultisample,
-            showWireframe, showVertices, showNormals, pointSize, wireframeColor, vertexColor, normalsColor, boxColor,
-            boxCenter, boxSize, vmin, vmax);
+            showWireframe, showVertices, showNormals, pointSize, wireframeColor, vertexColor, normalsColor, boxColor, vmin, vmax);
     }
 
 	void render()

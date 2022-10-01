@@ -35,6 +35,8 @@
     <None Include="shaders\color_shader.vs" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\MtlLoader.h" />
+    <ClInclude Include="LoadersManager.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\Utils.h" />
     <ClInclude Include="include\Mesh.h" />

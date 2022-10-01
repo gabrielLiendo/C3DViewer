@@ -30,7 +30,7 @@ public:
 
         glViewport(0, 0, width, height);
 
-        ui = UI(window, &bgColor);
+        ui = UI(window);
         ui.init();
     }
 
@@ -334,7 +334,6 @@ private:
     bool firstMouse = true;
     bool keys[1024];
 
-    glm::vec3 bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
     glm::mat4 view, projection;
 
     // Limit values

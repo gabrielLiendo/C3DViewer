@@ -6,8 +6,11 @@ public:
 	{
 		infile = std::ifstream(file_name);
 
-		if (!infile.is_open())
+		if (!infile.is_open()) {
+			std::cout << file_name << " no fue conseguido" << std::endl;
 			return false;
+		}
+			
 
 		readMaterials();
 	}
@@ -74,7 +77,6 @@ private:
 			else if (prefix == "illum")
 				ss >> illum;
 		}
-
 		
 		return std::make_shared<Material>(name, kd);
 	}

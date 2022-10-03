@@ -97,7 +97,7 @@ public:
                     ImGui::Checkbox("##Wireframe", selectedObject->getWireframeBool());
                     ImGui::Text("Color");
                     ImGui::SameLine();
-                    ImGui::ColorEdit3("##WireColor", glm::value_ptr(*selectedObject->getWireframeColor()), ImGuiColorEditFlags_NoLabel);
+                    ImGui::ColorEdit3("WireColor", glm::value_ptr(*selectedObject->getWireframeColor()));
                     ImGui::TreePop();
                 }
             }
@@ -206,6 +206,11 @@ private:
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
+
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 2.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(6.0f, 8.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
+
 
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(window, true);

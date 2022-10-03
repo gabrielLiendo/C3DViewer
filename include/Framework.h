@@ -84,6 +84,7 @@ public:
     void resize_callback(GLFWwindow* window, int width, int height)
     {
         glViewport(0, 0, width, height);
+
         // Re-render the scene because the current frame was drawn for the old resolution
         draw();
     }
@@ -331,6 +332,7 @@ public:
     }
 
 private:
+
     // Pointer to window
     GLFWwindow* window;
     UI ui;

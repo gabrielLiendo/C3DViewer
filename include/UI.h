@@ -17,37 +17,16 @@ public:
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        renderDockSpace();
+
+        renderSceneWindow();
+
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
         // Draw the main window
-        if (ImGui::Begin("Scene", 0, ImGuiWindowFlags_MenuBar))
+        if (ImGui::Begin("Current Scene"))
         {
-            if (ImGui::BeginMenuBar())
-            {
-                if (ImGui::BeginMenu("Object"))
-                {
-                    if (ImGui::MenuItem("Load"))
-                        loadersManager.loadObj(selected);
-                    if (ImGui::MenuItem("Delete Selected"))
-                        deleteSelected();
-                    if (ImGui::MenuItem("Delete All"))
-                        deleteAllObjects();
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Scene"))
-                {
-                    if (ImGui::MenuItem("Load Scene"))
-                        loadersManager.loadScene();
-
-                    if (ImGui::MenuItem("Save Scene"))
-                        loadersManager.saveScene();
-
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMenuBar();
-            }
-
             if (ImGui::TreeNode("Background"))
             {
                 ImGui::Text("Color");
@@ -198,6 +177,8 @@ public:
             ImGui::End();
         }
 
+       
+
         // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -229,6 +210,74 @@ private:
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 130");
+    }
+
+    // Create the docking enviorment
+    void renderDockSpace()
+    {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+        ImGuiWindowFlags host_window_flags = 0;
+        host_window_flags |= ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking;
+        host_window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+            host_window_flags |= ImGuiWindowFlags_NoBackground;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin("Dockspace", nullptr, host_window_flags);
+        ImGui::PopStyleVar(3);
+
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags, nullptr);
+
+        // Create Menu Bar
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::BeginMenu("Object"))
+            {
+                if (ImGui::MenuItem("Load"))
+                    loadersManager.loadObj(selected);
+                if (ImGui::MenuItem("Delete Selected"))
+                    deleteSelected();
+                if (ImGui::MenuItem("Delete All"))
+                    deleteAllObjects();
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Scene"))
+            {
+                if (ImGui::MenuItem("Load Scene"))
+                    loadersManager.loadScene();
+
+                if (ImGui::MenuItem("Save Scene"))
+                    loadersManager.saveScene();
+
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+
+        ImGui::End();
+    }
+
+    void renderSceneWindow()
+    {
+        /*if (ImGui::Begin("Scene"))
+        {
+            ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+            glm::vec2 mSize = { viewportPanelSize.x, viewportPanelSize.y };
+
+            // add rendered texture to ImGUI scene window
+            uint64_t textureID = mFrameBuffer->get_texture();
+            ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ mSize.x, mSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+            
+            ImGui::End();
+        }*/
     }
 
     static void DrawVec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max)
@@ -263,11 +312,6 @@ private:
         ImGui::EndTable();
     }
 
-    void setSelected(int selected)
-    {
-        this->selected = selected;
-    }
-
 
     GLFWwindow* window;
 
@@ -276,6 +320,7 @@ private:
 
     // State
     int selected = -1;
+    bool show_app_dockspace = true;
     bool show_demo_window = true;
 
     // Limit values

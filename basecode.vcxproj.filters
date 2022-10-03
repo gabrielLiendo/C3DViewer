@@ -73,7 +73,7 @@
     <ClInclude Include="include\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Framework.h">
+    <ClInclude Include="include\C3DViewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\glad\glad.h">
@@ -130,10 +130,19 @@
     <ClInclude Include="include\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LoadersManager.h">
+    <ClInclude Include="include\MtlLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\MtlLoader.h">
+    <ClInclude Include="include\LoadersManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OBB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SceneLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

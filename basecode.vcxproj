@@ -35,12 +35,15 @@
     <None Include="shaders\color_shader.vs" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\LoadersManager.h" />
     <ClInclude Include="include\MtlLoader.h" />
-    <ClInclude Include="LoadersManager.h" />
     <ClInclude Include="include\Camera.h" />
+    <ClInclude Include="include\OBB.h" />
+    <ClInclude Include="include\Object.h" />
+    <ClInclude Include="include\SceneLoader.h" />
     <ClInclude Include="include\Utils.h" />
     <ClInclude Include="include\Mesh.h" />
-    <ClInclude Include="include\Framework.h" />
+    <ClInclude Include="include\C3DViewer.h" />
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\GLFW\glfw3.h" />
     <ClInclude Include="include\GLFW\glfw3native.h" />

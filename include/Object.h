@@ -442,7 +442,6 @@ struct ObjectDistance
 };
 
 std::vector<Object> objects;
-bool draw = false;
 Object *selectedObject;
 
 void deleteAllObjects()

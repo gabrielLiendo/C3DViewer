@@ -317,7 +317,6 @@ private:
         ImGui::EndTable();
     }
 
-
     GLFWwindow* window;
 
     // Loaders

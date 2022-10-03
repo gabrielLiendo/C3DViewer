@@ -1,9 +1,8 @@
 #pragma once
-
-class MyGlWindow
+class C3DViewer
 {
 public:
-    MyGlWindow()
+    C3DViewer()
     {
         // Init GLFW
         glfwInit();
@@ -37,33 +36,33 @@ public:
     // Set the required callback functions
     void setCallbacks()
     {
-        MyGlWindow* myWindow = this;
+        C3DViewer* C3D_window = this;
 
-        glfwSetWindowUserPointer(window, myWindow);
+        glfwSetWindowUserPointer(window, C3D_window);
 
         glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos)
         {
-                static_cast<MyGlWindow*>(glfwGetWindowUserPointer(window))->mouse_callback(xpos, ypos);
+                static_cast<C3DViewer*>(glfwGetWindowUserPointer(window))->mouse_callback(xpos, ypos);
         });
 
         glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mode) 
         {
-                static_cast<MyGlWindow*>(glfwGetWindowUserPointer(window))->key_callback(key, scancode, action, mode);
+                static_cast<C3DViewer*>(glfwGetWindowUserPointer(window))->key_callback(key, scancode, action, mode);
         });
 
         glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods)
         {
-                static_cast<MyGlWindow*>(glfwGetWindowUserPointer(window))->button_callback(button, action, mods);
+                static_cast<C3DViewer*>(glfwGetWindowUserPointer(window))->button_callback(button, action, mods);
         });
 
         glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height)
         {
-                static_cast<MyGlWindow*>(glfwGetWindowUserPointer(window))->resize_callback(window, width, height);
+                static_cast<C3DViewer*>(glfwGetWindowUserPointer(window))->resize_callback(window, width, height);
         });
 
         glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset)
         {
-                static_cast<MyGlWindow*>(glfwGetWindowUserPointer(window))->scroll_callback(window, xoffset, yoffset);
+                static_cast<C3DViewer*>(glfwGetWindowUserPointer(window))->scroll_callback(window, xoffset, yoffset);
         });
     }
 
@@ -352,9 +351,10 @@ public:
     }
 
 private:
-
     // Pointer to window
     GLFWwindow* window;
+
+    // User Interface
     UI ui;
   
     // Window dimensions

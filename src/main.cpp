@@ -40,12 +40,11 @@ glm::vec3 bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
 #include "ObjLoader.h"
 #include "LoadersManager.h"
 #include "UI.h"
-#include "Framework.h"
-
+#include "C3DViewer.h"
 
 int main()
 {
-    MyGlWindow app = MyGlWindow();
+    C3DViewer app = C3DViewer();
     app.run();
     app.terminate();
 }

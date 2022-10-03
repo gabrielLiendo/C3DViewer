@@ -60,6 +60,11 @@ public:
         {
                 static_cast<MyGlWindow*>(glfwGetWindowUserPointer(window))->resize_callback(window, width, height);
         });
+
+        glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset)
+        {
+                static_cast<MyGlWindow*>(glfwGetWindowUserPointer(window))->scroll_callback(window, xoffset, yoffset);
+        });
     }
 
     void setRenderVariables()
@@ -188,14 +193,29 @@ public:
        }
     }
 
+    void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+    {
+        std::cout << yoffset << std::endl;
+        yScroll = yoffset;
+    }
+
+    double getYScroll()
+    {
+        double value = yScroll;
+        yScroll = 0.0f;
+        return value;
+    }
+
     void do_movement(GLfloat delta)
     {
+        double yScroll = getYScroll();
+
         // Camera controls
-        if (keys[GLFW_KEY_UP])
+        if (keys[GLFW_KEY_UP] || yScroll > 0)
         {
             camera.changePosZ(-delta);
         }
-        else if (keys[GLFW_KEY_DOWN])
+        else if (keys[GLFW_KEY_DOWN] || yScroll < 0)
         {
             camera.changePosZ(delta);
         }
@@ -353,6 +373,8 @@ private:
 
     bool firstMouse = true;
     bool keys[1024];
+
+    double yScroll = 0.0f;
 
     glm::mat4 view, projection;
 

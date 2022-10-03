@@ -7,66 +7,11 @@ public:
     UI(GLFWwindow* window)
     {
         this->window = window;
+        init();
     }
 
-    static void DrawVec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max)
+    void render()
     {
-        ImGui::BeginTable(label.c_str(), 4, ImGuiTableFlags_NoPadOuterX);
-        ImGui::TableNextRow();
-
-        ImGui::TableSetColumnIndex(0);
-        ImGui::Text(label.c_str());
-
-        ImGui::TableSetColumnIndex(1);
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-        ImGui::Button("X");
-        ImGui::PopStyleColor(1);
-        ImGui::SameLine();
-        ImGui::DragFloat("##X", &values.x, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-
-        ImGui::TableSetColumnIndex(2);
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-        ImGui::Button("Y");
-        ImGui::PopStyleColor(1);
-        ImGui::SameLine();
-        ImGui::DragFloat("##Y", &values.y, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-
-        ImGui::TableSetColumnIndex(3);
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-        ImGui::Button("Z");
-        ImGui::PopStyleColor(1);
-        ImGui::SameLine();
-        ImGui::DragFloat("##Z", &values.z, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-
-        ImGui::EndTable();
-    }
-
-    void setSelected(int selected)
-    {
-        this->selected = selected;
-    }
-
-    // Setup Dear ImGui context and style
-    void init()
-    {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-        io.FontDefault = io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Regular.ttf", 16.0f);
-
-        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-        // Setup Dear ImGui style
-        ImGui::StyleColorsDark();
-
-        // Setup Platform/Renderer backends
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 130");
-    }
-
-	void render()
-	{
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -74,9 +19,9 @@ public:
 
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
-        
+
         // Draw the main window
-        if(ImGui::Begin("Scene", 0, ImGuiWindowFlags_MenuBar))
+        if (ImGui::Begin("Scene", 0, ImGuiWindowFlags_MenuBar))
         {
             if (ImGui::BeginMenuBar())
             {
@@ -108,28 +53,6 @@ public:
                 ImGui::Text("Color");
                 ImGui::SameLine();
                 ImGui::ColorEdit3("##bgColor", glm::value_ptr(bgColor), ImGuiColorEditFlags_NoLabel);
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNodeEx("Object List", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                if (ImGui::Selectable("Camera", selected == 0))
-                {
-                    selected = 0;
-                    selectedCamera = true;
-                    selectedObject = nullptr;
-                }
-
-                int m = objects.size();
-                for (int i = 1; i < m + 1; i++)
-                {
-                    if (ImGui::Selectable(objects[i - 1].getName().c_str(), selected == i))
-                    {
-                        selected = i;
-                        selectedObject = &objects[i - 1];
-                    }
-                }
-
                 ImGui::TreePop();
             }
 
@@ -253,20 +176,98 @@ public:
             ImGui::End();
         }
 
+        if (ImGui::Begin("Objects"))
+        {
+            if (ImGui::Selectable("Camera", selected == 0))
+            {
+                selected = 0;
+                selectedCamera = true;
+                selectedObject = nullptr;
+            }
+
+            int m = objects.size();
+            for (int i = 1; i < m + 1; i++)
+            {
+                if (ImGui::Selectable(objects[i - 1].getName().c_str(), selected == i))
+                {
+                    selected = i;
+                    selectedObject = &objects[i - 1];
+                }
+            }
+
+            ImGui::End();
+        }
+
         // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	}
+    }
 
-	void terminate()
-	{
+    void terminate()
+    {
         // Cleanup
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
-	}
+    }
 
 private:
+    // Setup Dear ImGui context and style
+    void init()
+    {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+        io.FontDefault = io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Regular.ttf", 16.0f);
+
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+
+        // Setup Platform/Renderer backends
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 130");
+    }
+
+    static void DrawVec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max)
+    {
+        ImGui::BeginTable(label.c_str(), 4, ImGuiTableFlags_NoPadOuterX);
+        ImGui::TableNextRow();
+
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text(label.c_str());
+
+        ImGui::TableSetColumnIndex(1);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+        ImGui::Button("X");
+        ImGui::PopStyleColor(1);
+        ImGui::SameLine();
+        ImGui::DragFloat("##X", &values.x, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::TableSetColumnIndex(2);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+        ImGui::Button("Y");
+        ImGui::PopStyleColor(1);
+        ImGui::SameLine();
+        ImGui::DragFloat("##Y", &values.y, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::TableSetColumnIndex(3);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+        ImGui::Button("Z");
+        ImGui::PopStyleColor(1);
+        ImGui::SameLine();
+        ImGui::DragFloat("##Z", &values.z, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::EndTable();
+    }
+
+    void setSelected(int selected)
+    {
+        this->selected = selected;
+    }
+
 
     GLFWwindow* window;
 

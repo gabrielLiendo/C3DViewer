@@ -199,7 +199,7 @@ public:
 		return &verticesColor;
 	}
 
-	void draw(int colorLoc)
+	void draw(int colorLoc, bool picking)
 	{
 		glm::vec3 color;
 
@@ -220,16 +220,32 @@ public:
 
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0, 1.0);
-		for (int i = 0; i < meshes.size(); i++)
-		{	
-			if (*meshes[i].getShow())
+		if (!picking)
+		{
+			for (int i = 0; i < meshes.size(); i++)
 			{
-				color = *meshes[i].mtl->getDiffuse();
-				glUniform3f(colorLoc, color.x, color.y, color.z);
-				meshes[i].draw();
-			}
+				if (*meshes[i].getShow())
+				{
+					color = *meshes[i].mtl->getDiffuse();
+					glUniform3f(colorLoc, color.x, color.y, color.z);
+					meshes[i].draw();
+				}
 
+			}
 		}
+		else
+		{
+			color = pickingColor;
+			for (int i = 0; i < meshes.size(); i++)
+			{
+				if (*meshes[i].getShow())
+				{
+					glUniform3f(colorLoc, color.x, color.y, color.z);
+					meshes[i].draw();
+				}
+			}
+		}
+		
 		glDisable(GL_POLYGON_OFFSET_FILL);
 
 		if (showVertices)

@@ -10,6 +10,11 @@ public:
         init();
     }
 
+    void setSelected(int selected)
+    {
+        this->selected = selected;
+    }
+
     void render()
     {
         // Start the Dear ImGui frame
@@ -102,32 +107,6 @@ public:
             ImGui::End();
         }
 
-        if (ImGui::Begin("Properties"))
-        {
-            if (selectedObject)
-            {
-                if (ImGui::TreeNodeEx("Transformation", ImGuiTreeNodeFlags_DefaultOpen))
-                {
-                    DrawVec3Control("Scale", *selectedObject->getScaleFactor(), 0.05, -10.0f, 10.0f);
-                    DrawVec3Control("Rotation", *selectedObject->getRotationFactor(), 10.0f, -360.0f, 360.0f);
-                    DrawVec3Control("Translation", selectedObject->translation, 0.05, -max_float, max_float);
-
-                    ImGui::TreePop();
-                }
-                if (ImGui::TreeNode("Bounding Box"))
-                {
-                    ImGui::Text("Color");
-                    ImGui::SameLine();
-                    ImGui::ColorEdit3("##Color", glm::value_ptr(*selectedObject->getBoxColor()));
-                    ImGui::TreePop();
-                }
-            }
-            else if (selectedCamera)
-                DrawVec3Control("Position", *camera.getPosition(), 0.05, -max_float, max_float);
-
-            ImGui::End();
-        }
-
         if (ImGui::Begin("Meshes"))
         {
             if (selectedObject)
@@ -156,6 +135,34 @@ public:
             }
             ImGui::End();
         }
+
+        if (ImGui::Begin("Properties"))
+        {
+            if (selectedObject)
+            {
+                if (ImGui::TreeNodeEx("Transformation", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    DrawVec3Control("Scale", *selectedObject->getScaleFactor(), 0.05, -10.0f, 10.0f);
+                    DrawVec3Control("Rotation", *selectedObject->getRotationFactor(), 10.0f, -360.0f, 360.0f);
+                    DrawVec3Control("Translation", selectedObject->translation, 0.05, -max_float, max_float);
+
+                    ImGui::TreePop();
+                }
+                if (ImGui::TreeNode("Bounding Box"))
+                {
+                    ImGui::Text("Color");
+                    ImGui::SameLine();
+                    ImGui::ColorEdit3("##Color", glm::value_ptr(*selectedObject->getBoxColor()));
+                    ImGui::TreePop();
+                }
+            }
+            else if (selectedCamera)
+                DrawVec3Control("Position", *camera.getPosition(), 0.05, -max_float, max_float);
+
+            ImGui::End();
+        }
+
+       
 
         if (ImGui::Begin("Objects"))
         {

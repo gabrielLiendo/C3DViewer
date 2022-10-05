@@ -28,6 +28,7 @@ public:
         // Build and compile our shader programs
         basic_shader = Shader("shaders/basic_shader.vs", "shaders/basic_shader.frag");
         normals_shader = Shader("shaders/normals_shader.vs", "shaders/normals_shader.frag", "shaders/normals_shader.geom");
+        picking_shader = Shader("shaders/picking_shader.vs", "shaders/picking_shader.frag");
 
         // Get the uniform locations
         mvpLoc = glGetUniformLocation(basic_shader.Program, "MVP");
@@ -36,6 +37,9 @@ public:
         mvpLoc_ns = glGetUniformLocation(normals_shader.Program, "MVP");
         colorLoc_ns = glGetUniformLocation(normals_shader.Program, "normalsColor");
         scaleLoc_ns = glGetUniformLocation(normals_shader.Program, "normalScale");
+
+        mvpLoc_ps = glGetUniformLocation(picking_shader.Program, "MVP");
+        colorLoc_ps = glGetUniformLocation(picking_shader.Program, "pickingColor");
 
         // Set functions and variables
         setCallbacks();
@@ -109,6 +113,7 @@ public:
 
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && !io.WantCaptureMouse) {
             std::cout << lastX << " " << lastY << std::endl;
+            processColorPicker = true;
         }
     }
 
@@ -145,7 +150,7 @@ public:
            }
 
            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-               firstMouse = true;
+               firstMouse = true;   
        }
     }
 
@@ -176,6 +181,28 @@ public:
         }
     }
 
+    void readPixel()
+    {
+        glFlush();
+        glFinish();
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        unsigned char data[4];
+        glReadPixels(lastX, lastY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        int pickedID = data[0] + data[1] * 256 + data[2] * 256 * 256;
+
+        if (pickedID == 0x00ffffff) { // Full white, must be the background !
+            std::cout << "background" << std::endl;
+            selectedObject = nullptr;
+        }
+        else if (pickedID <= objects.size()) {
+            std::cout << "mesh " << pickedID << std::endl;
+            selectedObject = &objects[pickedID - 1];
+            ui.setSelected(pickedID);
+        }
+    }
+
     void draw()
     {   
         // Data to pass to shaders
@@ -199,13 +226,41 @@ public:
         glfwPollEvents();
         do_movement(deltaTime);
 
+        // Create camera transformations
+        view = glm::lookAt(*camera.getPosition(), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
+
+
+        // Clear the colorbuffer
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (processColorPicker)
+        {
+            picking_shader.Use();
+
+            for (int i = 0; i < objects.size(); i++)
+            {
+                objModel = objects[i].getModelTransformation();
+
+                // Pass the mvp matrix to the shader
+                MVP = projection * view * objModel;
+                glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
+
+                objects[i].draw(colorLoc_ps, true);
+            }
+
+            readPixel();
+            basic_shader.Use();
+            processColorPicker = false;
+        }
+
+
         // Clear the colorbuffer
         glClearColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Create camera transformations
-        view = glm::lookAt(*camera.getPosition(), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
+        
 
         // Use corresponding shader when setting uniforms/drawing objects
         basic_shader.Use();
@@ -218,7 +273,7 @@ public:
             MVP = projection * view * objModel;
             glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
 
-            objects[i].draw(colorLoc);
+            objects[i].draw(colorLoc, false);
 
             if (*objects[i].getNormalsBool())
             {
@@ -248,6 +303,8 @@ public:
 
             selectedObject->drawBoundingBox();
         }
+
+       
 
         // Render UI frame
         ui.render();
@@ -284,6 +341,8 @@ private:
     float lastX = width / 2.0;
     float lastY = height / 2.0;
    
+    bool processColorPicker = false;
+
     // Mouse Scroll 
     double yScroll = 0.0f;
 
@@ -296,9 +355,10 @@ private:
     bool firstMouse = true;
 
     //Shaders
-    Shader basic_shader, normals_shader;
+    Shader basic_shader, normals_shader, picking_shader;
 
     // Uniform locations
     int mvpLoc, colorLoc;
     int mvpLoc_ns, colorLoc_ns, scaleLoc_ns;
+    int mvpLoc_ps, colorLoc_ps;
 };

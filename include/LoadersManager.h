@@ -23,7 +23,8 @@ public:
         int r = (i & 0x000000FF) >> 0;
         int g = (i & 0x0000FF00) >> 8;
         int b = (i & 0x00FF0000) >> 16;
-        glm::vec3 pickingColor = glm::vec3(r, g, b);
+        glm::vec3 pickingColor = glm::vec3(r / 255.0f, g / 255.0f, b / 255.0f);
+        std::cout << pickingColor.x << "  " << pickingColor.y << " " << pickingColor.z << std::endl;
 
         // Load .obj
         Object newObject = Object(objLoader.loadMeshes(objFileName), pickingColor, objFileName);

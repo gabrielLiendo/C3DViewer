@@ -18,8 +18,15 @@ public:
         mtlFileName = mtlFileName.substr(0, mtlFileName.size() - 4) + ".mtl";
         mtlLoader.load(mtlFileName.c_str());
 
+        // Convert "i", the integer mesh ID, into an RGB color
+        int i = objects.size() + 1;
+        int r = (i & 0x000000FF) >> 0;
+        int g = (i & 0x0000FF00) >> 8;
+        int b = (i & 0x00FF0000) >> 16;
+        glm::vec3 pickingColor = glm::vec3(r, g, b);
+
         // Load .obj
-        Object newObject = Object(objLoader.loadMeshes(objFileName), objFileName);
+        Object newObject = Object(objLoader.loadMeshes(objFileName), pickingColor, objFileName);
         objects.push_back(newObject);
 
         // Set obj name
@@ -106,7 +113,7 @@ public:
         std::string buffName, name, mtl, buffPath, objPath, mtlPath;
 
         glm::vec3 normalize, scale, translation, angles;
-        glm::vec3 wireframeColor, vertexColor, normalsColor, boxColor, diffuseColor;
+        glm::vec3 pickingColor, wireframeColor, vertexColor, normalsColor, boxColor, diffuseColor;
         glm::vec3 vmin, vmax;
         bool useDepthTest, useCullFace, useMultisample, showWireframe, showVertices, showNormals;
         int pointSize;
@@ -127,6 +134,7 @@ public:
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> angles.x >> angles.y >> angles.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> useDepthTest >> useCullFace >> useMultisample >> showWireframe >> showVertices >> showNormals;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> pointSize;
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> pickingColor.x >> pickingColor.y >> pickingColor.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> wireframeColor.x >> wireframeColor.y >> wireframeColor.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vertexColor.x >> vertexColor.y >> vertexColor.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> normalsColor.x >> normalsColor.y >> normalsColor.z;
@@ -169,7 +177,7 @@ public:
         }
 
         return Object(meshes, objPath, name, normalize, scale, translation, angles, useDepthTest, useCullFace, useMultisample,
-            showWireframe, showVertices, showNormals, pointSize, wireframeColor, vertexColor, normalsColor, boxColor, vmin, vmax);
+            showWireframe, showVertices, showNormals, pointSize, pickingColor, wireframeColor, vertexColor, normalsColor, boxColor, vmin, vmax);
     }
 
 private:

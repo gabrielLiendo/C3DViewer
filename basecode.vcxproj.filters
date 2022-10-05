@@ -62,10 +62,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\color_shader.frag">
+    <None Include="shaders\basic_shader.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shaders\color_shader.vs">
+    <None Include="shaders\basic_shader.vs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
@@ -140,9 +140,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\OBB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\SceneLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

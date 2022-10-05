@@ -19,8 +19,6 @@ public:
 
         renderDockSpace();
 
-        renderSceneWindow();
-
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -123,35 +121,39 @@ public:
                     ImGui::ColorEdit3("##Color", glm::value_ptr(*selectedObject->getBoxColor()));
                     ImGui::TreePop();
                 }
-                if (ImGui::TreeNode("Meshes Materials"))
-                {
-                    std::vector<Mesh>* meshes = selectedObject->getMeshes();
-
-                    for (int i = 0; i < meshes->size(); i++)
-                    {
-                        Mesh* m = &(*meshes)[i];
-
-                        if (ImGui::TreeNode(m->getName().c_str()))
-                        {
-                            ImGui::Text("Show Mesh");
-                            ImGui::SameLine();
-                            ImGui::Checkbox("##showMesh", m->getShow());
-                            ImGui::Text("Material Name: ");
-                            ImGui::SameLine();
-                            std::string mtlName = m->mtl->name;
-                            ImGui::Text(mtlName.c_str());
-                            ImGui::Text("Diffuse");
-                            ImGui::SameLine();
-                            ImGui::ColorEdit3("Diffuse", glm::value_ptr(*m->mtl->getDiffuse()), ImGuiColorEditFlags_NoLabel);
-                            ImGui::TreePop();
-                        }
-                    }
-                    ImGui::TreePop();
-                }
             }
             else if (selectedCamera)
                 DrawVec3Control("Position", *camera.getPosition(), 0.05, -max_float, max_float);
 
+            ImGui::End();
+        }
+
+        if (ImGui::Begin("Meshes"))
+        {
+            if (selectedObject)
+            {
+                std::vector<Mesh>* meshes = selectedObject->getMeshes();
+
+                for (int i = 0; i < meshes->size(); i++)
+                {
+                    Mesh* m = &(*meshes)[i];
+
+                    if (ImGui::TreeNode(m->getName().c_str()))
+                    {
+                        ImGui::Text("Show Mesh");
+                        ImGui::SameLine();
+                        ImGui::Checkbox("##showMesh", m->getShow());
+                        ImGui::Text("Material Name: ");
+                        ImGui::SameLine();
+                        std::string mtlName = m->mtl->name;
+                        ImGui::Text(mtlName.c_str());
+                        ImGui::Text("Diffuse");
+                        ImGui::SameLine();
+                        ImGui::ColorEdit3("Diffuse", glm::value_ptr(*m->mtl->getDiffuse()), ImGuiColorEditFlags_NoLabel);
+                        ImGui::TreePop();
+                    }
+                }
+            }
             ImGui::End();
         }
 
@@ -211,7 +213,10 @@ private:
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(6.0f, 8.0f));
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
 
-
+        auto& colors = ImGui::GetStyle().Colors;
+        colors[ImGuiCol_WindowBg] = ImVec4{ 0.0078f, 0.031f, 0.058f, 0.941f };
+        colors[ImGuiCol_TitleBgActive] = ImVec4{ 0.039f, 0.094f, 0.176f, 1.0f };
+ 
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 130");
@@ -268,21 +273,6 @@ private:
         }
 
         ImGui::End();
-    }
-
-    void renderSceneWindow()
-    {
-        /*if (ImGui::Begin("Scene"))
-        {
-            ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-            glm::vec2 mSize = { viewportPanelSize.x, viewportPanelSize.y };
-
-            // add rendered texture to ImGUI scene window
-            uint64_t textureID = mFrameBuffer->get_texture();
-            ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ mSize.x, mSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-            
-            ImGui::End();
-        }*/
     }
 
     static void DrawVec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max)

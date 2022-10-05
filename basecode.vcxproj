@@ -31,8 +31,8 @@
     <ClCompile Include="src\tinyfiledialogs.c" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\color_shader.frag" />
-    <None Include="shaders\color_shader.vs" />
+    <None Include="shaders\basic_shader.frag" />
+    <None Include="shaders\basic_shader.vs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\LoadersManager.h" />
@@ -40,7 +40,6 @@
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\OBB.h" />
     <ClInclude Include="include\Object.h" />
-    <ClInclude Include="include\SceneLoader.h" />
     <ClInclude Include="include\Utils.h" />
     <ClInclude Include="include\Mesh.h" />
     <ClInclude Include="include\C3DViewer.h" />

@@ -174,12 +174,12 @@ public:
 		return &showWireframe;
 	}
 
-	bool* getVerticesBool()
+	bool* getShowVertices()
 	{
 		return &showVertices;
 	}
 
-	bool* getNormalsBool()
+	bool* getShowNormals()
 	{
 		return &showNormals;
 	}
@@ -220,6 +220,7 @@ public:
 
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0, 1.0);
+
 		if (!picking)
 		{
 			for (int i = 0; i < meshes.size(); i++)
@@ -248,18 +249,6 @@ public:
 		
 		glDisable(GL_POLYGON_OFFSET_FILL);
 
-		if (showVertices)
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-			glPointSize(pointSize);
-			for (int i = 0; i < meshes.size(); i++)
-			{
-				glUniform3f(colorLoc, verticesColor.x, verticesColor.y, verticesColor.z);
-				meshes[i].draw();
-			}
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
-
 		if (showWireframe)
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -272,10 +261,14 @@ public:
 		}
 	}
 	
-	void drawNormals()
+	void drawVertices()
 	{
+		glEnable(GL_PROGRAM_POINT_SIZE);
+
 		for (int i = 0; i < meshes.size(); i++)
 			meshes[i].drawVertex();
+
+		glDisable(GL_PROGRAM_POINT_SIZE);
 	}
 
 	void drawBoundingBox()

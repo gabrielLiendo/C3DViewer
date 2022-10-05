@@ -237,17 +237,17 @@ private:
 			}
 		}
 
-		Material* mtl = nullptr;
+		std::shared_ptr<Material> mtl = nullptr;
 		for (int i = 0; i < materials.size(); i++)
 		{
 			if ((* materials[i]).name == mtl_name)
-				mtl = &(* materials[i]);
+				mtl = materials[i];
 		}
 		
 		if (!mtl)
 		{
 			std::cout << "El material " << mtl_name << " no fue encontrado." << std::endl;
-			mtl = &default_mtl;
+			mtl = materials[0];
 		}
 
 		Mesh newMesh = Mesh(name, vertices, mtl);

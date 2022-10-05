@@ -34,4 +34,3 @@ private:
 };
 
 std::vector<std::shared_ptr<Material>> materials;
-Material default_mtl = Material("Default", glm::vec3(0.7, 0.7, 0.7));

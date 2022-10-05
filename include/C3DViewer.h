@@ -26,9 +26,10 @@ public:
         glViewport(0, 0, width, height);
 
         // Build and compile our shader programs
-        basic_shader = Shader("shaders/basic_shader.vs", "shaders/basic_shader.frag");
-        normals_shader = Shader("shaders/normals_shader.vs", "shaders/normals_shader.frag", "shaders/normals_shader.geom");
-        picking_shader = Shader("shaders/picking_shader.vs", "shaders/picking_shader.frag");
+        basic_shader = Shader("shaders/basic.vs", "shaders/basic.frag");
+        normals_shader = Shader("shaders/normals.vs", "shaders/normals.frag", "shaders/normals.geom");
+        circularVertex_shader = Shader("shaders/circularPoint.vs", "shaders/circularPoint.frag");
+        picking_shader = Shader("shaders/picking.vs", "shaders/picking.frag");
 
         // Get the uniform locations
         mvpLoc = glGetUniformLocation(basic_shader.Program, "MVP");
@@ -38,11 +39,18 @@ public:
         colorLoc_ns = glGetUniformLocation(normals_shader.Program, "normalsColor");
         scaleLoc_ns = glGetUniformLocation(normals_shader.Program, "normalScale");
 
+        mvpLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "MVP");
+        pointSizeLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "pointSize");
+        colorLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "vertexColor");
+
         mvpLoc_ps = glGetUniformLocation(picking_shader.Program, "MVP");
         colorLoc_ps = glGetUniformLocation(picking_shader.Program, "pickingColor");
 
         // Set functions and variables
         setCallbacks();
+
+        // Create Default Material
+        materials.push_back(std::make_shared<Material>("Default", glm::vec3(0.7, 0.7, 0.7)));
 
         // Create and initialize UI 
         ui = UI(window);
@@ -156,7 +164,12 @@ public:
 
     void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
-        yScroll = yoffset;
+        ImGuiIO& io = ImGui::GetIO();
+
+        if (!io.WantCaptureMouse)
+            yScroll = yoffset;
+        else
+            yScroll = 0.0f;
     }
 
     double getYScroll()
@@ -192,12 +205,10 @@ public:
         glReadPixels(lastX, lastY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
         int pickedID = data[0] + data[1] * 256 + data[2] * 256 * 256;
 
-        if (pickedID == 0x00ffffff) { // Full white, must be the background !
-            std::cout << "background" << std::endl;
+        if (pickedID == 0x00ffffff) {
             selectedObject = nullptr;
         }
         else if (pickedID <= objects.size()) {
-            std::cout << "mesh " << pickedID << std::endl;
             selectedObject = &objects[pickedID - 1];
             ui.setSelected(pickedID);
         }
@@ -209,7 +220,7 @@ public:
         glm::mat4 MVP;
         glm::mat4 view, projection;
         glm::mat4 objModel, boxModel;
-        glm::vec3 boxColor, normalsColor;
+        glm::vec3 boxColor, color;
 
         // Calculate deltatime of current frame
         float currentFrame = glfwGetTime();
@@ -229,7 +240,6 @@ public:
         // Create camera transformations
         view = glm::lookAt(*camera.getPosition(), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
-
 
         // Clear the colorbuffer
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -260,8 +270,6 @@ public:
         glClearColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        
-
         // Use corresponding shader when setting uniforms/drawing objects
         basic_shader.Use();
 
@@ -275,16 +283,32 @@ public:
 
             objects[i].draw(colorLoc, false);
 
-            if (*objects[i].getNormalsBool())
+            if (*objects[i].getShowNormals())
             {
                 // Use other shader to draw the normals
                 normals_shader.Use();
 
                 glUniformMatrix4fv(mvpLoc_ns, 1, GL_FALSE, glm::value_ptr(MVP));
-                normalsColor = *objects[i].getNormalsColor();
-                glUniform3f(colorLoc_ns, normalsColor.x, normalsColor.y, normalsColor.z);
+                color = *objects[i].getNormalsColor();
+                glUniform3f(colorLoc_ns, color.x, color.y, color.z);
                 glUniform1f(scaleLoc_ns, objects[i].getScaleNormal());
-                objects[i].drawNormals();
+                objects[i].drawVertices();
+
+                // We start using our normal shader again
+                basic_shader.Use();
+                glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
+            }
+
+            if (*objects[i].getShowVertices())
+            {
+                // Use other shader to draw the normals
+                circularVertex_shader.Use();
+
+                glUniformMatrix4fv(mvpLoc_cps, 1, GL_FALSE, glm::value_ptr(MVP));
+                color = *objects[i].getVerticesColor();
+                glUniform3f(colorLoc_cps, color.x, color.y, color.z);
+                glUniform1f(pointSizeLoc_cps, float(* objects[i].getPointSize()));
+                objects[i].drawVertices();
 
                 // We start using our normal shader again
                 basic_shader.Use();
@@ -355,10 +379,11 @@ private:
     bool firstMouse = true;
 
     //Shaders
-    Shader basic_shader, normals_shader, picking_shader;
+    Shader basic_shader, normals_shader, circularVertex_shader, picking_shader;
 
     // Uniform locations
     int mvpLoc, colorLoc;
     int mvpLoc_ns, colorLoc_ns, scaleLoc_ns;
+    int mvpLoc_cps, colorLoc_cps, pointSizeLoc_cps;
     int mvpLoc_ps, colorLoc_ps;
 };

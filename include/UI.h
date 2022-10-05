@@ -72,7 +72,7 @@ public:
                 {
                     ImGui::Text("Show Vertices");
                     ImGui::SameLine();
-                    ImGui::Checkbox("##Vertices", selectedObject->getVerticesBool());
+                    ImGui::Checkbox("##Vertices", selectedObject->getShowVertices());
                     ImGui::Text("Vertex size");
                     ImGui::SameLine();
                     ImGui::DragInt("##vertexSize", selectedObject->getPointSize(), 1, 1);
@@ -86,7 +86,7 @@ public:
                 {
                     ImGui::Text("Show Normals");
                     ImGui::SameLine();
-                    ImGui::Checkbox("##VNormals", selectedObject->getNormalsBool());
+                    ImGui::Checkbox("##VNormals", selectedObject->getShowNormals());
                     ImGui::Text("Color");
                     ImGui::SameLine();
                     ImGui::ColorEdit3("##NormalsColor", glm::value_ptr(*selectedObject->getNormalsColor()), ImGuiColorEditFlags_NoLabel);
@@ -100,7 +100,7 @@ public:
                     ImGui::Checkbox("##Wireframe", selectedObject->getWireframeBool());
                     ImGui::Text("Color");
                     ImGui::SameLine();
-                    ImGui::ColorEdit3("WireColor", glm::value_ptr(*selectedObject->getWireframeColor()));
+                    ImGui::ColorEdit3("##WireColor", glm::value_ptr(*selectedObject->getWireframeColor()), ImGuiColorEditFlags_NoLabel);
                     ImGui::TreePop();
                 }
             }
@@ -163,6 +163,24 @@ public:
         }
 
        
+
+        if (ImGui::Begin("Materials"))
+        {
+            int m = materials.size();
+            for (int i = 0; i < m; i++)
+            {
+                std::shared_ptr<Material> m = materials[i];
+                if (ImGui::TreeNode(m->name.c_str()))
+                {
+                    ImGui::Text("Diffuse");
+                    ImGui::SameLine();
+                    ImGui::ColorEdit3("Diffuse", glm::value_ptr(*m->getDiffuse()), ImGuiColorEditFlags_NoLabel);
+                    ImGui::TreePop();
+                }
+            }
+
+            ImGui::End();
+        }
 
         if (ImGui::Begin("Objects"))
         {
@@ -256,23 +274,24 @@ private:
         // Create Menu Bar
         if (ImGui::BeginMenuBar())
         {
-            if (ImGui::BeginMenu("Object"))
+            if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem("Load"))
+                if (ImGui::MenuItem("Load Object"))
                     loadersManager.loadObj(selected);
-                if (ImGui::MenuItem("Delete Selected"))
-                    deleteSelected();
-                if (ImGui::MenuItem("Delete All"))
-                    deleteAllObjects();
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("Scene"))
-            {
                 if (ImGui::MenuItem("Load Scene"))
                     loadersManager.loadScene();
 
                 if (ImGui::MenuItem("Save Scene"))
                     loadersManager.saveScene();
+
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Tools"))
+            {
+                if (ImGui::MenuItem("Delete Selected", "Backspace"))
+                    deleteSelected();
+                if (ImGui::MenuItem("Delete All", "X"))
+                    deleteAllObjects();
 
                 ImGui::EndMenu();
             }

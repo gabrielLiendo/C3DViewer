@@ -4,9 +4,9 @@ class Mesh
 public:
 	std::string name;
 	std::vector<Vertex> vertices;
-	Material* mtl;
+	std::shared_ptr<Material> mtl;
 
-	Mesh(std::string name, std::vector<Vertex> vertices, Material* mtl)
+	Mesh(std::string name, std::vector<Vertex> vertices, std::shared_ptr<Material> mtl)
 	{
 		this->name = name;
 		this->vertices = vertices;

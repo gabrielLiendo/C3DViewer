@@ -11,7 +11,6 @@ public:
 			return false;
 		}
 			
-
 		readMaterials();
 	}
 private:

@@ -62,10 +62,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\basic.frag">
+    <None Include="shaders\fragment\ilumColor.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shaders\basic.vs">
+    <None Include="shaders\vertex\basic.vs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

@@ -6,9 +6,10 @@ public:
     {
         // Init GLFW
         glfwInit();
-        // Set all the required options for GLFW, (GLSL version required = 3.0)
+
+        // Set all the required options for GLFW
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
         glfwWindowHint(GLFW_SAMPLES, 4);
@@ -26,25 +27,25 @@ public:
         glViewport(0, 0, width, height);
 
         // Build and compile our shader programs
-        basic_shader = Shader("shaders/basic.vs", "shaders/basic.frag");
-        normals_shader = Shader("shaders/normals.vs", "shaders/normals.frag", "shaders/normals.geom");
-        circularVertex_shader = Shader("shaders/circularPoint.vs", "shaders/circularPoint.frag");
-        picking_shader = Shader("shaders/picking.vs", "shaders/picking.frag");
+        basic_shader = Shader("shaders/vertex/basic.vs", "shaders/fragment/ilumColor.frag");
+        normals_shader = Shader("shaders/vertex/passNormal.vs", "shaders/fragment/flatColor.frag", "shaders/geometry/normals.geom");
+        circularVertex_shader = Shader("shaders/vertex/basic.vs", "shaders/fragment/pointColor.frag");
+        picking_shader = Shader("shaders/vertex/basic.vs", "shaders/fragment/flatColor.frag");
 
         // Get the uniform locations
         mvpLoc = glGetUniformLocation(basic_shader.Program, "MVP");
         colorLoc = glGetUniformLocation(basic_shader.Program, "diffuseColor");
 
         mvpLoc_ns = glGetUniformLocation(normals_shader.Program, "MVP");
-        colorLoc_ns = glGetUniformLocation(normals_shader.Program, "normalsColor");
+        colorLoc_ns = glGetUniformLocation(normals_shader.Program, "color");
         scaleLoc_ns = glGetUniformLocation(normals_shader.Program, "normalScale");
 
         mvpLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "MVP");
         pointSizeLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "pointSize");
-        colorLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "vertexColor");
+        colorLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "color");
 
         mvpLoc_ps = glGetUniformLocation(picking_shader.Program, "MVP");
-        colorLoc_ps = glGetUniformLocation(picking_shader.Program, "pickingColor");
+        colorLoc_ps = glGetUniformLocation(picking_shader.Program, "color");
 
         // Set functions and variables
         setCallbacks();

@@ -265,6 +265,7 @@ public:
 	{
 		glEnable(GL_PROGRAM_POINT_SIZE);
 
+		glPointSize(pointSize);
 		for (int i = 0; i < meshes.size(); i++)
 			meshes[i].drawVertex();
 

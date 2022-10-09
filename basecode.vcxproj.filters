@@ -142,5 +142,8 @@
     <ClInclude Include="include\OBB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ModelLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

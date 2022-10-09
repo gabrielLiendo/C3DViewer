@@ -32,5 +32,3 @@ private:
 	short illum;
 	*/
 };
-
-std::vector<std::shared_ptr<Material>> materials;

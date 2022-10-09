@@ -2,6 +2,13 @@
 class MtlLoader
 {
 public:
+	MtlLoader() = default;
+
+	MtlLoader(ModelLayer* modelLayer)
+	{
+		this->modelLayer = modelLayer;
+	}
+
 	bool load(const char* file_name)
 	{
 		infile = std::ifstream(file_name);
@@ -14,6 +21,8 @@ public:
 		readMaterials();
 	}
 private:
+	ModelLayer* modelLayer;
+
 	std::string line, prefix;
 	std::stringstream ss;
 	std::ifstream infile;
@@ -30,7 +39,7 @@ private:
 
 			ss >> prefix;
 			if (prefix == "newmtl") 
-				materials.push_back(readMaterial());
+				(*modelLayer).materials.push_back(readMaterial());
 				
 		}
 	}

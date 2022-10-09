@@ -4,9 +4,12 @@ class UI
 public:
     UI() = default;
 
-    UI(GLFWwindow* window)
+    UI(GLFWwindow* window, ModelLayer *modelLayer)
     {
         this->window = window;
+        this->modelLayer = modelLayer;
+        this->loadersManager = LoadersManager(modelLayer);
+
         init();
     }
 
@@ -26,6 +29,9 @@ public:
 
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
+
+
+        Object* selectedObject = (*modelLayer).selectedObject;
 
         // Draw the main window
         if (ImGui::Begin("Current Scene"))
@@ -162,14 +168,12 @@ public:
             ImGui::End();
         }
 
-       
-
         if (ImGui::Begin("Materials"))
         {
-            int m = materials.size();
+            int m = (*modelLayer).materials.size();
             for (int i = 0; i < m; i++)
             {
-                std::shared_ptr<Material> m = materials[i];
+                std::shared_ptr<Material> m = (*modelLayer).materials[i];
                 if (ImGui::TreeNode(m->name.c_str()))
                 {
                     ImGui::Text("Diffuse");
@@ -191,20 +195,18 @@ public:
                 selectedObject = nullptr;
             }
 
-            int m = objects.size();
+            int m = (*modelLayer).objects.size();
             for (int i = 1; i < m + 1; i++)
             {
-                if (ImGui::Selectable(objects[i - 1].getName().c_str(), selected == i))
+                if (ImGui::Selectable((*modelLayer).objects[i - 1].getName().c_str(), selected == i))
                 {
                     selected = i;
-                    selectedObject = &objects[i - 1];
+                    selectedObject = &(*modelLayer).objects[i - 1];
                 }
             }
 
             ImGui::End();
         }
-
-       
 
         // Rendering
         ImGui::Render();
@@ -289,9 +291,9 @@ private:
             if (ImGui::BeginMenu("Tools"))
             {
                 if (ImGui::MenuItem("Delete Selected", "Backspace"))
-                    deleteSelected();
+                    (*modelLayer).deleteSelected();
                 if (ImGui::MenuItem("Delete All", "X"))
-                    deleteAllObjects();
+                    (*modelLayer).deleteAllObjects();
 
                 ImGui::EndMenu();
             }
@@ -334,6 +336,8 @@ private:
     }
 
     GLFWwindow* window;
+
+    ModelLayer* modelLayer;
 
     // Loaders
     LoadersManager loadersManager;

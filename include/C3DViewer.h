@@ -51,10 +51,10 @@ public:
         setCallbacks();
 
         // Create Default Material
-        materials.push_back(std::make_shared<Material>("Default", glm::vec3(0.7, 0.7, 0.7)));
+        modelLayer.materials.push_back(std::make_shared<Material>("Default", glm::vec3(0.7, 0.7, 0.7)));
 
         // Create and initialize UI 
-        ui = UI(window);
+        ui = UI(window, &modelLayer);
     }
 
     // Set the required callback functions
@@ -105,7 +105,7 @@ public:
             glfwSetWindowShouldClose(window, GL_TRUE);
 
         else if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
-            deleteSelected();
+            modelLayer.deleteSelected();
 
         if (key >= 0 && key < 1024)
         {
@@ -143,10 +143,10 @@ public:
                float xoffset = xpos - lastX;
                float yoffset = (height - ypos) - lastY;
 
-               if (selectedObject)
+               if (modelLayer.selectedObject)
                {
-                   selectedObject->addXRot(- yoffset * 0.25);
-                   selectedObject->addYRot(xoffset * 0.25);
+                   modelLayer.selectedObject->addXRot(- yoffset * 0.25);
+                   modelLayer.selectedObject->addYRot(xoffset * 0.25);
                }
                else
                {
@@ -207,10 +207,10 @@ public:
         int pickedID = data[0] + data[1] * 256 + data[2] * 256 * 256;
 
         if (pickedID == 0x00ffffff) {
-            selectedObject = nullptr;
+            modelLayer.selectedObject = nullptr;
         }
-        else if (pickedID <= objects.size()) {
-            selectedObject = &objects[pickedID - 1];
+        else if (pickedID <= modelLayer.objects.size()) {
+            modelLayer.selectedObject = &modelLayer.objects[pickedID - 1];
             ui.setSelected(pickedID);
         }
     }
@@ -250,22 +250,21 @@ public:
         {
             picking_shader.Use();
 
-            for (int i = 0; i < objects.size(); i++)
+            for (int i = 0; i < modelLayer.objects.size(); i++)
             {
-                objModel = objects[i].getModelTransformation();
+                objModel = modelLayer.objects[i].getModelTransformation();
 
                 // Pass the mvp matrix to the shader
                 MVP = projection * view * objModel;
                 glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
 
-                objects[i].draw(colorLoc_ps, true);
+                modelLayer.objects[i].draw(colorLoc_ps, true);
             }
 
             readPixel();
             basic_shader.Use();
             processColorPicker = false;
         }
-
 
         // Clear the colorbuffer
         glClearColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
@@ -274,42 +273,42 @@ public:
         // Use corresponding shader when setting uniforms/drawing objects
         basic_shader.Use();
 
-        for (int i = 0; i < objects.size(); i++)
+        for (int i = 0; i < modelLayer.objects.size(); i++)
         {
-            objModel = objects[i].getModelTransformation();
+            objModel = modelLayer.objects[i].getModelTransformation();
 
             // Pass the mvp matrix to the shader
             MVP = projection * view * objModel;
             glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
 
-            objects[i].draw(colorLoc, false);
+            modelLayer.objects[i].draw(colorLoc, false);
 
-            if (*objects[i].getShowNormals())
+            if (*modelLayer.objects[i].getShowNormals())
             {
                 // Use other shader to draw the normals
                 normals_shader.Use();
 
                 glUniformMatrix4fv(mvpLoc_ns, 1, GL_FALSE, glm::value_ptr(MVP));
-                color = *objects[i].getNormalsColor();
+                color = *modelLayer.objects[i].getNormalsColor();
                 glUniform3f(colorLoc_ns, color.x, color.y, color.z);
-                glUniform1f(scaleLoc_ns, objects[i].getScaleNormal());
-                objects[i].drawVertices();
+                glUniform1f(scaleLoc_ns, modelLayer.objects[i].getScaleNormal());
+                modelLayer.objects[i].drawVertices();
 
                 // We start using our normal shader again
                 basic_shader.Use();
                 glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
             }
 
-            if (*objects[i].getShowVertices())
+            if (*modelLayer.objects[i].getShowVertices())
             {
                 // Use other shader to draw the normals
                 circularVertex_shader.Use();
 
                 glUniformMatrix4fv(mvpLoc_cps, 1, GL_FALSE, glm::value_ptr(MVP));
-                color = *objects[i].getVerticesColor();
+                color = *modelLayer.objects[i].getVerticesColor();
                 glUniform3f(colorLoc_cps, color.x, color.y, color.z);
-                glUniform1f(pointSizeLoc_cps, float(* objects[i].getPointSize()));
-                objects[i].drawVertices();
+                glUniform1f(pointSizeLoc_cps, float(*modelLayer.objects[i].getPointSize()));
+                modelLayer.objects[i].drawVertices();
 
                 // We start using our normal shader again
                 basic_shader.Use();
@@ -317,19 +316,17 @@ public:
             }
         }
 
-        if (selectedObject)
+        if (modelLayer.selectedObject)
         {
-            boxModel = selectedObject->getModelTransformation() * selectedObject->getBoxModel();
+            boxModel = modelLayer.selectedObject->getModelTransformation() * modelLayer.selectedObject->getBoxModel();
             MVP = projection * view * boxModel;
-            boxColor = *selectedObject->getBoxColor();
+            boxColor = *modelLayer.selectedObject->getBoxColor();
 
             glUniform3f(colorLoc, boxColor.x, boxColor.y, boxColor.z);
             glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
 
-            selectedObject->drawBoundingBox();
+            modelLayer.selectedObject->drawBoundingBox();
         }
-
-       
 
         // Render UI frame
         ui.render();
@@ -358,6 +355,8 @@ private:
 
     // User Interface
     UI ui;
+
+    ModelLayer modelLayer;
   
     // Window dimensions
     const int width = 1600, height = 800;

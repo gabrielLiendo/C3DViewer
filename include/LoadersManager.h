@@ -2,6 +2,15 @@
 class LoadersManager
 {
 public:
+    LoadersManager() = default;
+
+    LoadersManager(ModelLayer* modelLayer)
+    {
+        this->modelLayer = modelLayer;
+        this->objLoader = ObjLoader(modelLayer);
+        this->mtlLoader = MtlLoader(modelLayer);
+    }
+
     // Open File Dialog and load .obj with its respective material (.mtl)
     void loadObj(int &selected)
     {
@@ -19,7 +28,7 @@ public:
         mtlLoader.load(mtlFileName.c_str());
 
         // Convert "i", the integer mesh ID, into an RGB color
-        int i = objects.size() + 1;
+        int i = (*modelLayer).objects.size() + 1;
         int r = (i & 0x000000FF) >> 0;
         int g = (i & 0x0000FF00) >> 8;
         int b = (i & 0x00FF0000) >> 16;
@@ -28,21 +37,21 @@ public:
 
         // Load .obj
         Object newObject = Object(objLoader.loadMeshes(objFileName), pickingColor, objFileName);
-        objects.push_back(newObject);
+        (*modelLayer).objects.push_back(newObject);
 
         // Set obj name
         std::string objName = objFileName;
         objName = objName.substr(objName.find_last_of("/\\") + 1);
         objName = objName.substr(0, objName.size() - 4);
-        objects.back().setName(objName);
+        (*modelLayer).objects.back().setName(objName);
 
         // Set loaded object as selected
-        selected = objects.size();
-        selectedObject = &objects.back();
+        selected = (*modelLayer).objects.size();
+        (*modelLayer).selectedObject = &(*modelLayer).objects.back();
     }
 
     // Save the current scene in a .txt
-    static void saveScene()
+    void saveScene()
     {
         char const* lTheSaveFileName;
         char const* lFilterPatterns[2] = { "*.txt", "*.text" };
@@ -73,8 +82,8 @@ public:
         outfile << "bg " << bgColor.x << " " << bgColor.y << " " << bgColor.z << "\n";
 
         // Write each objects' properties
-        for (int i = 0; i < objects.size(); i++)
-            objects[i].getInfo(outfile);
+        for (int i = 0; i < (*modelLayer).objects.size(); i++)
+            (*modelLayer).objects[i].getInfo(outfile);
 
         outfile.close();
     }
@@ -84,7 +93,7 @@ public:
         FILE* lIn;
         char const* sceneFileName, * lFilterPatterns[2] = { "*.txt", "*.text" };
 
-        deleteAllObjects();
+        (*modelLayer).deleteAllObjects();
 
         sceneFileName = tinyfd_openFileDialog("Open Scene", "", 2, lFilterPatterns, NULL, 0);
 
@@ -104,7 +113,7 @@ public:
             
             ss >> prefix;
             if (prefix == "o")
-                objects.push_back(loadObject());    
+                (*modelLayer).objects.push_back(loadObject());
         }
     }
 
@@ -166,11 +175,11 @@ public:
             {
                 ss >> mtl;
                 std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> diffuseColor.x >> diffuseColor.y >> diffuseColor.z;
-                for (int i = materials.size() - 1; i >= 0; i--)
+                for (int i = (*modelLayer).materials.size() - 1; i >= 0; i--)
                 {
-                    if ((*materials[i]).name == mtl)
+                    if ((*(*modelLayer).materials[i]).name == mtl)
                     {
-                        (*materials[i]).setDiffuse(diffuseColor);
+                        (*(*modelLayer).materials[i]).setDiffuse(diffuseColor);
                         break;
                     }
                 }
@@ -182,6 +191,8 @@ public:
     }
 
 private:
+    ModelLayer* modelLayer;
+
     ObjLoader objLoader;
     MtlLoader mtlLoader;
 

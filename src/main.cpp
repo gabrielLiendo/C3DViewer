@@ -35,6 +35,7 @@ glm::vec3 bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
 #include "OBB.h"
 #include "Mesh.h"
 #include "Object.h"
+#include "ModelLayer.h"
 #include "Camera.h"
 #include "MtlLoader.h"
 #include "ObjLoader.h"

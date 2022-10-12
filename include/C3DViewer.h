@@ -51,10 +51,10 @@ public:
         setCallbacks();
 
         // Create Default Material
-        modelLayer.materials.push_back(std::make_shared<Material>("Default", glm::vec3(0.7, 0.7, 0.7)));
+        modelLayer.materials.push_back(std::make_shared<Material>("Default", glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.7, 0.7, 0.7), glm::vec3(0.5, 0.5, 0.5)));
 
         // Create and initialize UI 
-        ui = UI(window, &modelLayer);
+        ui = UI(window, &modelLayer, &camera);
     }
 
     // Set the required callback functions
@@ -358,6 +358,9 @@ private:
 
     ModelLayer modelLayer;
   
+    // Camera
+    Camera camera;
+
     // Window dimensions
     const int width = 1600, height = 800;
 

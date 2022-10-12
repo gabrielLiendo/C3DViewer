@@ -86,6 +86,6 @@ private:
 				ss >> illum;
 		}
 		
-		return std::make_shared<Material>(name, kd);
+		return std::make_shared<Material>(name, ka, kd, ks);
 	}
 };

@@ -4,11 +4,12 @@ class UI
 public:
     UI() = default;
 
-    UI(GLFWwindow* window, ModelLayer *modelLayer)
+    UI(GLFWwindow* window, ModelLayer *modelLayer, Camera *camera)
     {
         this->window = window;
+        this->camera = camera;
         this->modelLayer = modelLayer;
-        this->loadersManager = LoadersManager(modelLayer);
+        this->loadersManager = LoadersManager(modelLayer, camera);
 
         init();
     }
@@ -130,7 +131,7 @@ public:
                         ImGui::Checkbox("##showMesh", m->getShow());
                         ImGui::Text("Material Name: ");
                         ImGui::SameLine();
-                        std::string mtlName = m->mtl->name;
+                        std::string mtlName = *m->mtl->getName();
                         ImGui::Text(mtlName.c_str());
                         ImGui::Text("Diffuse");
                         ImGui::SameLine();
@@ -162,8 +163,8 @@ public:
                     ImGui::TreePop();
                 }
             }
-            else if (selectedCamera)
-                DrawVec3Control("Position", *camera.getPosition(), 0.05, -max_float, max_float);
+            else if (camera->selected)
+                DrawVec3Control("Position", *camera->getPosition(), 0.05, -max_float, max_float);
 
             ImGui::End();
         }
@@ -174,7 +175,7 @@ public:
             for (int i = 0; i < m; i++)
             {
                 std::shared_ptr<Material> m = (*modelLayer).materials[i];
-                if (ImGui::TreeNode(m->name.c_str()))
+                if (ImGui::TreeNode(m->getName()->c_str()))
                 {
                     ImGui::Text("Diffuse");
                     ImGui::SameLine();
@@ -191,8 +192,8 @@ public:
             if (ImGui::Selectable("Camera", selected == 0))
             {
                 selected = 0;
-                selectedCamera = true;
-                selectedObject = nullptr;
+                camera->selected = true;
+                (*modelLayer).setSelectedObject(nullptr);
             }
 
             int m = (*modelLayer).objects.size();
@@ -201,7 +202,7 @@ public:
                 if (ImGui::Selectable((*modelLayer).objects[i - 1].getName().c_str(), selected == i))
                 {
                     selected = i;
-                    selectedObject = &(*modelLayer).objects[i - 1];
+                    (*modelLayer).setSelectedObject(& (*modelLayer).objects[i - 1]);
                 }
             }
 
@@ -338,6 +339,7 @@ private:
     GLFWwindow* window;
 
     ModelLayer* modelLayer;
+    Camera* camera;
 
     // Loaders
     LoadersManager loadersManager;

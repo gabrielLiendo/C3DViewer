@@ -42,7 +42,7 @@ public:
 	{
 		glm::vec3 diffuse = *mtl->getDiffuse();
 		outfile << "om " << name << "\n";
-		outfile << "mtl " << mtl->name << "\n";
+		outfile << "mtl " << *mtl->getName() << "\n";
 		outfile << "d " << diffuse.x << " " << diffuse.y  << " " << diffuse.z << "\n";
 	}
 

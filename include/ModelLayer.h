@@ -8,6 +8,11 @@ public:
 
 	ModelLayer() = default;
 
+	void setSelectedObject(Object* selectedObject)
+	{
+		this->selectedObject = selectedObject;
+	}
+
 	void deleteAllObjects()
 	{
 		selectedObject = nullptr;

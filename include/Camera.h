@@ -2,6 +2,8 @@
 class Camera
 {
 public:
+	bool selected;
+
 	Camera() {
 		position = glm::vec3(0.0, 0.0, 2.0);
 	}
@@ -34,6 +36,3 @@ public:
 private:
 	
 };
-
-Camera camera;
-bool selectedCamera;

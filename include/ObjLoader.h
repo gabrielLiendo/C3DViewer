@@ -39,7 +39,6 @@ private:
 
 		while (std::getline(infile, line))
 		{
-			//std::cout << line << std::endl;
 			ss.clear();
 			ss.str(line);
 
@@ -70,7 +69,7 @@ private:
 
 	Mesh readMesh()
 	{
-		unsigned int n, count, index, posindex, normalindex ,textcoordindex;
+		unsigned int n, count, index, posindex, normalindex, textcoordindex;
 
 		std::vector<int> faceIndexes;
 		std::vector<Vertex> vertices, face;
@@ -240,6 +239,7 @@ private:
 					}
 				}
 				tNormal /= n;
+				std::cout << positionIndex[i] - 1 << " " << glm::normalize(tNormal).x << " " << glm::normalize(tNormal).y << " " << glm::normalize(tNormal).z << std::endl;
 				vertices.push_back({ positions[positionIndex[i] - 1], glm::normalize(tNormal) });
 			}
 		}
@@ -247,7 +247,7 @@ private:
 		std::shared_ptr<Material> mtl = nullptr;
 		for (int i = 0; i < (*modelLayer).materials.size(); i++)
 		{
-			if ((*(*modelLayer).materials[i]).name == mtl_name)
+			if (*((*modelLayer).materials[i])->getName() == mtl_name)
 				mtl = (*modelLayer).materials[i];
 		}
 		

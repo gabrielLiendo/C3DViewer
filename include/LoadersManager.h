@@ -4,9 +4,10 @@ class LoadersManager
 public:
     LoadersManager() = default;
 
-    LoadersManager(ModelLayer* modelLayer)
+    LoadersManager(ModelLayer* modelLayer, Camera* camera)
     {
         this->modelLayer = modelLayer;
+        this->camera = camera;
         this->objLoader = ObjLoader(modelLayer);
         this->mtlLoader = MtlLoader(modelLayer);
     }
@@ -75,7 +76,7 @@ public:
         outfile.open(lTheSaveFileName);
 
         // Write the Camera's position
-        glm::vec3 camPos = *camera.getPosition();
+        glm::vec3 camPos = *camera->getPosition();
         outfile << "camera " << camPos.x << " " << camPos.y << " " << camPos.z << "\n";
 
         // Write background color
@@ -104,7 +105,7 @@ public:
         infile = std::ifstream(sceneFileName);
 
         std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> camPos.x >> camPos.y >> camPos.z;
-        camera.setPos(camPos);
+        camera->setPos(camPos);
         std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> bgColor.x >> bgColor.y >> bgColor.z;
 
         while (std::getline(infile, line))
@@ -177,7 +178,7 @@ public:
                 std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> diffuseColor.x >> diffuseColor.y >> diffuseColor.z;
                 for (int i = (*modelLayer).materials.size() - 1; i >= 0; i--)
                 {
-                    if ((*(*modelLayer).materials[i]).name == mtl)
+                    if (*((*modelLayer).materials[i])->getName() == mtl)
                     {
                         (*(*modelLayer).materials[i]).setDiffuse(diffuseColor);
                         break;
@@ -192,6 +193,7 @@ public:
 
 private:
     ModelLayer* modelLayer;
+    Camera* camera;
 
     ObjLoader objLoader;
     MtlLoader mtlLoader;

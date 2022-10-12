@@ -239,7 +239,6 @@ private:
 					}
 				}
 				tNormal /= n;
-				std::cout << positionIndex[i] - 1 << " " << glm::normalize(tNormal).x << " " << glm::normalize(tNormal).y << " " << glm::normalize(tNormal).z << std::endl;
 				vertices.push_back({ positions[positionIndex[i] - 1], glm::normalize(tNormal) });
 			}
 		}

@@ -170,7 +170,9 @@ public:
                 ImGui::Text("Color");
                 ImGui::SameLine();
                 ImGui::ColorEdit3("LightColor", glm::value_ptr(*sceneLayer->light.getColor()), ImGuiColorEditFlags_NoLabel);
+                DrawVec3Control("LightPosition", *sceneLayer->light.getPosition(), 0.05, -max_float, max_float);
                 ImGui::DragFloat("Ambient Intensity", sceneLayer->light.getAmbientIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::DragFloat("Diffuse Intensity", sceneLayer->light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
             }
 
             ImGui::End();

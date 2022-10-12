@@ -34,11 +34,14 @@ public:
 
         // Get the uniform locations
         mvpLoc = glGetUniformLocation(basic_shader.Program, "MVP");
+        modelLoc = glGetUniformLocation(basic_shader.Program, "model");
         lightColorLoc = glGetUniformLocation(basic_shader.Program, "gLight.color");
         lightAmbientIntensityLoc = glGetUniformLocation(basic_shader.Program, "gLight.ambientIntensity");
+        lightDiffuseIntensityLoc = glGetUniformLocation(basic_shader.Program, "gLight.diffuseIntensity");
+        lightPositionLoc = glGetUniformLocation(basic_shader.Program, "gLight.position");
         mtlAmbientLoc = glGetUniformLocation(basic_shader.Program, "gMaterial.ambientColor");
         mtlDiffuseLoc = glGetUniformLocation(basic_shader.Program, "gMaterial.diffuseColor");
-
+       
         mvpLoc_ns = glGetUniformLocation(normals_shader.Program, "MVP");
         colorLoc_ns = glGetUniformLocation(normals_shader.Program, "color");
         scaleLoc_ns = glGetUniformLocation(normals_shader.Program, "normalScale");
@@ -273,8 +276,11 @@ public:
         // Use corresponding shader when setting uniforms/drawing objects
         basic_shader.Use();
 
+        // Set lighting Uniforms
         glUniform3f(lightColorLoc, sceneLayer.light.getColor()->x, sceneLayer.light.getColor()->y, sceneLayer.light.getColor()->z);
+        glUniform3f(lightPositionLoc, sceneLayer.light.getPosition()->x, sceneLayer.light.getPosition()->y, sceneLayer.light.getPosition()->z);
         glUniform1f(lightAmbientIntensityLoc, *sceneLayer.light.getAmbientIntensity());
+        glUniform1f(lightDiffuseIntensityLoc, *sceneLayer.light.getDiffuseIntensity());
 
         for (int i = 0; i < sceneLayer.objects.size(); i++)
         {
@@ -283,6 +289,7 @@ public:
             // Pass the mvp matrix to the shader
             MVP = projection * view * objModel;
             glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(objModel));
 
             sceneLayer.objects[i].draw(mtlDiffuseLoc, mtlAmbientLoc);
 
@@ -389,7 +396,7 @@ private:
     Shader basic_shader, normals_shader, circularVertex_shader, picking_shader;
 
     // Uniform locations
-    int mvpLoc, lightColorLoc, lightAmbientIntensityLoc, mtlAmbientLoc, mtlDiffuseLoc;
+    int mvpLoc, modelLoc, lightColorLoc, lightAmbientIntensityLoc, lightDiffuseIntensityLoc, lightPositionLoc, mtlAmbientLoc, mtlDiffuseLoc;
     int mvpLoc_ns, colorLoc_ns, scaleLoc_ns;
     int mvpLoc_cps, colorLoc_cps, pointSizeLoc_cps;
     int mvpLoc_ps, colorLoc_ps;

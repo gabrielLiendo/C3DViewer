@@ -50,9 +50,6 @@ public:
         // Set functions and variables
         setCallbacks();
 
-        // Create Default Material
-        modelLayer.materials.push_back(std::make_shared<Material>("Default", glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.7, 0.7, 0.7), glm::vec3(0.5, 0.5, 0.5)));
-
         // Create and initialize UI 
         ui = UI(window, &modelLayer, &camera);
     }
@@ -356,7 +353,7 @@ private:
     // User Interface
     UI ui;
 
-    ModelLayer modelLayer;
+    SceneLayer modelLayer;
   
     // Camera
     Camera camera;

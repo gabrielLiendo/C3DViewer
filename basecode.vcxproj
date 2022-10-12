@@ -35,7 +35,8 @@
     <None Include="shaders\vertex\basic.vs" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\ModelLayer.h" />
+    <ClInclude Include="include\Light.h" />
+    <ClInclude Include="include\SceneLayer.h" />
     <ClInclude Include="include\LoadersManager.h" />
     <ClInclude Include="include\MtlLoader.h" />
     <ClInclude Include="include\Camera.h" />

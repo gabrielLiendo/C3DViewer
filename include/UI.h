@@ -4,7 +4,7 @@ class UI
 public:
     UI() = default;
 
-    UI(GLFWwindow* window, ModelLayer *modelLayer, Camera *camera)
+    UI(GLFWwindow* window, SceneLayer *modelLayer, Camera *camera)
     {
         this->window = window;
         this->camera = camera;
@@ -338,7 +338,7 @@ private:
 
     GLFWwindow* window;
 
-    ModelLayer* modelLayer;
+    SceneLayer* modelLayer;
     Camera* camera;
 
     // Loaders

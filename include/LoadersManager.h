@@ -4,7 +4,7 @@ class LoadersManager
 public:
     LoadersManager() = default;
 
-    LoadersManager(ModelLayer* modelLayer, Camera* camera)
+    LoadersManager(SceneLayer* modelLayer, Camera* camera)
     {
         this->modelLayer = modelLayer;
         this->camera = camera;
@@ -192,7 +192,7 @@ public:
     }
 
 private:
-    ModelLayer* modelLayer;
+    SceneLayer* modelLayer;
     Camera* camera;
 
     ObjLoader objLoader;

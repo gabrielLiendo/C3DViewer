@@ -4,7 +4,7 @@ class ObjLoader
 public:
 	ObjLoader() = default;
 
-	ObjLoader(ModelLayer* modelLayer)
+	ObjLoader(SceneLayer* modelLayer)
 	{
 		this->modelLayer = modelLayer;
 	}
@@ -20,7 +20,7 @@ public:
 	}
 
 private:
-	ModelLayer* modelLayer;
+	SceneLayer* modelLayer;
 
 	std::ifstream infile;
 	std::vector<glm::vec3> positions, normals, faceNormals;

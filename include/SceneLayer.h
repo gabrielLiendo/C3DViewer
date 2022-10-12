@@ -1,12 +1,20 @@
 #pragma once
-class ModelLayer
+class SceneLayer
 {
 public:
 	std::vector<Object> objects;
 	std::vector<std::shared_ptr<Material>> materials;
+
+	Light light;
+
 	Object* selectedObject;
 
-	ModelLayer() = default;
+	SceneLayer()
+	{
+		// Create Default Material
+		materials.push_back(std::make_shared<Material>());
+		light = Light();
+	};
 
 	void setSelectedObject(Object* selectedObject)
 	{

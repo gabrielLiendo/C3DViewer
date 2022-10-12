@@ -4,7 +4,7 @@ class MtlLoader
 public:
 	MtlLoader() = default;
 
-	MtlLoader(ModelLayer* modelLayer)
+	MtlLoader(SceneLayer* modelLayer)
 	{
 		this->modelLayer = modelLayer;
 	}
@@ -21,7 +21,7 @@ public:
 		readMaterials();
 	}
 private:
-	ModelLayer* modelLayer;
+	SceneLayer* modelLayer;
 
 	std::string line, prefix;
 	std::stringstream ss;

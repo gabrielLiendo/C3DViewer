@@ -199,7 +199,16 @@ public:
 		return &verticesColor;
 	}
 
-	void draw(int colorLoc, bool picking)
+	void drawFlatPicking(int colorLoc)
+	{
+		for (int i = 0; i < meshes.size(); i++)
+		{
+			glUniform3f(colorLoc, pickingColor.x, pickingColor.y, pickingColor.z);
+			meshes[i].draw();
+		}
+	}
+
+	void draw(int colorLoc, int ambientLoc)
 	{
 		glm::vec3 color;
 
@@ -221,32 +230,19 @@ public:
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0, 1.0);
 
-		if (!picking)
+		for (int i = 0; i < meshes.size(); i++)
 		{
-			for (int i = 0; i < meshes.size(); i++)
+			if (*meshes[i].getShow())
 			{
-				if (*meshes[i].getShow())
-				{
-					color = *meshes[i].mtl->getDiffuse();
-					glUniform3f(colorLoc, color.x, color.y, color.z);
-					meshes[i].draw();
-				}
+				color = *meshes[i].mtl->getDiffuse();
+				glUniform3f(colorLoc, color.x, color.y, color.z);
 
+				color = *meshes[i].mtl->getAmbient();
+				glUniform3f(ambientLoc, color.x, color.y, color.z);
+				meshes[i].draw();
 			}
 		}
-		else
-		{
-			color = pickingColor;
-			for (int i = 0; i < meshes.size(); i++)
-			{
-				if (*meshes[i].getShow())
-				{
-					glUniform3f(colorLoc, color.x, color.y, color.z);
-					meshes[i].draw();
-				}
-			}
-		}
-		
+
 		glDisable(GL_POLYGON_OFFSET_FILL);
 
 		if (showWireframe)

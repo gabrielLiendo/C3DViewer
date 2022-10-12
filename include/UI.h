@@ -4,12 +4,12 @@ class UI
 public:
     UI() = default;
 
-    UI(GLFWwindow* window, SceneLayer *modelLayer, Camera *camera)
+    UI(GLFWwindow* window, SceneLayer *sceneLayer, Camera *camera)
     {
         this->window = window;
         this->camera = camera;
-        this->modelLayer = modelLayer;
-        this->loadersManager = LoadersManager(modelLayer, camera);
+        this->sceneLayer = sceneLayer;
+        this->loadersManager = LoadersManager(sceneLayer, camera);
 
         init();
     }
@@ -32,7 +32,7 @@ public:
             ImGui::ShowDemoWindow(&show_demo_window);
 
 
-        Object* selectedObject = (*modelLayer).selectedObject;
+        Object* selectedObject = (*sceneLayer).selectedObject;
 
         // Draw the main window
         if (ImGui::Begin("Current Scene"))
@@ -165,16 +165,23 @@ public:
             }
             else if (camera->selected)
                 DrawVec3Control("Position", *camera->getPosition(), 0.05, -max_float, max_float);
+            else if (lightSelected)
+            {
+                ImGui::Text("Color");
+                ImGui::SameLine();
+                ImGui::ColorEdit3("LightColor", glm::value_ptr(*sceneLayer->light.getColor()), ImGuiColorEditFlags_NoLabel);
+                ImGui::DragFloat("Ambient Intensity", sceneLayer->light.getAmbientIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            }
 
             ImGui::End();
         }
 
         if (ImGui::Begin("Materials"))
         {
-            int m = (*modelLayer).materials.size();
+            int m = (*sceneLayer).materials.size();
             for (int i = 0; i < m; i++)
             {
-                std::shared_ptr<Material> m = (*modelLayer).materials[i];
+                std::shared_ptr<Material> m = (*sceneLayer).materials[i];
                 if (ImGui::TreeNode(m->getName()->c_str()))
                 {
                     ImGui::Text("Diffuse");
@@ -193,16 +200,25 @@ public:
             {
                 selected = 0;
                 camera->selected = true;
-                (*modelLayer).setSelectedObject(nullptr);
+                lightSelected = false;
+                (*sceneLayer).setSelectedObject(nullptr);
             }
 
-            int m = (*modelLayer).objects.size();
-            for (int i = 1; i < m + 1; i++)
+            if (ImGui::Selectable("Light", selected == 1))
             {
-                if (ImGui::Selectable((*modelLayer).objects[i - 1].getName().c_str(), selected == i))
+                selected = 1;
+                lightSelected = true;
+                camera->selected = false;
+                (*sceneLayer).setSelectedObject(nullptr);
+            }
+
+            int m = (*sceneLayer).objects.size();
+            for (int i = 2; i < m + 2; i++)
+            {
+                if (ImGui::Selectable(sceneLayer->objects[i - 2].getName().c_str(), selected == i))
                 {
                     selected = i;
-                    (*modelLayer).setSelectedObject(& (*modelLayer).objects[i - 1]);
+                    (*sceneLayer).setSelectedObject(& (*sceneLayer).objects[i - 2]);
                 }
             }
 
@@ -292,9 +308,9 @@ private:
             if (ImGui::BeginMenu("Tools"))
             {
                 if (ImGui::MenuItem("Delete Selected", "Backspace"))
-                    (*modelLayer).deleteSelected();
+                    (*sceneLayer).deleteSelected();
                 if (ImGui::MenuItem("Delete All", "X"))
-                    (*modelLayer).deleteAllObjects();
+                    (*sceneLayer).deleteAllObjects();
 
                 ImGui::EndMenu();
             }
@@ -338,7 +354,7 @@ private:
 
     GLFWwindow* window;
 
-    SceneLayer* modelLayer;
+    SceneLayer* sceneLayer;
     Camera* camera;
 
     // Loaders
@@ -348,6 +364,7 @@ private:
     int selected = -1;
     bool show_app_dockspace = true;
     bool show_demo_window = true;
+    bool lightSelected = false;
 
     // Limit values
     float max_float = std::numeric_limits<float>::max();

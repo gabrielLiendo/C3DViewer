@@ -5,7 +5,7 @@ public:
 	Light()
 	{
 		color = glm::vec3(1.0f, 1.0f, 1.0f);
-		ambientIntensity = 0.0f;
+		ambientIntensity = 1.0f;
 	}
 
 	Light(glm::vec3 color, float ambientIntensity)

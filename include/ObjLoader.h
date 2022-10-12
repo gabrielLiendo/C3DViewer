@@ -4,9 +4,9 @@ class ObjLoader
 public:
 	ObjLoader() = default;
 
-	ObjLoader(SceneLayer* modelLayer)
+	ObjLoader(SceneLayer* sceneLayer)
 	{
-		this->modelLayer = modelLayer;
+		this->sceneLayer = sceneLayer;
 	}
 
 	std::vector<Mesh> loadMeshes(const char* file_name)
@@ -20,7 +20,7 @@ public:
 	}
 
 private:
-	SceneLayer* modelLayer;
+	SceneLayer* sceneLayer;
 
 	std::ifstream infile;
 	std::vector<glm::vec3> positions, normals, faceNormals;
@@ -245,16 +245,16 @@ private:
 		}
 
 		std::shared_ptr<Material> mtl = nullptr;
-		for (int i = 0; i < (*modelLayer).materials.size(); i++)
+		for (int i = 0; i < (*sceneLayer).materials.size(); i++)
 		{
-			if (*((*modelLayer).materials[i])->getName() == mtl_name)
-				mtl = (*modelLayer).materials[i];
+			if (*((*sceneLayer).materials[i])->getName() == mtl_name)
+				mtl = (*sceneLayer).materials[i];
 		}
 		
 		if (!mtl)
 		{
 			std::cout << "El material " << mtl_name << " no fue encontrado." << std::endl;
-			mtl = (* modelLayer).materials[0];
+			mtl = (* sceneLayer).materials[0];
 		}
 
 		Mesh newMesh = Mesh(name, vertices, mtl);

@@ -23,10 +23,9 @@ public:
 		return &name;
 	}
 
-	glm::vec3 *getDiffuse()
-	{
-		return &diffuse;
-	}
+	glm::vec3 *getDiffuse(){ return &diffuse; }
+
+	glm::vec3 *getAmbient() { return &ambient; }
 
 	void setDiffuse(glm::vec3 diffuse)
 	{

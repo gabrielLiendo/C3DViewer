@@ -4,12 +4,12 @@ class LoadersManager
 public:
     LoadersManager() = default;
 
-    LoadersManager(SceneLayer* modelLayer, Camera* camera)
+    LoadersManager(SceneLayer* sceneLayer, Camera* camera)
     {
-        this->modelLayer = modelLayer;
+        this->sceneLayer = sceneLayer;
         this->camera = camera;
-        this->objLoader = ObjLoader(modelLayer);
-        this->mtlLoader = MtlLoader(modelLayer);
+        this->objLoader = ObjLoader(sceneLayer);
+        this->mtlLoader = MtlLoader(sceneLayer);
     }
 
     // Open File Dialog and load .obj with its respective material (.mtl)
@@ -29,7 +29,7 @@ public:
         mtlLoader.load(mtlFileName.c_str());
 
         // Convert "i", the integer mesh ID, into an RGB color
-        int i = (*modelLayer).objects.size() + 1;
+        int i = (*sceneLayer).objects.size() + 1;
         int r = (i & 0x000000FF) >> 0;
         int g = (i & 0x0000FF00) >> 8;
         int b = (i & 0x00FF0000) >> 16;
@@ -38,17 +38,17 @@ public:
 
         // Load .obj
         Object newObject = Object(objLoader.loadMeshes(objFileName), pickingColor, objFileName);
-        (*modelLayer).objects.push_back(newObject);
+        (*sceneLayer).objects.push_back(newObject);
 
         // Set obj name
         std::string objName = objFileName;
         objName = objName.substr(objName.find_last_of("/\\") + 1);
         objName = objName.substr(0, objName.size() - 4);
-        (*modelLayer).objects.back().setName(objName);
+        (*sceneLayer).objects.back().setName(objName);
 
         // Set loaded object as selected
-        selected = (*modelLayer).objects.size();
-        (*modelLayer).selectedObject = &(*modelLayer).objects.back();
+        selected = (*sceneLayer).objects.size() + 1;
+        (*sceneLayer).selectedObject = &(*sceneLayer).objects.back();
     }
 
     // Save the current scene in a .txt
@@ -83,8 +83,8 @@ public:
         outfile << "bg " << bgColor.x << " " << bgColor.y << " " << bgColor.z << "\n";
 
         // Write each objects' properties
-        for (int i = 0; i < (*modelLayer).objects.size(); i++)
-            (*modelLayer).objects[i].getInfo(outfile);
+        for (int i = 0; i < (*sceneLayer).objects.size(); i++)
+            (*sceneLayer).objects[i].getInfo(outfile);
 
         outfile.close();
     }
@@ -94,7 +94,7 @@ public:
         FILE* lIn;
         char const* sceneFileName, * lFilterPatterns[2] = { "*.txt", "*.text" };
 
-        (*modelLayer).deleteAllObjects();
+        (*sceneLayer).deleteAllObjects();
 
         sceneFileName = tinyfd_openFileDialog("Open Scene", "", 2, lFilterPatterns, NULL, 0);
 
@@ -114,7 +114,7 @@ public:
             
             ss >> prefix;
             if (prefix == "o")
-                (*modelLayer).objects.push_back(loadObject());
+                (*sceneLayer).objects.push_back(loadObject());
         }
     }
 
@@ -176,11 +176,11 @@ public:
             {
                 ss >> mtl;
                 std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> diffuseColor.x >> diffuseColor.y >> diffuseColor.z;
-                for (int i = (*modelLayer).materials.size() - 1; i >= 0; i--)
+                for (int i = (*sceneLayer).materials.size() - 1; i >= 0; i--)
                 {
-                    if (*((*modelLayer).materials[i])->getName() == mtl)
+                    if (*((*sceneLayer).materials[i])->getName() == mtl)
                     {
-                        (*(*modelLayer).materials[i]).setDiffuse(diffuseColor);
+                        (*(*sceneLayer).materials[i]).setDiffuse(diffuseColor);
                         break;
                     }
                 }
@@ -192,7 +192,7 @@ public:
     }
 
 private:
-    SceneLayer* modelLayer;
+    SceneLayer* sceneLayer;
     Camera* camera;
 
     ObjLoader objLoader;

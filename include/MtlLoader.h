@@ -4,9 +4,9 @@ class MtlLoader
 public:
 	MtlLoader() = default;
 
-	MtlLoader(SceneLayer* modelLayer)
+	MtlLoader(SceneLayer* sceneLayer)
 	{
-		this->modelLayer = modelLayer;
+		this->sceneLayer = sceneLayer;
 	}
 
 	bool load(const char* file_name)
@@ -20,8 +20,9 @@ public:
 			
 		readMaterials();
 	}
+
 private:
-	SceneLayer* modelLayer;
+	SceneLayer* sceneLayer;
 
 	std::string line, prefix;
 	std::stringstream ss;
@@ -39,7 +40,7 @@ private:
 
 			ss >> prefix;
 			if (prefix == "newmtl") 
-				(*modelLayer).materials.push_back(readMaterial());
+				(*sceneLayer).materials.push_back(readMaterial());
 				
 		}
 	}
@@ -86,6 +87,7 @@ private:
 				ss >> illum;
 		}
 		
+		std::cout << kd.x << " " << kd.y << " " << kd.z << std::endl;
 		return std::make_shared<Material>(name, ka, kd, ks);
 	}
 };

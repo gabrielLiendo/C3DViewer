@@ -208,7 +208,7 @@ public:
 		}
 	}
 
-	void draw(int colorLoc, int ambientLoc, int specularLoc)
+	void draw(bool lighting, int diffuseLoc, int ambientLoc, int specularLoc)
 	{
 		glm::vec3 color;
 
@@ -235,13 +235,17 @@ public:
 			if (*meshes[i].getShow())
 			{
 				color = *meshes[i].mtl->getDiffuse();
-				glUniform3f(colorLoc, color.x, color.y, color.z);
+				glUniform3f(diffuseLoc, color.x, color.y, color.z);
 
-				color = *meshes[i].mtl->getAmbient();
-				glUniform3f(ambientLoc, color.x, color.y, color.z);
+				if (lighting)
+				{
+					color = *meshes[i].mtl->getAmbient();
+					glUniform3f(ambientLoc, color.x, color.y, color.z);
 
-				color = *meshes[i].mtl->getSpecular();
-				glUniform3f(ambientLoc, color.x, color.y, color.z);
+					color = *meshes[i].mtl->getSpecular();
+					glUniform3f(specularLoc, color.x, color.y, color.z);
+				}
+				
 				meshes[i].draw();
 			}
 		}
@@ -253,7 +257,7 @@ public:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			for (int i = 0; i < meshes.size(); i++)
 			{
-				glUniform3f(colorLoc, wireframeColor.x, wireframeColor.y, wireframeColor.z);
+				glUniform3f(diffuseLoc, wireframeColor.x, wireframeColor.y, wireframeColor.z);
 				meshes[i].draw();
 			}
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

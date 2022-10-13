@@ -27,22 +27,25 @@ public:
         glViewport(0, 0, width, height);
 
         // Build and compile our shader programs
-        basic_shader = Shader("shaders/vertex/basic.vs", "shaders/fragment/ilumColor.frag");
+        basic_shader = Shader("shaders/vertex/basic.vs", "shaders/fragment/flatColor.frag");
+        lighting_shader = Shader("shaders/vertex/ilum.vs", "shaders/fragment/ilumColor.frag");
         normals_shader = Shader("shaders/vertex/passNormal.vs", "shaders/fragment/flatColor.frag", "shaders/geometry/normals.geom");
         circularVertex_shader = Shader("shaders/vertex/basic.vs", "shaders/fragment/pointColor.frag");
-        picking_shader = Shader("shaders/vertex/basic.vs", "shaders/fragment/flatColor.frag");
-
+        
         // Get the uniform locations
-        mvpLoc = glGetUniformLocation(basic_shader.Program, "MVP");
-        modelLoc = glGetUniformLocation(basic_shader.Program, "model");
-        viewLoc = glGetUniformLocation(basic_shader.Program, "view");
-        lightColorLoc = glGetUniformLocation(basic_shader.Program, "gLight.color");
-        lightAmbientIntensityLoc = glGetUniformLocation(basic_shader.Program, "gLight.ambientIntensity");
-        lightDiffuseIntensityLoc = glGetUniformLocation(basic_shader.Program, "gLight.diffuseIntensity");
-        lightPositionLoc = glGetUniformLocation(basic_shader.Program, "gLight.position");
-        mtlAmbientLoc = glGetUniformLocation(basic_shader.Program, "gMaterial.ambientColor");
-        mtlDiffuseLoc = glGetUniformLocation(basic_shader.Program, "gMaterial.diffuseColor");
-        mtlSpecularLoc = glGetUniformLocation(basic_shader.Program, "gMaterial.specularColor");
+        mvpLoc_bs = glGetUniformLocation(basic_shader.Program, "MVP");
+        colorLoc_bs = glGetUniformLocation(basic_shader.Program, "color");
+
+        mvpLoc = glGetUniformLocation(lighting_shader.Program, "MVP");
+        modelLoc = glGetUniformLocation(lighting_shader.Program, "model");
+        viewLoc = glGetUniformLocation(lighting_shader.Program, "view");
+        lightColorLoc = glGetUniformLocation(lighting_shader.Program, "gLight.color");
+        lightAmbientIntensityLoc = glGetUniformLocation(lighting_shader.Program, "gLight.ambientIntensity");
+        lightDiffuseIntensityLoc = glGetUniformLocation(lighting_shader.Program, "gLight.diffuseIntensity");
+        lightPositionLoc = glGetUniformLocation(lighting_shader.Program, "gLight.position");
+        mtlAmbientLoc = glGetUniformLocation(lighting_shader.Program, "gMaterial.ambientColor");
+        mtlDiffuseLoc = glGetUniformLocation(lighting_shader.Program, "gMaterial.diffuseColor");
+        mtlSpecularLoc = glGetUniformLocation(lighting_shader.Program, "gMaterial.specularColor");
        
         mvpLoc_ns = glGetUniformLocation(normals_shader.Program, "MVP");
         colorLoc_ns = glGetUniformLocation(normals_shader.Program, "color");
@@ -51,9 +54,6 @@ public:
         mvpLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "MVP");
         pointSizeLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "pointSize");
         colorLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "color");
-
-        mvpLoc_ps = glGetUniformLocation(picking_shader.Program, "MVP");
-        colorLoc_ps = glGetUniformLocation(picking_shader.Program, "color");
 
         // Set functions and variables
         setCallbacks();
@@ -253,7 +253,7 @@ public:
 
         if (processColorPicker)
         {
-            picking_shader.Use();
+            basic_shader.Use();
 
             for (int i = 0; i < sceneLayer.objects.size(); i++)
             {
@@ -263,11 +263,10 @@ public:
                 MVP = projection * view * objModel;
                 glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
 
-                sceneLayer.objects[i].drawFlatPicking(colorLoc_ps);
+                sceneLayer.objects[i].drawFlatPicking(colorLoc_bs);
             }
 
             readPixel();
-            basic_shader.Use();
             processColorPicker = false;
         }
 
@@ -276,13 +275,20 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Use corresponding shader when setting uniforms/drawing objects
-        basic_shader.Use();
 
-        // Set lighting Uniforms
-        glUniform3f(lightColorLoc, sceneLayer.light.getColor()->x, sceneLayer.light.getColor()->y, sceneLayer.light.getColor()->z);
-        glUniform3f(lightPositionLoc, sceneLayer.light.getPosition()->x, sceneLayer.light.getPosition()->y, sceneLayer.light.getPosition()->z);
-        glUniform1f(lightAmbientIntensityLoc, *sceneLayer.light.getAmbientIntensity());
-        glUniform1f(lightDiffuseIntensityLoc, *sceneLayer.light.getDiffuseIntensity());
+        if (sceneLayer.useLighting)
+        {
+            lighting_shader.Use();
+
+            // Set lighting Uniforms
+            glUniform3f(lightColorLoc, sceneLayer.light.getColor()->x, sceneLayer.light.getColor()->y, sceneLayer.light.getColor()->z);
+            glUniform3f(lightPositionLoc, sceneLayer.light.getPosition()->x, sceneLayer.light.getPosition()->y, sceneLayer.light.getPosition()->z);
+            glUniform1f(lightAmbientIntensityLoc, *sceneLayer.light.getAmbientIntensity());
+            glUniform1f(lightDiffuseIntensityLoc, *sceneLayer.light.getDiffuseIntensity());
+        }
+        else 
+            basic_shader.Use();
+        
 
         for (int i = 0; i < sceneLayer.objects.size(); i++)
         {
@@ -290,12 +296,20 @@ public:
 
             // Pass the mvp matrix to the shader
             MVP = projection * view * objModel;
-            glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(objModel));
-            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-            sceneLayer.objects[i].draw(mtlDiffuseLoc, mtlAmbientLoc, mtlSpecularLoc);
-
+           
+            if (sceneLayer.useLighting)
+            {
+                glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
+                glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(objModel));
+                glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+                sceneLayer.objects[i].draw(true, mtlDiffuseLoc, mtlAmbientLoc, mtlSpecularLoc);
+            }
+            else
+            {
+                glUniformMatrix4fv(mvpLoc_bs, 1, GL_FALSE, glm::value_ptr(MVP));
+                sceneLayer.objects[i].draw(false, colorLoc_bs, 0, 0);
+            }
+                
             if (*sceneLayer.objects[i].getShowNormals())
             {
                 // Use other shader to draw the normals
@@ -308,8 +322,16 @@ public:
                 sceneLayer.objects[i].drawVertices();
 
                 // We start using our normal shader again
-                basic_shader.Use();
-                glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
+                if (sceneLayer.useLighting)
+                {
+                    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
+                    lighting_shader.Use();
+                }
+                else 
+                {
+                    glUniformMatrix4fv(mvpLoc_bs, 1, GL_FALSE, glm::value_ptr(MVP));
+                    basic_shader.Use();
+                }
             }
 
             if (*sceneLayer.objects[i].getShowVertices())
@@ -324,8 +346,16 @@ public:
                 sceneLayer.objects[i].drawVertices();
 
                 // We start using our normal shader again
-                basic_shader.Use();
-                glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
+                if (sceneLayer.useLighting)
+                {
+                    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
+                    lighting_shader.Use();
+                }
+                else
+                {
+                    glUniformMatrix4fv(mvpLoc_bs, 1, GL_FALSE, glm::value_ptr(MVP));
+                    basic_shader.Use();
+                }
             }
         }
 
@@ -396,12 +426,12 @@ private:
     bool firstMouse = true;
 
     //Shaders
-    Shader basic_shader, normals_shader, circularVertex_shader, picking_shader;
+    Shader basic_shader, lighting_shader, normals_shader, circularVertex_shader;
 
     // Uniform locations
     int mvpLoc, modelLoc, viewLoc, lightColorLoc, lightAmbientIntensityLoc, lightDiffuseIntensityLoc, 
         lightPositionLoc, mtlAmbientLoc, mtlDiffuseLoc, mtlSpecularLoc;
     int mvpLoc_ns, colorLoc_ns, scaleLoc_ns;
     int mvpLoc_cps, colorLoc_cps, pointSizeLoc_cps;
-    int mvpLoc_ps, colorLoc_ps;
+    int mvpLoc_bs, colorLoc_bs;
 };

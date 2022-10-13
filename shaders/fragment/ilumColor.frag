@@ -26,7 +26,7 @@ uniform vec3 view;
 
 void main()
 {
-	float specularStrength = 0.5;
+	float specularStrength = 0.1;
 	vec3 norm = normalize(Normal);
 	vec3 lightDir = normalize(gLight.position - FragPos);
 	vec3 viewDir = normalize(view - FragPos);

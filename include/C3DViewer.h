@@ -299,6 +299,7 @@ public:
            
             if (sceneLayer.useLighting)
             {
+                lighting_shader.Use();
                 glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
                 glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(objModel));
                 glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
@@ -306,6 +307,7 @@ public:
             }
             else
             {
+                basic_shader.Use();
                 glUniformMatrix4fv(mvpLoc_bs, 1, GL_FALSE, glm::value_ptr(MVP));
                 sceneLayer.objects[i].draw(false, colorLoc_bs, 0, 0);
             }
@@ -320,18 +322,6 @@ public:
                 glUniform3f(colorLoc_ns, color.x, color.y, color.z);
                 glUniform1f(scaleLoc_ns, sceneLayer.objects[i].getScaleNormal());
                 sceneLayer.objects[i].drawVertices();
-
-                // We start using our normal shader again
-                if (sceneLayer.useLighting)
-                {
-                    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
-                    lighting_shader.Use();
-                }
-                else 
-                {
-                    glUniformMatrix4fv(mvpLoc_bs, 1, GL_FALSE, glm::value_ptr(MVP));
-                    basic_shader.Use();
-                }
             }
 
             if (*sceneLayer.objects[i].getShowVertices())
@@ -344,33 +334,22 @@ public:
                 glUniform3f(colorLoc_cps, color.x, color.y, color.z);
                 glUniform1f(pointSizeLoc_cps, float(*sceneLayer.objects[i].getPointSize()));
                 sceneLayer.objects[i].drawVertices();
-
-                // We start using our normal shader again
-                if (sceneLayer.useLighting)
-                {
-                    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
-                    lighting_shader.Use();
-                }
-                else
-                {
-                    glUniformMatrix4fv(mvpLoc_bs, 1, GL_FALSE, glm::value_ptr(MVP));
-                    basic_shader.Use();
-                }
             }
         }
 
-        /*
         if (sceneLayer.selectedObject)
         {
+            basic_shader.Use();
+
             boxModel = sceneLayer.selectedObject->getModelTransformation() * sceneLayer.selectedObject->getBoxModel();
             MVP = projection * view * boxModel;
             boxColor = *sceneLayer.selectedObject->getBoxColor();
 
-            glUniform3f(colorLoc, boxColor.x, boxColor.y, boxColor.z);
+            glUniform3f(colorLoc_bs, boxColor.x, boxColor.y, boxColor.z);
             glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
 
             sceneLayer.selectedObject->drawBoundingBox();
-        }*/
+        }
 
         // Render UI frame
         ui.render();

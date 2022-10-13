@@ -27,6 +27,8 @@ public:
 
 	glm::vec3 *getAmbient() { return &ambient; }
 
+	glm::vec3 *getSpecular() { return &specular; }
+
 	void setDiffuse(glm::vec3 diffuse)
 	{
 		this->diffuse = diffuse;

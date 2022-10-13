@@ -35,12 +35,14 @@ public:
         // Get the uniform locations
         mvpLoc = glGetUniformLocation(basic_shader.Program, "MVP");
         modelLoc = glGetUniformLocation(basic_shader.Program, "model");
+        viewLoc = glGetUniformLocation(basic_shader.Program, "view");
         lightColorLoc = glGetUniformLocation(basic_shader.Program, "gLight.color");
         lightAmbientIntensityLoc = glGetUniformLocation(basic_shader.Program, "gLight.ambientIntensity");
         lightDiffuseIntensityLoc = glGetUniformLocation(basic_shader.Program, "gLight.diffuseIntensity");
         lightPositionLoc = glGetUniformLocation(basic_shader.Program, "gLight.position");
         mtlAmbientLoc = glGetUniformLocation(basic_shader.Program, "gMaterial.ambientColor");
         mtlDiffuseLoc = glGetUniformLocation(basic_shader.Program, "gMaterial.diffuseColor");
+        mtlSpecularLoc = glGetUniformLocation(basic_shader.Program, "gMaterial.specularColor");
        
         mvpLoc_ns = glGetUniformLocation(normals_shader.Program, "MVP");
         colorLoc_ns = glGetUniformLocation(normals_shader.Program, "color");
@@ -290,8 +292,9 @@ public:
             MVP = projection * view * objModel;
             glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(objModel));
+            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-            sceneLayer.objects[i].draw(mtlDiffuseLoc, mtlAmbientLoc);
+            sceneLayer.objects[i].draw(mtlDiffuseLoc, mtlAmbientLoc, mtlSpecularLoc);
 
             if (*sceneLayer.objects[i].getShowNormals())
             {
@@ -396,7 +399,8 @@ private:
     Shader basic_shader, normals_shader, circularVertex_shader, picking_shader;
 
     // Uniform locations
-    int mvpLoc, modelLoc, lightColorLoc, lightAmbientIntensityLoc, lightDiffuseIntensityLoc, lightPositionLoc, mtlAmbientLoc, mtlDiffuseLoc;
+    int mvpLoc, modelLoc, viewLoc, lightColorLoc, lightAmbientIntensityLoc, lightDiffuseIntensityLoc, 
+        lightPositionLoc, mtlAmbientLoc, mtlDiffuseLoc, mtlSpecularLoc;
     int mvpLoc_ns, colorLoc_ns, scaleLoc_ns;
     int mvpLoc_cps, colorLoc_cps, pointSizeLoc_cps;
     int mvpLoc_ps, colorLoc_ps;

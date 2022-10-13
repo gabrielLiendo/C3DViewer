@@ -35,6 +35,36 @@ public:
         Object* selectedObject = (*sceneLayer).selectedObject;
 
         // Draw the main window
+
+        if (ImGui::Begin("Lighting"))
+        {
+            if (ImGui::TreeNodeEx("Configuration##Ligthing", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::Text("Use Lighting");
+                ImGui::SameLine();
+                ImGui::Checkbox("##useLighting", &sceneLayer->useLighting);
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Properties##Ligthing"))
+            {
+                DrawVec3Control("Position", *sceneLayer->light.getPosition(), 0.05, -max_float, max_float);
+                ImGui::Text("Color");
+                ImGui::SameLine();
+                ImGui::ColorEdit3("LightColor", glm::value_ptr(*sceneLayer->light.getColor()), ImGuiColorEditFlags_NoLabel);
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNode("Intesity##Ligthing"))
+            {
+                ImGui::DragFloat("Ambient", sceneLayer->light.getAmbientIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::DragFloat("Diffuse", sceneLayer->light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::TreePop();
+            }
+
+            ImGui::End();
+        }
+
+
         if (ImGui::Begin("Current Scene"))
         {
             if (ImGui::TreeNode("Background"))
@@ -54,6 +84,7 @@ public:
             ImGui::End();
         }
 
+        
         // Draw the 'Rendering' and 'Properties' windows 
         if (ImGui::Begin("Rendering"))
         {
@@ -167,12 +198,7 @@ public:
                 DrawVec3Control("Position", *camera->getPosition(), 0.05, -max_float, max_float);
             else if (lightSelected)
             {
-                ImGui::Text("Color");
-                ImGui::SameLine();
-                ImGui::ColorEdit3("LightColor", glm::value_ptr(*sceneLayer->light.getColor()), ImGuiColorEditFlags_NoLabel);
-                DrawVec3Control("LightPosition", *sceneLayer->light.getPosition(), 0.05, -max_float, max_float);
-                ImGui::DragFloat("Ambient Intensity", sceneLayer->light.getAmbientIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
-                ImGui::DragFloat("Diffuse Intensity", sceneLayer->light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+               
             }
 
             ImGui::End();

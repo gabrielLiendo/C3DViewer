@@ -6,6 +6,7 @@ public:
 	std::vector<std::shared_ptr<Material>> materials;
 
 	Light light;
+	bool useLighting = false;
 
 	Object* selectedObject;
 

@@ -208,7 +208,7 @@ public:
 		}
 	}
 
-	void draw(int colorLoc, int ambientLoc)
+	void draw(int colorLoc, int ambientLoc, int specularLoc)
 	{
 		glm::vec3 color;
 
@@ -238,6 +238,9 @@ public:
 				glUniform3f(colorLoc, color.x, color.y, color.z);
 
 				color = *meshes[i].mtl->getAmbient();
+				glUniform3f(ambientLoc, color.x, color.y, color.z);
+
+				color = *meshes[i].mtl->getSpecular();
 				glUniform3f(ambientLoc, color.x, color.y, color.z);
 				meshes[i].draw();
 			}

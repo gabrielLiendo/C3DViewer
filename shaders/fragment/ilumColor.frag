@@ -48,5 +48,5 @@ void main()
 						 gMaterial.specularColor *
 						 gLight.color;  
 
-	fragColor = (ambientColor + diffuseColor + specularColor) * diffuseColor;
+	fragColor = (ambientColor + diffuseColor) * diffuseColor;
 } 

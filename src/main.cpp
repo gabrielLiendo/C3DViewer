@@ -35,7 +35,7 @@
 #include "Object.h"
 #include "Camera.h"
 #include "Light.h"
-#include "SceneLayer.h"
+#include "Scene.h"
 #include "MtlLoader.h"
 #include "ObjLoader.h"
 #include "LoadersManager.h"

@@ -36,7 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Light.h" />
-    <ClInclude Include="include\SceneLayer.h" />
+    <ClInclude Include="include\Scene.h" />
     <ClInclude Include="include\LoadersManager.h" />
     <ClInclude Include="include\MtlLoader.h" />
     <ClInclude Include="include\Camera.h" />

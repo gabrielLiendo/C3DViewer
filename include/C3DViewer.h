@@ -61,7 +61,7 @@ public:
         setCallbacks();
 
         // Create and initialize UI 
-        ui = UI(window, &scene, &camera);
+        ui = UI(window, &scene);
     }
 
     // Set the required callback functions
@@ -157,8 +157,8 @@ public:
                }
                else
                {
-                   camera.changePosX(xoffset * 0.01);
-                   camera.changePosY(yoffset * 0.01);
+                   scene.camera.changePosX(xoffset * 0.01);
+                   scene.camera.changePosY(yoffset * 0.01);
                }
 
                lastX = xpos;
@@ -194,11 +194,11 @@ public:
         // Camera controls
         if (keys[GLFW_KEY_UP] || yScroll > 0)
         {
-            camera.changePosZ(-delta);
+            scene.camera.changePosZ(-delta);
         }
         else if (keys[GLFW_KEY_DOWN] || yScroll < 0)
         {
-            camera.changePosZ(delta);
+            scene.camera.changePosZ(delta);
         }
     }
 
@@ -247,7 +247,7 @@ public:
         do_movement(deltaTime);
 
         // Create camera transformations
-        view = glm::lookAt(*camera.getPosition(), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::lookAt(*scene.camera.getPosition(), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
 
         // Clear the colorbuffer
@@ -383,9 +383,6 @@ private:
     UI ui;
 
     Scene scene;
-  
-    // Camera
-    Camera camera;
 
     // Window dimensions
     const int width = 1600, height = 800;

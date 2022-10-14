@@ -142,7 +142,7 @@
     <ClInclude Include="include\OBB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\SceneLayer.h">
+    <ClInclude Include="include\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Light.h">

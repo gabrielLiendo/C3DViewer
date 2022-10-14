@@ -10,7 +10,7 @@ public:
 		this->path = path;
 		this->meshes = meshes;
 		this->pickingColor = pickingColor;
-	
+
 		// Set bounding box's corners values
 		float min_x, max_x, min_y, max_y, min_z, max_z, scaleFactor;
 
@@ -44,15 +44,15 @@ public:
 		glm::vec3 vmin = glm::vec3(min_x, min_y, min_z);
 
 		scaleFactor = std::max(std::max(max_x - min_x, max_y - min_y), max_z - min_z);
-		normalize = glm::vec3(1/ scaleFactor, 1/ scaleFactor, 1/ scaleFactor);
+		normalize = glm::vec3(1 / scaleFactor, 1 / scaleFactor, 1 / scaleFactor);
 		center = -(vmax + vmin) * 0.5f;
 
 		// Create bounding box
-		boundingBox = OBB(vmin, vmax , { 1.0, 1.0, 1.0 });
+		boundingBox = OBB(vmin, vmax, { 1.0, 1.0, 1.0 });
 	}
 
 	Object(std::vector<Mesh> meshes, std::string path, std::string name, glm::vec3 normalize, glm::vec3 scale, glm::vec3 translation, glm::vec3 angles,
-	    bool showWireframe, bool showVertices, bool showNormals, int pointSize, 
+		bool showWireframe, bool showVertices, bool showNormals, int pointSize,
 		glm::vec3 pickingColor, glm::vec3 wireframeColor, glm::vec3 verticesColor, glm::vec3 normalsColor, glm::vec3 boxColor, glm::vec3 vmin, glm::vec3 vmax)
 	{
 		this->meshes = meshes;
@@ -98,37 +98,13 @@ public:
 		boundingBox.center.x = newXTranslation;
 	}
 
-	std::string getName()
-	{
-		return name;
-	}
+	std::string getName(){ return name; }
 
-	glm::vec3* getScaleFactor()
-	{
-		return &scale;
-	}
+	glm::vec3* getScaleFactor(){ return &scale; }
 
-	glm::vec3* getTranslationFactor()
-	{
-		return &translation;
-	}
+	glm::vec3* getTranslationFactor(){ return &translation; }
 
-	glm::vec3* getRotationFactor()
-	{
-		return &angles;
-	}
-
-	glm::mat4 getModelTransformation()
-	{
-		return
-			glm::translate(glm::mat4(1.0f), translation) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(angles.x), glm::vec3(1.0f, 0.0f, 0.0f)) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(angles.y), glm::vec3(0.0f, 1.0f, 0.0f)) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(angles.z), glm::vec3(0.0f, 0.0f, 1.0f)) *
-			glm::scale(glm::mat4(1.0f), scale)* 
-			glm::scale(glm::mat4(1.0f), normalize)*
-			glm::translate(glm::mat4(1.0f), center);
-	}
+	glm::vec3* getRotationFactor(){ return &angles; }
 
 	glm::mat4 getBoxModel()
 	{
@@ -178,6 +154,18 @@ public:
 	glm::vec3* getVerticesColor()
 	{
 		return &verticesColor;
+	}
+
+	glm::mat4 getModelTransformation()
+	{
+		return
+			glm::translate(glm::mat4(1.0f), translation) *
+			glm::rotate(glm::mat4(1.0f), glm::radians(angles.x), glm::vec3(1.0f, 0.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), glm::radians(angles.y), glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), glm::radians(angles.z), glm::vec3(0.0f, 0.0f, 1.0f)) *
+			glm::scale(glm::mat4(1.0f), scale) *
+			glm::scale(glm::mat4(1.0f), normalize) *
+			glm::translate(glm::mat4(1.0f), center);
 	}
 
 	void drawFlatPicking(int colorLoc)
@@ -292,20 +280,4 @@ private:
 	glm::vec3 wireframeColor = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec3 verticesColor = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 normalsColor = glm::vec3(0.0f, 1.0f, 0.0f);
-};
-
-struct ObjectDistance
-{
-	Object* obj;
-	float intersectionDistance;
-	int index;
-
-	ObjectDistance() = default;
-
-	ObjectDistance(Object* obj, float intersectionDistance, int index)
-	{
-		this->obj = obj;
-		this->intersectionDistance = intersectionDistance;
-		this->index = index;
-	}
 };

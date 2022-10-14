@@ -4,12 +4,11 @@ class UI
 public:
     UI() = default;
 
-    UI(GLFWwindow* window, Scene *scene, Camera *camera)
+    UI(GLFWwindow* window, Scene *scene)
     {
         this->window = window;
-        this->camera = camera;
         this->scene = scene;
-        this->loadersManager = LoadersManager(scene, camera);
+        this->loadersManager = LoadersManager(scene);
 
         init();
     }
@@ -147,7 +146,7 @@ private:
             }
             if (ImGui::TreeNode("Position##Ligthing"))
             {
-                DrawVec3Control(" ", *scene->light.getPosition(), 0.05f, -max_float, max_float);
+                Vec3Control(" ", *scene->light.getPosition(), 0.05f, -max_float, max_float);
                 ImGui::TreePop();
             }
             if (ImGui::TreeNode("Intesity##Ligthing"))
@@ -164,7 +163,7 @@ private:
         {
             if (ImGui::TreeNodeEx("Position##Camera", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                DrawVec3Control(" ", *camera->getPosition(), 0.05f, -max_float, max_float);
+                Vec3Control(" ", *scene->camera.getPosition(), 0.05f, -max_float, max_float);
                 ImGui::TreePop();
             }
 
@@ -290,9 +289,9 @@ private:
             {
                 if (ImGui::TreeNodeEx("Model Transformation", ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    DrawVec3Control("Scale", *selectedObject->getScaleFactor(), 0.05f, -10.0f, 10.0f);
-                    DrawVec3Control("Rotation", *selectedObject->getRotationFactor(), 10.0f, -360.0f, 360.0f);
-                    DrawVec3Control("Translation", selectedObject->translation, 0.05f, -max_float, max_float);
+                    Vec3Control("Scale", *selectedObject->getScaleFactor(), 0.05f, -10.0f, 10.0f);
+                    Vec3Control("Rotation", *selectedObject->getRotationFactor(), 10.0f, -360.0f, 360.0f);
+                    Vec3Control("Translation", selectedObject->translation, 0.05f, -max_float, max_float);
                     ImGui::TreePop();
                 }
 
@@ -329,7 +328,7 @@ private:
         }
     }
 
-    static void DrawVec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max)
+    static void Vec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max)
     {
         ImGui::BeginTable(label.c_str(), 4, ImGuiTableFlags_NoPadOuterX);
         ImGui::TableNextRow();
@@ -364,7 +363,6 @@ private:
     // References
     GLFWwindow* window;
     Scene* scene;
-    Camera* camera;
 
     // Loaders
     LoadersManager loadersManager;

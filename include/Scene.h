@@ -1,15 +1,20 @@
 #pragma once
-class Scene
+struct Scene
 {
-public:
+	// Models Information
 	std::vector<Object> objects;
 	std::vector<std::shared_ptr<Material>> materials;
-
-	Light light;
-	bool useLighting = false;
-
 	Object* selectedObject;
 
+	// Camera
+	Camera camera;
+
+	// Light
+	Light light;
+
+	bool useLighting = false;
+
+	// Background Color
 	glm::vec3 bgColor;
 
 	// Rendering State

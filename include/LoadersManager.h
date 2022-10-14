@@ -5,13 +5,11 @@ public:
     LoadersManager()
     {
         this->scene = nullptr;
-        this->camera = nullptr;
     }
 
-    LoadersManager(Scene* scene, Camera* camera)
+    LoadersManager(Scene* scene)
     {
         this->scene = scene;
-        this->camera = camera;
         this->objLoader = ObjLoader(scene);
         this->mtlLoader = MtlLoader(scene);
     }
@@ -32,7 +30,7 @@ public:
         mtlLoader.load(mtlFileName.c_str());
 
         // Convert "i", the integer mesh ID, into an RGB color
-        int i = (*scene).objects.size();
+        int i = scene->objects.size();
         int r = (i & 0x000000FF) >> 0;
         int g = (i & 0x0000FF00) >> 8;
         int b = (i & 0x00FF0000) >> 16;
@@ -41,17 +39,17 @@ public:
 
         // Load .obj
         Object newObject = Object(objLoader.loadMeshes(objFileName), pickingColor, objFileName);
-        (*scene).objects.push_back(newObject);
+        scene->objects.push_back(newObject);
 
         // Set obj name
         std::string objName = objFileName;
         objName = objName.substr(objName.find_last_of("/\\") + 1);
         objName = objName.substr(0, objName.size() - 4);
-        (*scene).objects.back().setName(objName);
+        scene->objects.back().setName(objName);
 
         // Set loaded object as selected
-        selected = (*scene).objects.size() - 1;
-        (*scene).selectedObject = &(*scene).objects.back();
+        selected = scene->objects.size() - 1;
+        scene->selectedObject = &scene->objects.back();
     }
 
     // Save the current scene in a .txt
@@ -79,15 +77,18 @@ public:
         outfile.open(lTheSaveFileName);
 
         // Write the Camera's position
-        glm::vec3 camPos = *camera->getPosition();
+        glm::vec3 camPos = *scene->camera.getPosition();
         outfile << "camera " << camPos.x << " " << camPos.y << " " << camPos.z << "\n";
 
         // Write background color
         outfile << "bg " << scene->bgColor.x << " " << scene->bgColor.y << " " << scene->bgColor.z << "\n";
 
+        // Write the rendering options booleans
+        outfile << "ro " << scene->useDepthTest << " " << scene->useCullFace << " " << scene->useMultisample << "\n";
+
         // Write each objects' properties
-        for (int i = 0; i < (*scene).objects.size(); i++)
-            (*scene).objects[i].getInfo(outfile);
+        for (int i = 0; i < scene->objects.size(); i++)
+            scene->objects[i].getInfo(outfile);
 
         outfile.close();
     }
@@ -96,7 +97,7 @@ public:
     {
         char const* sceneFileName, * lFilterPatterns[2] = { "*.txt", "*.text" };
 
-        (*scene).deleteAllObjects();
+        scene->deleteAllObjects();
 
         sceneFileName = tinyfd_openFileDialog("Open Scene", "", 2, lFilterPatterns, NULL, 0);
 
@@ -104,11 +105,14 @@ public:
             return;
 
         glm::vec3 camPos;
+        bool useDepthTest, useCullFace, useMultisample;
+
         infile = std::ifstream(sceneFileName);
 
         std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> camPos.x >> camPos.y >> camPos.z;
-        camera->setPos(camPos);
+        scene->camera.setPos(camPos);
         std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> scene->bgColor.x >> scene->bgColor.y >> scene->bgColor.z;
+        std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> scene->useDepthTest >> scene->useCullFace >> scene->useMultisample;
 
         while (std::getline(infile, line))
         {
@@ -116,7 +120,7 @@ public:
             
             ss >> prefix;
             if (prefix == "o")
-                (*scene).objects.push_back(loadObject());
+                scene->objects.push_back(loadObject());
         }
     }
 
@@ -145,7 +149,7 @@ public:
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> scale.x >> scale.y >> scale.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> translation.x >> translation.y >> translation.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> angles.x >> angles.y >> angles.z;
-        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> useDepthTest >> useCullFace >> useMultisample >> showWireframe >> showVertices >> showNormals;
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> showWireframe >> showVertices >> showNormals;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> pointSize;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> pickingColor.x >> pickingColor.y >> pickingColor.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> wireframeColor.x >> wireframeColor.y >> wireframeColor.z;
@@ -178,11 +182,11 @@ public:
             {
                 ss >> mtl;
                 std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> diffuseColor.x >> diffuseColor.y >> diffuseColor.z;
-                for (int i = (*scene).materials.size() - 1; i >= 0; i--)
+                for (int i = scene->materials.size() - 1; i >= 0; i--)
                 {
-                    if (*((*scene).materials[i])->getName() == mtl)
+                    if (*(scene->materials[i])->getName() == mtl)
                     {
-                        (*(*scene).materials[i]).setDiffuse(diffuseColor);
+                        (*scene->materials[i]).setDiffuse(diffuseColor);
                         break;
                     }
                 }
@@ -195,7 +199,6 @@ public:
 
 private:
     Scene* scene = nullptr;
-    Camera* camera = nullptr;
 
     ObjLoader objLoader;
     MtlLoader mtlLoader;

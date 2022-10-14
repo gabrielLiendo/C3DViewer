@@ -2,8 +2,6 @@
 class Camera
 {
 public:
-	bool selected;
-
 	Camera() {
 		position = glm::vec3(0.0, 0.0, 2.0);
 	}
@@ -18,21 +16,21 @@ public:
 		this->position = position;
 	}
 
-	void changePosX(float xoffset)
+	void changePosX(double xoffset)
 	{
 		position.x += xoffset;
 	}
 
-	void changePosY(float yoffset)
+	void changePosY(double yoffset)
 	{
 		position.y += yoffset;
 	}
 
-	void changePosZ(float delta)
+	void changePosZ(double delta)
 	{
 		position.z += delta;
 	}
-	glm::vec3 position;
-private:
 	
+private:
+	glm::vec3 position;
 };

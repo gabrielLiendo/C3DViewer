@@ -23,6 +23,8 @@ public:
 
         // OpenGL options
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_MULTISAMPLE);
         glDepthFunc(GL_LESS);
         glViewport(0, 0, width, height);
 
@@ -59,7 +61,7 @@ public:
         setCallbacks();
 
         // Create and initialize UI 
-        ui = UI(window, &sceneLayer, &camera);
+        ui = UI(window, &scene, &camera);
     }
 
     // Set the required callback functions
@@ -110,7 +112,7 @@ public:
             glfwSetWindowShouldClose(window, GL_TRUE);
 
         else if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
-            sceneLayer.deleteSelected();
+            scene.deleteSelected();
 
         if (key >= 0 && key < 1024)
         {
@@ -145,13 +147,13 @@ public:
            }
            else
            {
-               float xoffset = xpos - lastX;
-               float yoffset = (height - ypos) - lastY;
+               double xoffset = xpos - lastX;
+               double yoffset = (height - ypos) - lastY;
 
-               if (sceneLayer.selectedObject)
+               if (scene.selectedObject)
                {
-                   sceneLayer.selectedObject->addXRot(- yoffset * 0.25);
-                   sceneLayer.selectedObject->addYRot(xoffset * 0.25);
+                   scene.selectedObject->addXRot(- yoffset * 0.25);
+                   scene.selectedObject->addYRot(xoffset * 0.25);
                }
                else
                {
@@ -208,15 +210,16 @@ public:
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
         unsigned char data[4];
-        glReadPixels(lastX, lastY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glReadPixels((int)lastX, (int)lastY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
         int pickedID = data[0] + data[1] * 256 + data[2] * 256 * 256;
 
         if (pickedID == 0x00ffffff) {
-            sceneLayer.selectedObject = nullptr;
+            scene.selectedObject = nullptr;
+            ui.setSelected(-1);
         }
-        else if (pickedID <= sceneLayer.objects.size()) {
-            sceneLayer.selectedObject = &sceneLayer.objects[pickedID - 1];
-            ui.setSelected(pickedID + 1);
+        else if (pickedID <= scene.objects.size()) {
+            scene.selectedObject = &scene.objects[pickedID];
+            ui.setSelected(pickedID);
         }
     }
 
@@ -229,7 +232,7 @@ public:
         glm::vec3 boxColor, color;
 
         // Calculate deltatime of current frame
-        float currentFrame = glfwGetTime();
+        double currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -255,15 +258,15 @@ public:
         {
             basic_shader.Use();
 
-            for (int i = 0; i < sceneLayer.objects.size(); i++)
+            for (int i = 0; i < scene.objects.size(); i++)
             {
-                objModel = sceneLayer.objects[i].getModelTransformation();
+                objModel = scene.objects[i].getModelTransformation();
 
                 // Pass the mvp matrix to the shader
                 MVP = projection * view * objModel;
                 glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
 
-                sceneLayer.objects[i].drawFlatPicking(colorLoc_bs);
+                scene.objects[i].drawFlatPicking(colorLoc_bs);
             }
 
             readPixel();
@@ -271,84 +274,84 @@ public:
         }
 
         // Clear the colorbuffer
-        glClearColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
+        glClearColor(scene.bgColor.x, scene.bgColor.y, scene.bgColor.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Use corresponding shader when setting uniforms/drawing objects
 
-        if (sceneLayer.useLighting)
+        if (scene.useLighting)
         {
             lighting_shader.Use();
 
             // Set lighting Uniforms
-            glUniform3f(lightColorLoc, sceneLayer.light.getColor()->x, sceneLayer.light.getColor()->y, sceneLayer.light.getColor()->z);
-            glUniform3f(lightPositionLoc, sceneLayer.light.getPosition()->x, sceneLayer.light.getPosition()->y, sceneLayer.light.getPosition()->z);
-            glUniform1f(lightAmbientIntensityLoc, *sceneLayer.light.getAmbientIntensity());
-            glUniform1f(lightDiffuseIntensityLoc, *sceneLayer.light.getDiffuseIntensity());
+            glUniform3f(lightColorLoc, scene.light.getColor()->x, scene.light.getColor()->y, scene.light.getColor()->z);
+            glUniform3f(lightPositionLoc, scene.light.getPosition()->x, scene.light.getPosition()->y, scene.light.getPosition()->z);
+            glUniform1f(lightAmbientIntensityLoc, *scene.light.getAmbientIntensity());
+            glUniform1f(lightDiffuseIntensityLoc, *scene.light.getDiffuseIntensity());
         }
         else 
             basic_shader.Use();
         
 
-        for (int i = 0; i < sceneLayer.objects.size(); i++)
+        for (int i = 0; i < scene.objects.size(); i++)
         {
-            objModel = sceneLayer.objects[i].getModelTransformation();
+            objModel = scene.objects[i].getModelTransformation();
 
             // Pass the mvp matrix to the shader
             MVP = projection * view * objModel;
            
-            if (sceneLayer.useLighting)
+            if (scene.useLighting)
             {
                 lighting_shader.Use();
                 glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
                 glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(objModel));
                 glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-                sceneLayer.objects[i].draw(true, mtlDiffuseLoc, mtlAmbientLoc, mtlSpecularLoc);
+                scene.objects[i].draw(true, mtlDiffuseLoc, mtlAmbientLoc, mtlSpecularLoc);
             }
             else
             {
                 basic_shader.Use();
                 glUniformMatrix4fv(mvpLoc_bs, 1, GL_FALSE, glm::value_ptr(MVP));
-                sceneLayer.objects[i].draw(false, colorLoc_bs, 0, 0);
+                scene.objects[i].draw(false, colorLoc_bs, 0, 0);
             }
                 
-            if (*sceneLayer.objects[i].getShowNormals())
+            if (*scene.objects[i].getShowNormals())
             {
                 // Use other shader to draw the normals
                 normals_shader.Use();
 
                 glUniformMatrix4fv(mvpLoc_ns, 1, GL_FALSE, glm::value_ptr(MVP));
-                color = *sceneLayer.objects[i].getNormalsColor();
+                color = *scene.objects[i].getNormalsColor();
                 glUniform3f(colorLoc_ns, color.x, color.y, color.z);
-                glUniform1f(scaleLoc_ns, sceneLayer.objects[i].getScaleNormal());
-                sceneLayer.objects[i].drawVertices();
+                glUniform1f(scaleLoc_ns, scene.objects[i].getScaleNormal());
+                scene.objects[i].drawVertices();
             }
 
-            if (*sceneLayer.objects[i].getShowVertices())
+            if (*scene.objects[i].getShowVertices())
             {
                 // Use other shader to draw the normals
                 circularVertex_shader.Use();
 
                 glUniformMatrix4fv(mvpLoc_cps, 1, GL_FALSE, glm::value_ptr(MVP));
-                color = *sceneLayer.objects[i].getVerticesColor();
+                color = *scene.objects[i].getVerticesColor();
                 glUniform3f(colorLoc_cps, color.x, color.y, color.z);
-                glUniform1f(pointSizeLoc_cps, float(*sceneLayer.objects[i].getPointSize()));
-                sceneLayer.objects[i].drawVertices();
+                glUniform1f(pointSizeLoc_cps, float(*scene.objects[i].getPointSize()));
+                scene.objects[i].drawVertices();
             }
         }
 
-        if (sceneLayer.selectedObject)
+        if (scene.selectedObject)
         {
             basic_shader.Use();
 
-            boxModel = sceneLayer.selectedObject->getModelTransformation() * sceneLayer.selectedObject->getBoxModel();
+            boxModel = scene.selectedObject->getModelTransformation() * scene.selectedObject->getBoxModel();
             MVP = projection * view * boxModel;
-            boxColor = *sceneLayer.selectedObject->getBoxColor();
+            boxColor = *scene.selectedObject->getBoxColor();
 
             glUniform3f(colorLoc_bs, boxColor.x, boxColor.y, boxColor.z);
             glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
 
-            sceneLayer.selectedObject->drawBoundingBox();
+            scene.selectedObject->drawBoundingBox();
         }
 
         // Render UI frame
@@ -379,7 +382,7 @@ private:
     // User Interface
     UI ui;
 
-    SceneLayer sceneLayer;
+    Scene scene;
   
     // Camera
     Camera camera;
@@ -388,8 +391,8 @@ private:
     const int width = 1600, height = 800;
 
     // Mouse Position
-    float lastX = width / 2.0;
-    float lastY = height / 2.0;
+    double lastX = width / 2.0;
+    double lastY = height / 2.0;
    
     bool processColorPicker = false;
 
@@ -397,8 +400,8 @@ private:
     double yScroll = 0.0f;
 
     // Deltatime
-    float deltaTime = 0.0f;	// Time between current frame and last frame
-    float lastFrame = 0.0f; // Time of last frame
+    double deltaTime = 0.0f;	// Time between current frame and last frame
+    double lastFrame = 0.0f; // Time of last frame
 
     // Keys and Mouse boolean state
     bool keys[1024] = {false};

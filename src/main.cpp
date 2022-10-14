@@ -26,8 +26,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-glm::vec3 bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
-
 // Other includes
 #include "Shader.h"
 #include "Utils.h"

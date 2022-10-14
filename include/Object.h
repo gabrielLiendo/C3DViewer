@@ -12,7 +12,7 @@ public:
 		this->pickingColor = pickingColor;
 	
 		// Set bounding box's corners values
-		float min_x, max_x, min_y, max_y, min_z, max_z, size_x, size_y, size_z, scaleFactor;
+		float min_x, max_x, min_y, max_y, min_z, max_z, scaleFactor;
 
 		min_x = max_x = meshes[0].vertices[0].position.x;
 		min_y = max_y = meshes[0].vertices[0].position.y;
@@ -52,8 +52,8 @@ public:
 	}
 
 	Object(std::vector<Mesh> meshes, std::string path, std::string name, glm::vec3 normalize, glm::vec3 scale, glm::vec3 translation, glm::vec3 angles,
-		bool useDepthTest, bool useCullFace, bool useMultisample, bool showWireframe, bool showVertices, bool showNormals,
-		int pointSize, glm::vec3 pickingColor, glm::vec3 wireframeColor, glm::vec3 verticesColor, glm::vec3 normalsColor, glm::vec3 boxColor, glm::vec3 vmin, glm::vec3 vmax)
+	    bool showWireframe, bool showVertices, bool showNormals, int pointSize, 
+		glm::vec3 pickingColor, glm::vec3 wireframeColor, glm::vec3 verticesColor, glm::vec3 normalsColor, glm::vec3 boxColor, glm::vec3 vmin, glm::vec3 vmax)
 	{
 		this->meshes = meshes;
 		this->path = path;
@@ -63,9 +63,6 @@ public:
 		this->translation = translation;
 		this->angles = angles;
 
-		this->useDepthTest = useDepthTest;
-		this->useCullFace = useCullFace;
-		this->useMultisample = useMultisample;
 		this->showWireframe = showWireframe;
 		this->showVertices = showVertices;
 		this->showNormals = showNormals;
@@ -85,12 +82,12 @@ public:
 		this->name = name;
 	}
 
-	void addXRot(float xoffset)
+	void addXRot(double xoffset)
 	{
 		angles.x += xoffset;
 	}
 
-	void addYRot(float yoffset)
+	void addYRot(double yoffset)
 	{
 		angles.y += yoffset;
 	}
@@ -129,7 +126,6 @@ public:
 			glm::rotate(glm::mat4(1.0f), glm::radians(angles.y), glm::vec3(0.0f, 1.0f, 0.0f)) *
 			glm::rotate(glm::mat4(1.0f), glm::radians(angles.z), glm::vec3(0.0f, 0.0f, 1.0f)) *
 			glm::scale(glm::mat4(1.0f), scale)* 
-
 			glm::scale(glm::mat4(1.0f), normalize)*
 			glm::translate(glm::mat4(1.0f), center);
 	}
@@ -159,16 +155,6 @@ public:
 		return &pointSize;
 	}
 
-	bool* getZBufferBool()
-	{
-		return &useDepthTest;
-	}
-
-	bool* getCullFaceBool()
-	{
-		return &useCullFace;
-	}
-
 	bool* getWireframeBool()
 	{
 		return &showWireframe;
@@ -182,11 +168,6 @@ public:
 	bool* getShowNormals()
 	{
 		return &showNormals;
-	}
-
-	bool* getMultisampleBool()
-	{
-		return &useMultisample;
 	}
 
 	glm::vec3* getWireframeColor()
@@ -211,21 +192,6 @@ public:
 	void draw(bool lighting, int diffuseLoc, int ambientLoc, int specularLoc)
 	{
 		glm::vec3 color;
-
-		if (useDepthTest)
-			glEnable(GL_DEPTH_TEST);
-		else
-			glDisable(GL_DEPTH_TEST);
-
-		if (useCullFace)
-			glEnable(GL_CULL_FACE);
-		else
-			glDisable(GL_CULL_FACE);
-
-		if (useMultisample)
-			glEnable(GL_MULTISAMPLE);
-		else
-			glDisable(GL_MULTISAMPLE);
 
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0, 1.0);
@@ -268,7 +234,7 @@ public:
 	{
 		glEnable(GL_PROGRAM_POINT_SIZE);
 
-		glPointSize(pointSize);
+		glPointSize((float)pointSize);
 		for (int i = 0; i < meshes.size(); i++)
 			meshes[i].drawVertex();
 
@@ -288,8 +254,7 @@ public:
 		outfile << "s " << scale.x << " " << scale.y << " " << scale.z << "\n";
 		outfile << "t " << translation.x << " " << translation.y << " " << translation.z << "\n";
 		outfile << "a " << angles.x << " " << angles.y << " " << angles.z << "\n";
-		outfile << "rs " << useDepthTest << " " << useCullFace << " " << useMultisample
-				<< " " << showWireframe << " " << showVertices << " " << showNormals << "\n";
+		outfile << "rs " << " " << showWireframe << " " << showVertices << " " << showNormals << "\n";
 		outfile << "pt " << pointSize << "\n";
 		outfile << "pc " << pickingColor.x << " " << pickingColor.y << " " << pickingColor.z << "\n";
 		outfile << "wc " << wireframeColor.x << " " << wireframeColor.y << " " << wireframeColor.z << "\n";
@@ -318,9 +283,6 @@ private:
 	std::vector<Mesh> meshes;
 
 	// Rendering State
-	bool useDepthTest = true;
-	bool useCullFace = true;
-	bool useMultisample = true;
 	bool showWireframe = false;
 	bool showVertices = false; int pointSize = 3;
 	bool showNormals = false;

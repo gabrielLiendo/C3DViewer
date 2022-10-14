@@ -1,5 +1,5 @@
 #pragma once
-class SceneLayer
+class Scene
 {
 public:
 	std::vector<Object> objects;
@@ -10,12 +10,48 @@ public:
 
 	Object* selectedObject;
 
-	SceneLayer()
+	glm::vec3 bgColor;
+
+	// Rendering State
+	bool useDepthTest = true;
+	bool useCullFace = true;
+	bool useMultisample = true;
+
+	Scene()
 	{
+		// Establish default background color
+		bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
+
 		// Create Default Material
 		materials.push_back(std::make_shared<Material>());
+
+		// Create Main Light Source
 		light = Light();
 	};
+
+	void setDepthTest()
+	{
+		if (useDepthTest)
+			glEnable(GL_DEPTH_TEST);
+		else
+			glDisable(GL_DEPTH_TEST);
+	}
+
+	void setCullFace()
+	{
+		if (useCullFace)
+			glEnable(GL_CULL_FACE);
+		else
+			glDisable(GL_CULL_FACE);
+	}
+
+	void setMultisample()
+	{
+		if (useMultisample)
+			glEnable(GL_MULTISAMPLE);
+		else
+			glDisable(GL_MULTISAMPLE);
+	}
 
 	void setSelectedObject(Object* selectedObject)
 	{

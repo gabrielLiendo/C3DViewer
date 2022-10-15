@@ -88,9 +88,9 @@ private:
 			ss >> prefix;
 			if (prefix == "o")
 			{	
-				int size = line.size();
+				size_t size = line.size();
 				infile.putback('\n');
-				for (int i = 0; i < size; i++)
+				for (size_t  i = 0; i < size; i++)
 					infile.putback(line[size - i - 1]);
 
 				break;
@@ -226,11 +226,11 @@ private:
 
 		if (!normalsIncluded)
 		{
-			for (int i = 0; i < positionIndex.size(); i++)
+			for (size_t  i = 0; i < positionIndex.size(); i++)
 			{
 				glm::vec3 tNormal = glm::vec3(0,0,0);
 				int n = 0;
-				for (int j = 0; j < positionIndex.size(); j++)
+				for (size_t j = 0; j < positionIndex.size(); j++)
 				{
 					if (positionIndex[i] == positionIndex[j] && i != j)
 					{
@@ -244,7 +244,7 @@ private:
 		}
 
 		std::shared_ptr<Material> mtl = nullptr;
-		for (int i = 0; i < (*scene).materials.size(); i++)
+		for (size_t  i = 0; i < (*scene).materials.size(); i++)
 		{
 			if (*((*scene).materials[i])->getName() == mtl_name)
 				mtl = (*scene).materials[i];

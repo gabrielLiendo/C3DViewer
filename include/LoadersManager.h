@@ -30,7 +30,7 @@ public:
         mtlLoader.load(mtlFileName.c_str());
 
         // Convert "i", the integer mesh ID, into an RGB color
-        int i = scene->objects.size();
+        int i = (int) scene->objects.size();
         int r = (i & 0x000000FF) >> 0;
         int g = (i & 0x0000FF00) >> 8;
         int b = (i & 0x00FF0000) >> 16;
@@ -48,7 +48,7 @@ public:
         scene->objects.back().setName(objName);
 
         // Set loaded object as selected
-        selected = scene->objects.size() - 1;
+        selected = (int)(scene->objects.size() - 1);
         scene->selectedObject = &scene->objects.back();
     }
 
@@ -105,7 +105,6 @@ public:
             return;
 
         glm::vec3 camPos;
-        bool useDepthTest, useCullFace, useMultisample;
 
         infile = std::ifstream(sceneFileName);
 
@@ -132,7 +131,7 @@ public:
         glm::vec3 normalize, scale, translation, angles;
         glm::vec3 pickingColor, wireframeColor, vertexColor, normalsColor, boxColor, diffuseColor;
         glm::vec3 vmin, vmax;
-        bool useDepthTest, useCullFace, useMultisample, showWireframe, showVertices, showNormals;
+        bool showWireframe, showVertices, showNormals;
         int pointSize;
 
         while (ss >> buffName)
@@ -171,7 +170,7 @@ public:
             ss >> prefix;
             if (prefix == "o")
             {
-                int size = line.size();
+                size_t size = line.size();
                 infile.putback('\n');
                 for (int i = 0; i < size; i++)
                     infile.putback(line[size - i - 1]);
@@ -182,7 +181,7 @@ public:
             {
                 ss >> mtl;
                 std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> diffuseColor.x >> diffuseColor.y >> diffuseColor.z;
-                for (int i = scene->materials.size() - 1; i >= 0; i--)
+                for (size_t i = scene->materials.size() - 1; i >= 0; i--)
                 {
                     if (*(scene->materials[i])->getName() == mtl)
                     {

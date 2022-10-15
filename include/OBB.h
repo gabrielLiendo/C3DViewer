@@ -74,7 +74,7 @@ struct OBB
         glm::vec4 v2 = model * glm::vec4(vmax, 1.0);
 
         float diagonal = sqrt(glm::length(v2 - v1));
-        return diagonal * 0.05;
+        return diagonal * 0.05f;
     }
 
     void getInfo(std::ofstream& outfile)

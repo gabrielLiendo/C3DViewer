@@ -131,7 +131,7 @@ private:
     // Draw the 'Lighting', 'Scene', 'Camera', 'Objects' and 'Materials' windows 
     void renderSceneConfigWindows()
     {
-        if (ImGui::Begin("Lighting"))
+        ImGui::Begin("Lighting");
         {
             if (ImGui::TreeNodeEx("Configuration##Ligthing", ImGuiTreeNodeFlags_DefaultOpen))
             {
@@ -159,7 +159,7 @@ private:
             ImGui::End();
         }
 
-        if (ImGui::Begin("Camera"))
+        ImGui::Begin("Camera");
         {
             if (ImGui::TreeNodeEx("Position##Camera", ImGuiTreeNodeFlags_DefaultOpen))
             {
@@ -170,7 +170,7 @@ private:
             ImGui::End();
         }
 
-        if (ImGui::Begin("Scene"))
+        ImGui::Begin("Scene");
         {
             if (ImGui::TreeNodeEx("Background", ImGuiTreeNodeFlags_DefaultOpen))
             {
@@ -198,13 +198,12 @@ private:
                 ImGui::TreePop();
             }
 
- 
             ImGui::End();
         }
 
-        if (ImGui::Begin("Materials"))
+        ImGui::Begin("Materials");
         {
-            int n = scene->materials.size();
+            size_t n = scene->materials.size();
             std::shared_ptr<Material> mtl = scene->materials[0];
 
             if (ImGui::TreeNode(mtl->getName()->c_str()))
@@ -215,7 +214,7 @@ private:
                 ImGui::TreePop();
             }
 
-            for (int i = 1; i < n; i++)
+            for (size_t i = 1; i < n; i++)
             {
                 mtl = scene->materials[i];
                 if (ImGui::TreeNodeEx(mtl->getName()->c_str(), ImGuiTreeNodeFlags_DefaultOpen))
@@ -230,9 +229,9 @@ private:
             ImGui::End();
         }
 
-        if (ImGui::Begin("Objects"))
+        ImGui::Begin("Objects");
         {
-            int m = scene->objects.size();
+            int m = (int)scene->objects.size();
            
             for (int i = 0; i < m; i++)
             {
@@ -253,14 +252,14 @@ private:
     {
         Object* selectedObject = scene->selectedObject;
 
-        if (ImGui::Begin("Meshes"))
+        ImGui::Begin("Meshes");
         {
             if (selectedObject)
             {
                 std::vector<Mesh>* meshes = selectedObject->getMeshes();
-                int n = meshes->size();
+                size_t n = meshes->size();
 
-                for (int i = 0; i < n; i++)
+                for (size_t i = 0; i < n; i++)
                 {
                     Mesh* m = &(*meshes)[i];
 
@@ -283,7 +282,7 @@ private:
             ImGui::End();
         }
 
-        if (ImGui::Begin("Properties"))
+        ImGui::Begin("Properties");
         {
             if (selectedObject)
             {

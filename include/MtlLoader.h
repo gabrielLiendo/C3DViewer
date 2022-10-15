@@ -19,6 +19,8 @@ public:
 		}
 			
 		readMaterials();
+
+		return 0;
 	}
 
 private:
@@ -62,7 +64,7 @@ private:
 			ss >> prefix;
 			if (prefix == "newmtl")
 			{
-				int size = line.size();
+				size_t size = line.size();
 				infile.putback('\n');
 				for (int i = 0; i < size; i++)
 					infile.putback(line[size - i - 1]);

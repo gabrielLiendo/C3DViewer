@@ -29,13 +29,13 @@ public:
 	void draw()
 	{
 		bind();
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+		glDrawArrays(GL_TRIANGLES, 0, (int)vertices.size());
 	}
 	
 	void drawVertex()
 	{
 		bind();
-		glDrawArrays(GL_POINTS, 0, vertices.size());
+		glDrawArrays(GL_POINTS, 0, (int)vertices.size());
 	}
 
 	void getInfo(std::ofstream& outfile)

@@ -18,11 +18,11 @@ public:
 		min_y = max_y = meshes[0].vertices[0].position.y;
 		min_z = max_z = meshes[0].vertices[0].position.z;
 
-		int n = meshes.size();
-		for (int i = 0; i < n; i++)
+		size_t n = meshes.size();
+		for (size_t  i = 0; i < n; i++)
 		{
-			int m = meshes[i].vertices.size();
-			for (int j = 0; j < m; j++)
+			size_t m = meshes[i].vertices.size();
+			for (size_t  j = 0; j < m; j++)
 			{
 				Vertex vertex = meshes[i].vertices[j];
 				if (vertex.position.x < min_x) min_x = vertex.position.x;
@@ -84,12 +84,12 @@ public:
 
 	void addXRot(double xoffset)
 	{
-		angles.x += xoffset;
+		angles.x += (float)xoffset;
 	}
 
 	void addYRot(double yoffset)
 	{
-		angles.y += yoffset;
+		angles.y += (float)yoffset;
 	}
 
 	void changeXTranslation(float newXTranslation) {
@@ -170,7 +170,7 @@ public:
 
 	void drawFlatPicking(int colorLoc)
 	{
-		for (int i = 0; i < meshes.size(); i++)
+		for (size_t i = 0; i < meshes.size(); i++)
 		{
 			glUniform3f(colorLoc, pickingColor.x, pickingColor.y, pickingColor.z);
 			meshes[i].draw();
@@ -180,11 +180,23 @@ public:
 	void draw(bool lighting, int diffuseLoc, int ambientLoc, int specularLoc)
 	{
 		glm::vec3 color;
+		size_t n = meshes.size();
 
-		glEnable(GL_POLYGON_OFFSET_FILL);
-		glPolygonOffset(1.0, 1.0);
+		if (showWireframe)
+		{
+			glEnable(GL_POLYGON_OFFSET_FILL);
+			glPolygonOffset(0.0, -1.0);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			for (size_t  i = 0; i < n; i++)
+			{
+				glUniform3f(diffuseLoc, wireframeColor.x, wireframeColor.y, wireframeColor.z);
+				meshes[i].draw();
+			}
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDisable(GL_POLYGON_OFFSET_FILL);
+		}
 
-		for (int i = 0; i < meshes.size(); i++)
+		for (size_t  i = 0; i < n; i++)
 		{
 			if (*meshes[i].getShow())
 			{
@@ -204,18 +216,7 @@ public:
 			}
 		}
 
-		glDisable(GL_POLYGON_OFFSET_FILL);
-
-		if (showWireframe)
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			for (int i = 0; i < meshes.size(); i++)
-			{
-				glUniform3f(diffuseLoc, wireframeColor.x, wireframeColor.y, wireframeColor.z);
-				meshes[i].draw();
-			}
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
+		
 	}
 	
 	void drawVertices()
@@ -223,7 +224,7 @@ public:
 		glEnable(GL_PROGRAM_POINT_SIZE);
 
 		glPointSize((float)pointSize);
-		for (int i = 0; i < meshes.size(); i++)
+		for (size_t  i = 0; i < meshes.size(); i++)
 			meshes[i].drawVertex();
 
 		glDisable(GL_PROGRAM_POINT_SIZE);
@@ -250,7 +251,7 @@ public:
 		outfile << "nc " << normalsColor.x << " " << normalsColor.y << " " << normalsColor.z << "\n";
 		boundingBox.getInfo(outfile);
 
-		for (int i = 0; i < meshes.size(); i++)
+		for (size_t  i = 0; i < meshes.size(); i++)
 			meshes[i].getInfo(outfile);
 	}
 

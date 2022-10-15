@@ -18,17 +18,17 @@ public:
 
 	void changePosX(double xoffset)
 	{
-		position.x += xoffset;
+		position.x += (float) xoffset;
 	}
 
 	void changePosY(double yoffset)
 	{
-		position.y += yoffset;
+		position.y += (float) yoffset;
 	}
 
 	void changePosZ(double delta)
 	{
-		position.z += delta;
+		position.z += (float) delta;
 	}
 	
 private:

@@ -187,7 +187,7 @@ public:
         return value;
     }
 
-    void do_movement(GLfloat delta)
+    void do_movement(double delta)
     {
         double yScroll = getYScroll();
 

@@ -11,7 +11,6 @@ public:
     {
         this->scene = scene;
         this->objLoader = ObjLoader(scene);
-        this->mtlLoader = MtlLoader(scene);
     }
 
     // Open File Dialog and load .obj with its respective material (.mtl)
@@ -27,7 +26,7 @@ public:
         // Load the respective .mtl
         std::string mtlFileName = objFileName;
         mtlFileName = mtlFileName.substr(0, mtlFileName.size() - 4) + ".mtl";
-        mtlLoader.load(mtlFileName.c_str());
+        MtlLoader::load(mtlFileName.c_str(), scene);
 
         // Convert "i", the integer mesh ID, into an RGB color
         int i = (int) scene->objects.size();
@@ -160,7 +159,7 @@ public:
 
        
         mtlPath = objPath.substr(0, objPath.size() - 4) + ".mtl";
-        mtlLoader.load((mtlPath).c_str());
+        MtlLoader::load((mtlPath).c_str(), scene);
         meshes = objLoader.loadMeshes((objPath).c_str());
 
         while (std::getline(infile, line))
@@ -200,7 +199,6 @@ private:
     Scene* scene = nullptr;
 
     ObjLoader objLoader;
-    MtlLoader mtlLoader;
 
     std::ifstream infile;
     std::string line, prefix;

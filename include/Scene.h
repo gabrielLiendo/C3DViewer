@@ -34,6 +34,12 @@ struct Scene
 		light = Light();
 	};
 
+	void addMaterial(std::string name, glm::vec3 ka, glm::vec3 kd, glm::vec3 ks)
+	{
+		std::shared_ptr<Material> newMtl = std::make_shared<Material>(name, ka, kd, ks);
+		materials.push_back(newMtl);
+	}
+
 	void setDepthTest()
 	{
 		if (useDepthTest)
@@ -65,9 +71,10 @@ struct Scene
 
 	void deleteAllObjects()
 	{
-		selectedObject = nullptr;
 		objects.clear();
-		materials.clear();
+		materials.resize(1);
+		selectedObject = nullptr;
+		std::cout << "Se borraron" << std::endl;
 	}
 
 	void deleteSelected()

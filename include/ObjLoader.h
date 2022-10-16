@@ -10,32 +10,11 @@ public:
 	}
 
 	std::vector<Mesh> loadMeshes(const char* file_name)
-	{
-		checkNormals = true;
-		normalsIncluded = true;
-
-		infile = std::ifstream (file_name);
-
-		return readMeshes();
-	}
-
-private:
-	Scene* scene;
-
-	std::ifstream infile;
-	std::vector<glm::vec3> positions, normals, faceNormals;
-	std::vector<int> positionIndex;
-
-	std::string line, prefix;
-	std::stringstream ss;
-
-	bool checkNormals = true;
-	bool normalsIncluded = true;
-
-	std::vector<Mesh> readMeshes()
-	{
+	{	
 		glm::vec3 v3;
 		std::vector<Mesh> meshes;
+		
+		infile = std::ifstream(file_name);
 
 		while (std::getline(infile, line))
 		{
@@ -66,6 +45,19 @@ private:
 
 		return meshes;
 	}
+
+private:
+	Scene* scene;
+
+	std::ifstream infile;
+	std::vector<glm::vec3> positions, normals, faceNormals;
+	std::vector<int> positionIndex;
+
+	std::string line, prefix;
+	std::stringstream ss;
+
+	bool checkNormals = true;
+	bool normalsIncluded = true;
 
 	Mesh readMesh()
 	{
@@ -226,11 +218,11 @@ private:
 
 		if (!normalsIncluded)
 		{
-			for (size_t  i = 0; i < positionIndex.size(); i++)
+			for (int i = 0; i < positionIndex.size(); i++)
 			{
 				glm::vec3 tNormal = glm::vec3(0,0,0);
 				int n = 0;
-				for (size_t j = 0; j < positionIndex.size(); j++)
+				for (int j = 0; j < positionIndex.size(); j++)
 				{
 					if (positionIndex[i] == positionIndex[j] && i != j)
 					{

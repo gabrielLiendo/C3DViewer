@@ -127,10 +127,8 @@ public:
     {
         ImGuiIO& io = ImGui::GetIO();
 
-        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && !io.WantCaptureMouse) {
-            std::cout << lastX << " " << lastY << std::endl;
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && !io.WantCaptureMouse)
             processColorPicker = true;
-        }
     }
 
     void mouse_callback(double xpos, double ypos)
@@ -157,8 +155,8 @@ public:
                }
                else
                {
-                   scene.camera.changePosX(xoffset * 0.01);
-                   scene.camera.changePosY(yoffset * 0.01);
+                   scene.camera.changePosX( xoffset * 0.01);
+                   scene.camera.changePosY( yoffset * 0.01);
                }
 
                lastX = xpos;
@@ -193,13 +191,9 @@ public:
 
         // Camera controls
         if (keys[GLFW_KEY_UP] || yScroll > 0)
-        {
-            scene.camera.changePosZ(-delta);
-        }
+            scene.camera.changePosZ(-1.5f*delta);
         else if (keys[GLFW_KEY_DOWN] || yScroll < 0)
-        {
-            scene.camera.changePosZ(delta);
-        }
+            scene.camera.changePosZ(1.5f*delta);
     }
 
     void readPixel()
@@ -236,11 +230,8 @@ public:
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        int w, h;
-        glfwGetFramebufferSize(window, &w, &h);
-
         // Define the viewport dimensions
-        glViewport(0, 0, w, h);
+        glViewport(0, 0, width, height);
 
         // Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
@@ -248,7 +239,7 @@ public:
 
         // Create camera transformations
         view = glm::lookAt(*scene.camera.getPosition(), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(w) / float(h), 0.1f, 100.0f);
+        projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(width) / float(height), 0.1f, 100.0f);
 
         // Clear the colorbuffer
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -278,7 +269,6 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Use corresponding shader when setting uniforms/drawing objects
-
         if (scene.useLighting)
         {
             lighting_shader.Use();
@@ -289,10 +279,8 @@ public:
             glUniform1f(lightAmbientIntensityLoc, *scene.light.getAmbientIntensity());
             glUniform1f(lightDiffuseIntensityLoc, *scene.light.getDiffuseIntensity());
         }
-        else 
-            basic_shader.Use();
         
-
+        // Render objects
         for (int i = 0; i < scene.objects.size(); i++)
         {
             objModel = scene.objects[i].getModelTransformation();

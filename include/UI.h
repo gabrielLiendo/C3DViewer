@@ -107,7 +107,6 @@ private:
                     loadersManager.loadObj(selected);
                 if (ImGui::MenuItem("Load Scene"))
                     loadersManager.loadScene();
-
                 if (ImGui::MenuItem("Save Scene"))
                     loadersManager.saveScene();
 
@@ -118,13 +117,34 @@ private:
                 if (ImGui::MenuItem("Delete Selected", "Backspace"))
                     scene->deleteSelected();
                 if (ImGui::MenuItem("Delete All", "X"))
-                    scene->deleteAllObjects();
-
+                    openPopupDelete = true;
+                   
                 ImGui::EndMenu();
+            } 
+            if (openPopupDelete == true)
+            {
+                ImGui::OpenPopup("Delete All?");
+                openPopupDelete = false;
             }
-            ImGui::EndMenuBar();
-        }
 
+            if (ImGui::BeginPopupModal("Delete All?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("All the objects will be deleted.\nThis operation cannot be undone!\n\n");
+                ImGui::Separator();
+
+                if (ImGui::Button("OK", ImVec2(120, 0))) 
+                {   
+                    scene->deleteAllObjects();
+                    ImGui::CloseCurrentPopup(); 
+                }
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+                ImGui::EndPopup();
+            }
+           
+        ImGui::EndMenuBar();
+        }
         ImGui::End();
     }
 
@@ -369,6 +389,7 @@ private:
     // State
     int selected = -1;
     bool show_demo_window = true;
+    bool openPopupDelete = false;
 
     // Slider limit values
     float max_float = std::numeric_limits<float>::max();

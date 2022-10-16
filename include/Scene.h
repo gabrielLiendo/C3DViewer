@@ -4,7 +4,7 @@ struct Scene
 	// Models Information
 	std::vector<Object> objects;
 	std::vector<std::shared_ptr<Material>> materials;
-	Object* selectedObject;
+	Object* selectedObject = nullptr;
 
 	// Camera
 	Camera camera;

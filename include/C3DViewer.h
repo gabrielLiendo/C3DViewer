@@ -29,10 +29,10 @@ public:
         glViewport(0, 0, width, height);
 
         // Build and compile our shader programs
-        basic_shader = Shader("shaders/vertex/basic.vs", "shaders/fragment/flatColor.frag");
-        lighting_shader = Shader("shaders/vertex/ilum.vs", "shaders/fragment/ilumColor.frag");
-        normals_shader = Shader("shaders/vertex/passNormal.vs", "shaders/fragment/flatColor.frag", "shaders/geometry/normals.geom");
-        circularVertex_shader = Shader("shaders/vertex/basic.vs", "shaders/fragment/pointColor.frag");
+        basic_shader = Shader("misc/shaders/vertex/basic.vs", "misc/shaders/fragment/flatColor.frag");
+        lighting_shader = Shader("misc/shaders/vertex/ilum.vs", "misc/shaders/fragment/ilumColor.frag");
+        normals_shader = Shader("misc/shaders/vertex/passNormal.vs", "misc/shaders/fragment/flatColor.frag", "misc/shaders/geometry/normals.geom");
+        circularVertex_shader = Shader("misc/shaders/vertex/basic.vs", "misc/shaders/fragment/pointColor.frag");
         
         // Get the uniform locations
         mvpLoc_bs = glGetUniformLocation(basic_shader.Program, "MVP");

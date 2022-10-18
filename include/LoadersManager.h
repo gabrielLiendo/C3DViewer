@@ -34,7 +34,6 @@ public:
         int g = (i & 0x0000FF00) >> 8;
         int b = (i & 0x00FF0000) >> 16;
         glm::vec3 pickingColor = glm::vec3(r / 255.0f, g / 255.0f, b / 255.0f);
-        std::cout << pickingColor.x << "  " << pickingColor.y << " " << pickingColor.z << std::endl;
 
         // Load .obj
         Object newObject = Object(objLoader.loadMeshes(objFileName), pickingColor, objFileName);
@@ -44,7 +43,7 @@ public:
         std::string objName = objFileName;
         objName = objName.substr(objName.find_last_of("/\\") + 1);
         objName = objName.substr(0, objName.size() - 4);
-        scene->objects.back().setName(objName);
+        scene->objects.back().name = objName;
 
         // Set loaded object as selected
         selected = (int)(scene->objects.size() - 1);
@@ -108,7 +107,7 @@ public:
         infile = std::ifstream(sceneFileName);
 
         std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> camPos.x >> camPos.y >> camPos.z;
-        scene->camera.setPos(camPos);
+        scene->camera.setPosition(camPos);
         std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> scene->bgColor.x >> scene->bgColor.y >> scene->bgColor.z;
         std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> scene->useDepthTest >> scene->useCullFace >> scene->useMultisample;
 

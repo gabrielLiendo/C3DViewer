@@ -2,6 +2,14 @@
 class Object
 {
 public:
+	std::string name;
+
+	// Model Tranformation Components
+	glm::vec3 center, normalize, scale, translation, oldAngles, angles;
+
+	// Bounding box
+	OBB boundingBox;
+
 	Object() = default;
 
 	Object(std::vector<Mesh> meshes, glm::vec3 pickingColor, std::string path)
@@ -34,11 +42,6 @@ public:
 			}
 		}
 
-		// Initialize model matrix components
-		translation = glm::vec3(0.0, 0.0, 0.0);
-		scale = glm::vec3(1.0, 1.0, 1.0);
-		angles = glm::vec3(0.0f, 0.0f, 0.0f);
-
 		// Normalize mesh into unitary parallelepiped
 		glm::vec3 vmax = glm::vec3(max_x, max_y, max_z);
 		glm::vec3 vmin = glm::vec3(min_x, min_y, min_z);
@@ -46,6 +49,24 @@ public:
 		scaleFactor = std::max(std::max(max_x - min_x, max_y - min_y), max_z - min_z);
 		normalize = glm::vec3(1 / scaleFactor, 1 / scaleFactor, 1 / scaleFactor);
 		center = -(vmax + vmin) * 0.5f;
+
+		// Initialize model matrix components
+		translation = glm::vec3(0.0, 0.0, 0.0);
+		scale = glm::vec3(1.0, 1.0, 1.0);
+		angles = glm::vec3(0.0f, 0.0f, 0.0f);
+		oldAngles = angles;
+
+		// Initialize matrices
+		normalizeMat = glm::scale(glm::mat4(1.0f), normalize);
+		centerMat = glm::translate(glm::mat4(1.0f), center);
+		scaleMat = glm::scale(glm::mat4(1.0f), scale);
+		translationMat = glm::translate(glm::mat4(1.0f), translation);
+		
+		glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(angles.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(angles.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 rotZ = glm::rotate(glm::mat4(1.0f), glm::radians(angles.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		
+		rotationMat = rotX * rotY * rotZ;
 
 		// Create bounding box
 		boundingBox = OBB(vmin, vmax, { 1.0, 1.0, 1.0 });
@@ -62,6 +83,7 @@ public:
 		this->scale = scale;
 		this->translation = translation;
 		this->angles = angles;
+		oldAngles = angles;
 
 		this->showWireframe = showWireframe;
 		this->showVertices = showVertices;
@@ -75,36 +97,53 @@ public:
 
 		this->boundingBox = OBB(vmin, vmax, boxColor);
 
-	}
+		// Initialize matrices
+		normalizeMat = glm::scale(glm::mat4(1.0f), normalize);
+		centerMat = glm::translate(glm::mat4(1.0f), center);
+		scaleMat = glm::scale(glm::mat4(1.0f), scale);
+		translationMat = glm::translate(glm::mat4(1.0f), translation);
 
-	void setName(std::string name) 
-	{
-		this->name = name;
+		glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(angles.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(angles.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 rotZ = glm::rotate(glm::mat4(1.0f), glm::radians(angles.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		
+		rotationMat = rotX * rotY * rotZ;
 	}
 
 	void addXRot(double xoffset)
 	{
-		angles.x += (float)xoffset;
+		glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians((float)xoffset), glm::vec3(1.0f, 0.0f, 0.0f));
+		rotationMat = rotX * rotationMat;
+
+		oldAngles.x = angles.x;
+		angles.x += xoffset;
 	}
 
 	void addYRot(double yoffset)
 	{
-		angles.y += (float)yoffset;
+		glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians((float)yoffset), glm::vec3(0.0f, 1.0f, 0.0f));
+		rotationMat = rotY * rotationMat;
+
+		oldAngles.y = angles.y;
+		angles.y += yoffset;
 	}
 
-	void changeXTranslation(float newXTranslation) {
-		float xoffset = newXTranslation - translation.x;
- 		translation.x = newXTranslation;
-		boundingBox.center.x = newXTranslation;
+	void setScaleMat(){ scaleMat = glm::scale(glm::mat4(1.0f), scale); }
+	
+	void setRotationsMats()
+	{	
+		glm::vec3 offsetAngles = angles - oldAngles;
+
+		glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(offsetAngles.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(offsetAngles.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 rotZ = glm::rotate(glm::mat4(1.0f), glm::radians(offsetAngles.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		
+		oldAngles = angles;
+
+		rotationMat = rotX * rotY * rotZ * rotationMat;
 	}
 
-	std::string getName(){ return name; }
-
-	glm::vec3* getScaleFactor(){ return &scale; }
-
-	glm::vec3* getTranslationFactor(){ return &translation; }
-
-	glm::vec3* getRotationFactor(){ return &angles; }
+	void setTranslationMat(){ translationMat = glm::translate(glm::mat4(1.0f), translation); }
 
 	glm::mat4 getBoxModel()
 	{
@@ -158,19 +197,13 @@ public:
 
 	glm::mat4 getModelTransformation()
 	{
-		return
-			glm::translate(glm::mat4(1.0f), translation) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(angles.x), glm::vec3(1.0f, 0.0f, 0.0f)) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(angles.y), glm::vec3(0.0f, 1.0f, 0.0f)) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(angles.z), glm::vec3(0.0f, 0.0f, 1.0f)) *
-			glm::scale(glm::mat4(1.0f), scale) *
-			glm::scale(glm::mat4(1.0f), normalize) *
-			glm::translate(glm::mat4(1.0f), center);
+		return translationMat * rotationMat * scaleMat * normalizeMat * centerMat;
 	}
 
 	void drawFlatPicking(int colorLoc)
-	{
-		for (size_t i = 0; i < meshes.size(); i++)
+	{	
+		int n = (int)meshes.size();
+		for (int i = 0; i < n; i++)
 		{
 			glUniform3f(colorLoc, pickingColor.x, pickingColor.y, pickingColor.z);
 			meshes[i].draw();
@@ -215,8 +248,6 @@ public:
 				meshes[i].draw();
 			}
 		}
-
-		
 	}
 	
 	void drawVertices()
@@ -260,16 +291,13 @@ public:
 		return &meshes;
 	}
 
-	// Model Tranformation
-	glm::vec3 center, normalize, scale, translation, angles;
-
-	// Bounding box
-	OBB boundingBox;
-
 private:
 	// Object basic components
-	std::string name, path;
+	std::string path;
 	std::vector<Mesh> meshes;
+
+	// Model matrices
+	glm::mat4 centerMat, normalizeMat, translationMat, scaleMat, rotationMat;
 
 	// Rendering State
 	bool showWireframe = false;

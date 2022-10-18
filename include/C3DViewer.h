@@ -57,6 +57,9 @@ public:
         pointSizeLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "pointSize");
         colorLoc_cps = glGetUniformLocation(circularVertex_shader.Program, "color");
 
+        // Initialize the view and projection matrices
+        projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(width) / float(height), 0.1f, 100.0f);
+
         // Set functions and variables
         setCallbacks();
 
@@ -98,8 +101,13 @@ public:
     }
 
     void resize_callback(GLFWwindow* window, int width, int height)
-    {
+    {     
+        this->width = width;
+        this->height = height;
+
         glViewport(0, 0, width, height);
+
+        projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(width) / float(height), 0.1f, 100.0f);
 
         // Re-render the scene because the current frame was drawn for the old resolution
         draw();
@@ -150,14 +158,11 @@ public:
 
                if (scene.selectedObject)
                {
-                   scene.selectedObject->addXRot(- yoffset * 0.25);
-                   scene.selectedObject->addYRot(xoffset * 0.25);
+                   scene.selectedObject->addXRot(yoffset * -0.25);
+                   scene.selectedObject->addYRot(xoffset *  0.25);
                }
                else
-               {
-                   scene.camera.changePosX( xoffset * 0.01);
-                   scene.camera.changePosY( yoffset * 0.01);
-               }
+                   scene.camera.changeDirection(xoffset, yoffset);
 
                lastX = xpos;
                lastY = height - ypos;
@@ -189,11 +194,15 @@ public:
     {
         double yScroll = getYScroll();
 
-        // Camera controls
+        // Move camera position
         if (keys[GLFW_KEY_UP] || yScroll > 0)
-            scene.camera.changePosZ(-1.5f*delta);
+            scene.camera.moveFrontBack(delta);
         else if (keys[GLFW_KEY_DOWN] || yScroll < 0)
-            scene.camera.changePosZ(1.5f*delta);
+            scene.camera.moveFrontBack(-delta);
+        else if (keys[GLFW_KEY_RIGHT])
+            scene.camera.moveLeftRight(delta);
+        else if (keys[GLFW_KEY_LEFT])
+            scene.camera.moveLeftRight(-delta);
     }
 
     void readPixel()
@@ -221,25 +230,20 @@ public:
     {   
         // Data to pass to shaders
         glm::mat4 MVP;
-        glm::mat4 view, projection;
-        glm::mat4 objModel, boxModel;
+        glm::mat4 objModel, boxModel, view;
         glm::vec3 boxColor, color;
+
+        // Get view matrix from camera
+        view = scene.camera.getView();
 
         // Calculate deltatime of current frame
         double currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // Define the viewport dimensions
-        glViewport(0, 0, width, height);
-
         // Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
         do_movement(deltaTime);
-
-        // Create camera transformations
-        view = glm::lookAt(*scene.camera.getPosition(), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(width) / float(height), 0.1f, 100.0f);
 
         // Clear the colorbuffer
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -247,9 +251,10 @@ public:
 
         if (processColorPicker)
         {
-            basic_shader.Use();
+            basic_shader.use();
 
-            for (int i = 0; i < scene.objects.size(); i++)
+            int n = (int)scene.objects.size();
+            for (int i = 0; i < n; i++)
             {
                 objModel = scene.objects[i].getModelTransformation();
 
@@ -271,7 +276,7 @@ public:
         // Use corresponding shader when setting uniforms/drawing objects
         if (scene.useLighting)
         {
-            lighting_shader.Use();
+            lighting_shader.use();
 
             // Set lighting Uniforms
             glUniform3f(lightColorLoc, scene.light.getColor()->x, scene.light.getColor()->y, scene.light.getColor()->z);
@@ -290,7 +295,7 @@ public:
            
             if (scene.useLighting)
             {
-                lighting_shader.Use();
+                lighting_shader.use();
                 glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
                 glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(objModel));
                 glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
@@ -298,7 +303,7 @@ public:
             }
             else
             {
-                basic_shader.Use();
+                basic_shader.use();
                 glUniformMatrix4fv(mvpLoc_bs, 1, GL_FALSE, glm::value_ptr(MVP));
                 scene.objects[i].draw(false, colorLoc_bs, 0, 0);
             }
@@ -306,7 +311,7 @@ public:
             if (*scene.objects[i].getShowNormals())
             {
                 // Use other shader to draw the normals
-                normals_shader.Use();
+                normals_shader.use();
 
                 glUniformMatrix4fv(mvpLoc_ns, 1, GL_FALSE, glm::value_ptr(MVP));
                 color = *scene.objects[i].getNormalsColor();
@@ -318,7 +323,7 @@ public:
             if (*scene.objects[i].getShowVertices())
             {
                 // Use other shader to draw the normals
-                circularVertex_shader.Use();
+                circularVertex_shader.use();
 
                 glUniformMatrix4fv(mvpLoc_cps, 1, GL_FALSE, glm::value_ptr(MVP));
                 color = *scene.objects[i].getVerticesColor();
@@ -330,7 +335,7 @@ public:
 
         if (scene.selectedObject)
         {
-            basic_shader.Use();
+            basic_shader.use();
 
             boxModel = scene.selectedObject->getModelTransformation() * scene.selectedObject->getBoxModel();
             MVP = projection * view * boxModel;
@@ -366,14 +371,14 @@ public:
 private:
     // Pointer to window
     GLFWwindow* window;
-
+    
     // User Interface
     UI ui;
 
     Scene scene;
 
     // Window dimensions
-    const int width = 1600, height = 800;
+    int width = 1600, height = 800;
 
     // Mouse Position
     double lastX = width / 2.0;
@@ -391,6 +396,9 @@ private:
     // Keys and Mouse boolean state
     bool keys[1024] = {false};
     bool firstMouse = true;
+
+    // Projection matriX
+    glm::mat4  projection;
 
     //Shaders
     Shader basic_shader, lighting_shader, normals_shader, circularVertex_shader;

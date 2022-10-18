@@ -123,7 +123,7 @@ public:
 
     }
     // Uses the current shader
-    void Use() 
+    void use() 
     { 
         glUseProgram(this->Program); 
     }

@@ -166,7 +166,7 @@ private:
             }
             if (ImGui::TreeNode("Position##Ligthing"))
             {
-                Vec3Control(" ", *scene->light.getPosition(), 0.05f, -max_float, max_float);
+                //Vec3Control(" ", *scene->light.getPosition(), 0.05f, -max_float, max_float);
                 ImGui::TreePop();
             }
             if (ImGui::TreeNode("Intesity##Ligthing"))
@@ -183,7 +183,7 @@ private:
         {
             if (ImGui::TreeNodeEx("Position##Camera", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                Vec3Control(" ", *scene->camera.getPosition(), 0.05f, -max_float, max_float);
+                //Vec3Control(" ", *scene->camera.getPosition(), 0.05f, -max_float, max_float);
                 ImGui::TreePop();
             }
 
@@ -256,7 +256,7 @@ private:
             for (int i = 0; i < m; i++)
             {
                 Object* obj = &scene->objects[i];
-                if (ImGui::Selectable(obj->getName().c_str(), selected == i))
+                if (ImGui::Selectable(obj->name.c_str(), selected == i))
                 {
                     selected = i;
                     scene->setSelectedObject(obj);
@@ -308,9 +308,9 @@ private:
             {
                 if (ImGui::TreeNodeEx("Model Transformation", ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    Vec3Control("Scale", *selectedObject->getScaleFactor(), 0.05f, -10.0f, 10.0f);
-                    Vec3Control("Rotation", *selectedObject->getRotationFactor(), 10.0f, -360.0f, 360.0f);
-                    Vec3Control("Translation", selectedObject->translation, 0.05f, -max_float, max_float);
+                    Vec3Control("Scale", selectedObject->scale, 0.05f, -10.0f, 10.0f, &Object::setScaleMat, selectedObject);
+                    Vec3Control("Rotation", selectedObject->angles, 5.0f, -360.0f, 360.0f, &Object::setRotationsMats, selectedObject);
+                    Vec3Control("Translation", selectedObject->translation, 0.05f, -max_float, max_float, &Object::setTranslationMat, selectedObject);
                     ImGui::TreePop();
                 }
 
@@ -347,7 +347,7 @@ private:
         }
     }
 
-    static void Vec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max)
+    static void Vec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max, void (Object::*setMat)(), Object* selectedObject)
     {
         ImGui::BeginTable(label.c_str(), 4, ImGuiTableFlags_NoPadOuterX);
         ImGui::TableNextRow();
@@ -357,21 +357,24 @@ private:
         ImGui::Button("X");
         ImGui::PopStyleColor(1);
         ImGui::SameLine();
-        ImGui::DragFloat("##X", &values.x, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        if(ImGui::DragFloat("##X", &values.x, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
+            (selectedObject->*setMat)();
 
         ImGui::TableSetColumnIndex(1);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
         ImGui::Button("Y");
         ImGui::PopStyleColor(1);
         ImGui::SameLine();
-        ImGui::DragFloat("##Y", &values.y, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-
+        if(ImGui::DragFloat("##Y", &values.y, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
+            (selectedObject->*setMat)();
+            
         ImGui::TableSetColumnIndex(2);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
         ImGui::Button("Z");
         ImGui::PopStyleColor(1);
         ImGui::SameLine();
-        ImGui::DragFloat("##Z", &values.z, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        if(ImGui::DragFloat("##Z", &values.z, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
+            (selectedObject->*setMat)();
 
         ImGui::TableSetColumnIndex(3);
         ImGui::Text(label.c_str());

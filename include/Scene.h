@@ -74,7 +74,6 @@ struct Scene
 		objects.clear();
 		materials.resize(1);
 		selectedObject = nullptr;
-		std::cout << "Se borraron" << std::endl;
 	}
 
 	void deleteSelected()

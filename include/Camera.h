@@ -2,6 +2,8 @@
 class Camera
 {
 public:
+	glm::vec3 position, front, up;
+
 	Camera() {
 		position = glm::vec3(0.0, 0.0, 3.0);
 		front = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -21,10 +23,7 @@ public:
 		this->position = position;
 	}
 
-	glm::vec3* getPosition()
-	{
-		return &position;
-	}
+	glm::vec3 getPosition(){ return position; }
 
 	void updateView(){ view = glm::lookAt(position, position + front, up); }
 
@@ -62,7 +61,7 @@ public:
 	}
 	
 private:
-	glm::vec3 position, front, up;
+	
     glm::mat4 view;
 	float yaw, pitch, speed;
 };

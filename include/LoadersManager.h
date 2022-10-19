@@ -75,7 +75,7 @@ public:
         outfile.open(lTheSaveFileName);
 
         // Write the Camera's position
-        glm::vec3 camPos = *scene->camera.getPosition();
+        glm::vec3 camPos = scene->camera.getPosition();
         outfile << "camera " << camPos.x << " " << camPos.y << " " << camPos.z << "\n";
 
         // Write background color

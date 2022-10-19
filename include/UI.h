@@ -166,7 +166,7 @@ private:
             }
             if (ImGui::TreeNode("Position##Ligthing"))
             {
-                //Vec3Control(" ", *scene->light.getPosition(), 0.05f, -max_float, max_float);
+                Vec3Control(" ", *scene->light.getPosition(), 0.05f, -max_float, max_float);
                 ImGui::TreePop();
             }
             if (ImGui::TreeNode("Intesity##Ligthing"))
@@ -181,9 +181,13 @@ private:
 
         ImGui::Begin("Camera");
         {
-            if (ImGui::TreeNodeEx("Position##Camera", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("Control##Camera", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                //Vec3Control(" ", *scene->camera.getPosition(), 0.05f, -max_float, max_float);
+                Camera *camera = &scene->camera;
+                Vec3Control("Position", scene->camera.position, 0.05f, -max_float, max_float, &Camera::updateView, camera);
+                Vec3Control("Front", scene->camera.front, 0.05f, -max_float, max_float, &Camera::updateView, camera);
+                Vec3Control("Up", scene->camera.up, 0.05f, -max_float, max_float, &Camera::updateView, camera);
+            
                 ImGui::TreePop();
             }
 
@@ -347,7 +351,39 @@ private:
         }
     }
 
-    static void Vec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max, void (Object::*setMat)(), Object* selectedObject)
+    static void Vec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max)
+    {
+        ImGui::BeginTable(label.c_str(), 4, ImGuiTableFlags_NoPadOuterX);
+        ImGui::TableNextRow();
+
+        ImGui::TableSetColumnIndex(0);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+        ImGui::Button("X");
+        ImGui::PopStyleColor(1);
+        ImGui::SameLine();
+        ImGui::DragFloat("##X", &values.x, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::TableSetColumnIndex(1);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+        ImGui::Button("Y");
+        ImGui::PopStyleColor(1);
+        ImGui::SameLine();
+        ImGui::DragFloat("##Y", &values.y, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+            
+        ImGui::TableSetColumnIndex(2);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+        ImGui::Button("Z");
+        ImGui::PopStyleColor(1);
+        ImGui::SameLine();
+        ImGui::DragFloat("##Z", &values.z, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::TableSetColumnIndex(3);
+        ImGui::Text(label.c_str());
+
+        ImGui::EndTable();
+    }
+
+    static void Vec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max, void (Object::*updateMat)(), Object* selectedObject)
     {
         ImGui::BeginTable(label.c_str(), 4, ImGuiTableFlags_NoPadOuterX);
         ImGui::TableNextRow();
@@ -358,7 +394,7 @@ private:
         ImGui::PopStyleColor(1);
         ImGui::SameLine();
         if(ImGui::DragFloat("##X", &values.x, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
-            (selectedObject->*setMat)();
+            (selectedObject->*updateMat)();
 
         ImGui::TableSetColumnIndex(1);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
@@ -366,7 +402,7 @@ private:
         ImGui::PopStyleColor(1);
         ImGui::SameLine();
         if(ImGui::DragFloat("##Y", &values.y, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
-            (selectedObject->*setMat)();
+            (selectedObject->*updateMat)();
             
         ImGui::TableSetColumnIndex(2);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
@@ -374,7 +410,42 @@ private:
         ImGui::PopStyleColor(1);
         ImGui::SameLine();
         if(ImGui::DragFloat("##Z", &values.z, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
-            (selectedObject->*setMat)();
+            (selectedObject->*updateMat)();
+
+        ImGui::TableSetColumnIndex(3);
+        ImGui::Text(label.c_str());
+
+        ImGui::EndTable();
+    }
+
+    static void Vec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max, void (Camera::*updateMat)(), Camera* camera)
+    {
+        ImGui::BeginTable(label.c_str(), 4, ImGuiTableFlags_NoPadOuterX);
+        ImGui::TableNextRow();
+
+        ImGui::TableSetColumnIndex(0);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+        ImGui::Button("X");
+        ImGui::PopStyleColor(1);
+        ImGui::SameLine();
+        if(ImGui::DragFloat("##X", &values.x, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
+            (camera->*updateMat)();
+
+        ImGui::TableSetColumnIndex(1);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+        ImGui::Button("Y");
+        ImGui::PopStyleColor(1);
+        ImGui::SameLine();
+        if(ImGui::DragFloat("##Y", &values.y, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
+            (camera->*updateMat)();
+            
+        ImGui::TableSetColumnIndex(2);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+        ImGui::Button("Z");
+        ImGui::PopStyleColor(1);
+        ImGui::SameLine();
+        if(ImGui::DragFloat("##Z", &values.z, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
+            (camera->*updateMat)();
 
         ImGui::TableSetColumnIndex(3);
         ImGui::Text(label.c_str());

@@ -18,15 +18,10 @@ public:
 
 	glm::mat4 getView(){ return view; }
 
-	void setPosition(glm::vec3 position)
-	{
-		this->position = position;
-	}
-
-	glm::vec3 getPosition(){ return position; }
-
+	// Update View matrix given the lastest values of the position, front and up vectors
 	void updateView(){ view = glm::lookAt(position, position + front, up); }
 
+	// Change front of camera given xoffset and yoffset
 	void changeDirection(float xoffset, float yoffset)
 	{	
 		glm::vec3 direction;
@@ -60,8 +55,30 @@ public:
 		updateView();
 	}
 	
+	// Save camera info into ofstream
+	void saveInfo(std::ofstream& outfile)
+	{
+		 outfile << "position " << position.x << " " << position.y << " " << position.z << "\n"
+		 		 << "front "    << front.x << " " << front.y << " " << front.z << "\n"
+				 << "up "       << up.x << " " << up.y << " " << up.z << "\n"
+				 << "fValue "   << yaw << " " << pitch << " " << speed << "\n";
+	}
+
+	// Load camera info from ifstream
+	void loadInfo(std::ifstream& infile)
+	{
+		std::string line, prefix;
+    	std::stringstream ss;
+
+		std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> position.x >> position.y >> position.z;
+		std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> front.x >> front.y >> front.z;
+		std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> up.x >> up.y >> up.z;
+		std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> yaw >> pitch >> speed;
+
+		updateView();
+	}
+
 private:
-	
     glm::mat4 view;
 	float yaw, pitch, speed;
 };

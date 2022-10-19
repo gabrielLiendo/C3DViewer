@@ -79,9 +79,9 @@ struct OBB
 
     void getInfo(std::ofstream& outfile)
     {
-        outfile << "bc " << color.x << " " << color.y << " " << color.z << "\n";
-        outfile << "b_vmin " << vmin.x << " " << vmin.y << " " << vmin.z << "\n";
-        outfile << "b_vmax " << vmax.x << " " << vmax.y << " " << vmax.z << "\n";
+        outfile << "bc " << color.x << " " << color.y << " " << color.z << "\n"
+                << "b_vmin " << vmin.x << " " << vmin.y << " " << vmin.z << "\n"
+                << "b_vmax " << vmax.x << " " << vmax.y << " " << vmax.z << "\n";
     }
 
 private:

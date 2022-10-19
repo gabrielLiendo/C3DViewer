@@ -72,7 +72,7 @@ public:
 		boundingBox = OBB(vmin, vmax, { 1.0, 1.0, 1.0 });
 	}
 
-	Object(std::vector<Mesh> meshes, std::string path, std::string name, glm::vec3 normalize, glm::vec3 scale, glm::vec3 translation, glm::vec3 angles,
+	Object(std::vector<Mesh> meshes, std::string path, std::string name, glm::vec3 normalize, glm::vec3 scale, glm::vec3 translation, glm::mat4 rotationMat, glm::vec3 angles,
 		bool showWireframe, bool showVertices, bool showNormals, int pointSize,
 		glm::vec3 pickingColor, glm::vec3 wireframeColor, glm::vec3 verticesColor, glm::vec3 normalsColor, glm::vec3 boxColor, glm::vec3 vmin, glm::vec3 vmax)
 	{
@@ -82,6 +82,7 @@ public:
 		this->normalize = normalize;
 		this->scale = scale;
 		this->translation = translation;
+		this->rotationMat = rotationMat;
 		this->angles = angles;
 		oldAngles = angles;
 
@@ -102,12 +103,14 @@ public:
 		centerMat = glm::translate(glm::mat4(1.0f), center);
 		scaleMat = glm::scale(glm::mat4(1.0f), scale);
 		translationMat = glm::translate(glm::mat4(1.0f), translation);
+	}
 
-		glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(angles.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(angles.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 rotZ = glm::rotate(glm::mat4(1.0f), glm::radians(angles.z), glm::vec3(0.0f, 0.0f, 1.0f));
-		
-		rotationMat = rotX * rotY * rotZ;
+	void clampAngle(float &angle)
+	{
+		if(angle > 360.0f)
+			angle -= 360.0f;
+		else if(angle < -360.0f)
+			angle += 360.0f;
 	}
 
 	void addXRot(double xoffset)
@@ -117,6 +120,8 @@ public:
 
 		oldAngles.x = angles.x;
 		angles.x += xoffset;
+
+		clampAngle(angles.x);
 	}
 
 	void addYRot(double yoffset)
@@ -126,6 +131,8 @@ public:
 
 		oldAngles.y = angles.y;
 		angles.y += yoffset;
+
+		clampAngle(angles.y);
 	}
 
 	void setScaleMat(){ scaleMat = glm::scale(glm::mat4(1.0f), scale); }
@@ -268,21 +275,27 @@ public:
 
 	void getInfo(std::ofstream &outfile)
 	{
-		outfile << "o " << name << "\n";
-		outfile << "p " << path << "\n";
-		outfile << "n " << normalize.x << " " << normalize.y << " " << normalize.z << "\n";
-		outfile << "s " << scale.x << " " << scale.y << " " << scale.z << "\n";
-		outfile << "t " << translation.x << " " << translation.y << " " << translation.z << "\n";
-		outfile << "a " << angles.x << " " << angles.y << " " << angles.z << "\n";
-		outfile << "rs " << " " << showWireframe << " " << showVertices << " " << showNormals << "\n";
-		outfile << "pt " << pointSize << "\n";
-		outfile << "pc " << pickingColor.x << " " << pickingColor.y << " " << pickingColor.z << "\n";
-		outfile << "wc " << wireframeColor.x << " " << wireframeColor.y << " " << wireframeColor.z << "\n";
-		outfile << "vc " << verticesColor.x << " " << verticesColor.y << " " << verticesColor.z << "\n";
-		outfile << "nc " << normalsColor.x << " " << normalsColor.y << " " << normalsColor.z << "\n";
+		outfile << "o " << name << "\n"
+				<< "p " << path << "\n"
+				<< "n " << normalize.x << " " << normalize.y << " " << normalize.z << "\n"
+				<< "s " << scale.x << " " << scale.y << " " << scale.z << "\n"
+				<< "t " << translation.x << " " << translation.y << " " << translation.z << "\n"
+				<< "r " << rotationMat[0][0] << " " << rotationMat[0][1] << " " << rotationMat[0][2] << " " 
+						<< rotationMat[1][0] << " " << rotationMat[1][1] << " " << rotationMat[1][2] << " "
+						<< rotationMat[2][0] << " " << rotationMat[2][1] << " " << rotationMat[2][2] << " " 
+						<< rotationMat[3][0] << " " << rotationMat[3][1] << " " << rotationMat[3][2] << "\n"
+				<< "a " << angles.x << " " << angles.y << " " << angles.z << "\n"
+				<< "rs " << " " << showWireframe << " " << showVertices << " " << showNormals << "\n"
+				<< "pt " << pointSize << "\n"
+				<< "pc " << pickingColor.x << " " << pickingColor.y << " " << pickingColor.z << "\n"
+				<< "wc " << wireframeColor.x << " " << wireframeColor.y << " " << wireframeColor.z << "\n"
+				<< "vc " << verticesColor.x << " " << verticesColor.y << " " << verticesColor.z << "\n"
+				<< "nc " << normalsColor.x << " " << normalsColor.y << " " << normalsColor.z << "\n";
+
 		boundingBox.getInfo(outfile);
 
-		for (size_t  i = 0; i < meshes.size(); i++)
+		int n = (int)meshes.size();
+		for (int  i = 0; i < n; i++)
 			meshes[i].getInfo(outfile);
 	}
 

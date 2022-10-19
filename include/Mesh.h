@@ -2,18 +2,23 @@
 class Mesh
 {
 public:
-	std::string name;
+	std::string name, mtlName;
 	std::vector<Vertex> vertices;
 	std::shared_ptr<Material> mtl;
 
-	Mesh(std::string name, std::vector<Vertex> vertices, std::shared_ptr<Material> mtl)
+	Mesh(std::string name, std::string mtlName, std::vector<Vertex> vertices)
 	{
 		this->name = name;
 		this->vertices = vertices;
-		this->mtl = mtl;
+		this->mtlName = mtlName;
 		showTriangles = true;
 
 		initMesh();
+	}
+
+	void setMaterial(std::shared_ptr<Material> mtl)
+	{
+		this->mtl = mtl;
 	}
 
 	bool* getShow()
@@ -41,9 +46,9 @@ public:
 	void getInfo(std::ofstream& outfile)
 	{
 		glm::vec3 diffuse = *mtl->getDiffuse();
-		outfile << "om " << name << "\n";
-		outfile << "mtl " << *mtl->getName() << "\n";
-		outfile << "d " << diffuse.x << " " << diffuse.y  << " " << diffuse.z << "\n";
+		outfile << "om " << name << "\n"
+			    << "mtl " << *mtl->getName() << "\n"
+			    << "d " << diffuse.x << " " << diffuse.y  << " " << diffuse.z << "\n";
 	}
 
 private:

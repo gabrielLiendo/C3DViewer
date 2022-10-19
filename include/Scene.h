@@ -87,4 +87,31 @@ struct Scene
 			selectedObject = nullptr;
 		}
 	}
+
+	void saveInfo(std::ofstream& outfile)
+	{	
+		camera.saveInfo(outfile);
+		
+		// Write background color and rendering options booleans
+        outfile << "bg " << bgColor.x << " " << bgColor.y << " " << bgColor.z << "\n"
+				<< "ro " << useDepthTest << " " << useCullFace << " " << useMultisample << "\n";
+
+        // Write each objects' properties
+		int n = (int)objects.size();
+        for (int i = 0; i < n; i++)
+            objects[i].getInfo(outfile);
+	}
+
+	void loadInfo(std::ifstream& infile)
+	{	
+		std::string line, prefix;
+    	std::stringstream ss;
+
+		camera.loadInfo(infile);
+
+		std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> bgColor.x >> bgColor.y >> bgColor.z;
+        std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> useDepthTest >>useCullFace >> useMultisample;
+
+		deleteAllObjects(); 
+	}
 };

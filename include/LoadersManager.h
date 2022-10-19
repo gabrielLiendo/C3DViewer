@@ -16,14 +16,13 @@ public:
     // Open File Dialog and load .obj with its respective material (.mtl)
     void loadObj(int &selected)
     {
-        char const* objFileName, * lFilterPatterns[1] = { "*.obj" };
-
-        objFileName = tinyfd_openFileDialog("Open", "", 1, lFilterPatterns, NULL, 0);
+        char const* lFilterPatterns[1] = { "*.obj" };
+        char const* objFileName = tinyfd_openFileDialog("Open", "", 1, lFilterPatterns, NULL, 0);
 
         if (!objFileName)
             return;
 
-        // Load the respective .mtl
+        // Load the respectives materials
         std::string mtlFileName = objFileName;
         mtlFileName = mtlFileName.substr(0, mtlFileName.size() - 4) + ".mtl";
         MtlLoader::load(mtlFileName.c_str(), scene);
@@ -35,9 +34,31 @@ public:
         int b = (i & 0x00FF0000) >> 16;
         glm::vec3 pickingColor = glm::vec3(r / 255.0f, g / 255.0f, b / 255.0f);
 
-        // Load .obj
-        Object newObject = Object(objLoader.loadMeshes(objFileName), pickingColor, objFileName);
-        scene->objects.push_back(newObject);
+        // Load meshes and assign materials
+        std::vector<Mesh> meshes = objLoader.loadMeshes(objFileName);
+    
+        int n = (int)meshes.size();
+        int m = (int)scene->materials.size();
+
+        for(int i=0; i < n; i++)
+        {
+            std::shared_ptr<Material> mtl = nullptr;
+            std::string meshMtl = meshes[i].mtlName;
+
+            for (int j=0; j < m; j++)
+            {
+                if (scene->materials[j]->name == meshMtl)
+                    mtl = scene->materials[j];
+            }
+            if (!mtl)
+            {
+                std::cout << "El material " << meshMtl<< " no fue encontrado." << std::endl;
+                mtl = scene->materials[0];
+            }
+            meshes[i].setMaterial(mtl);
+        }
+
+        scene->objects.push_back(Object(meshes, pickingColor, objFileName));
 
         // Set obj name
         std::string objName = objFileName;
@@ -53,16 +74,13 @@ public:
     // Save the current scene in a .txt
     void saveScene()
     {
-        char const* lTheSaveFileName;
         char const* lFilterPatterns[2] = { "*.txt", "*.text" };
-        FILE* lIn;
-
-        lTheSaveFileName = tinyfd_saveFileDialog("Save As", "Scene.txt", 2, lFilterPatterns, nullptr);
-
+        char const* lTheSaveFileName  = tinyfd_saveFileDialog("Save As", "Scene.txt", 2, lFilterPatterns, nullptr);
+  
         if (!lTheSaveFileName)
             return;
 
-        lIn = fopen(lTheSaveFileName, "w");
+        FILE* lIn = fopen(lTheSaveFileName, "w");
 
         if (!lIn)
         {
@@ -73,43 +91,25 @@ public:
         // Open file for writing
         std::ofstream outfile;
         outfile.open(lTheSaveFileName);
+        
+        // Write scene info into file
+        scene->saveInfo(outfile);
 
-        // Write the Camera's position
-        glm::vec3 camPos = scene->camera.getPosition();
-        outfile << "camera " << camPos.x << " " << camPos.y << " " << camPos.z << "\n";
-
-        // Write background color
-        outfile << "bg " << scene->bgColor.x << " " << scene->bgColor.y << " " << scene->bgColor.z << "\n";
-
-        // Write the rendering options booleans
-        outfile << "ro " << scene->useDepthTest << " " << scene->useCullFace << " " << scene->useMultisample << "\n";
-
-        // Write each objects' properties
-        for (int i = 0; i < scene->objects.size(); i++)
-            scene->objects[i].getInfo(outfile);
-
+        // Close file
         outfile.close();
     }
 
     void loadScene()
     {
-        char const* sceneFileName, * lFilterPatterns[2] = { "*.txt", "*.text" };
-
-        scene->deleteAllObjects();
-
-        sceneFileName = tinyfd_openFileDialog("Open Scene", "", 2, lFilterPatterns, NULL, 0);
+        char const* lFilterPatterns[2] = { "*.txt", "*.text" };
+        char const* sceneFileName = tinyfd_openFileDialog("Open Scene", "", 2, lFilterPatterns, NULL, 0);
 
         if (!sceneFileName)
             return;
 
-        glm::vec3 camPos;
-
         infile = std::ifstream(sceneFileName);
 
-        std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> camPos.x >> camPos.y >> camPos.z;
-        scene->camera.setPosition(camPos);
-        std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> scene->bgColor.x >> scene->bgColor.y >> scene->bgColor.z;
-        std::getline(infile, line); ss.clear(); ss.str(line);  ss >> prefix >> scene->useDepthTest >> scene->useCullFace >> scene->useMultisample;
+        scene->loadInfo(infile);
 
         while (std::getline(infile, line))
         {
@@ -129,6 +129,7 @@ public:
         glm::vec3 normalize, scale, translation, angles;
         glm::vec3 pickingColor, wireframeColor, vertexColor, normalsColor, boxColor, diffuseColor;
         glm::vec3 vmin, vmax;
+        glm::mat4 rotationMat;
         bool showWireframe, showVertices, showNormals;
         int pointSize;
 
@@ -145,6 +146,10 @@ public:
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> normalize.x >> normalize.y >> normalize.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> scale.x >> scale.y >> scale.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> translation.x >> translation.y >> translation.z;
+        std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> rotationMat[0][0] >> rotationMat[0][1] >> rotationMat[0][2]
+                                                                            >> rotationMat[1][0] >> rotationMat[1][1] >> rotationMat[1][2]
+                                                                            >> rotationMat[2][0] >> rotationMat[2][1] >> rotationMat[2][2]
+                                                                            >> rotationMat[3][0] >> rotationMat[3][1] >> rotationMat[3][2];
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> angles.x >> angles.y >> angles.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> showWireframe >> showVertices >> showNormals;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> pointSize;
@@ -190,7 +195,7 @@ public:
             }
         }
 
-        return Object(meshes, objPath, name, normalize, scale, translation, angles, 
+        return Object(meshes, objPath, name, normalize, scale, translation, rotationMat, angles, 
             showWireframe, showVertices, showNormals, pointSize, pickingColor, wireframeColor, vertexColor, normalsColor, boxColor, vmin, vmax);
     }
 

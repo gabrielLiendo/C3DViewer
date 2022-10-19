@@ -235,20 +235,7 @@ private:
 			}
 		}
 
-		std::shared_ptr<Material> mtl = nullptr;
-		for (size_t  i = 0; i < (*scene).materials.size(); i++)
-		{
-			if (*((*scene).materials[i])->getName() == mtl_name)
-				mtl = (*scene).materials[i];
-		}
-		
-		if (!mtl)
-		{
-			std::cout << "El material " << mtl_name << " no fue encontrado." << std::endl;
-			mtl = (* scene).materials[0];
-		}
-
-		Mesh newMesh = Mesh(name, vertices, mtl);
+		Mesh newMesh = Mesh(name, mtl_name, vertices);
 
 		faceIndexes.clear();
 		vertices.clear(); 

@@ -2,6 +2,8 @@
 class Material
 {
 public:
+	std::string name;
+
 	Material()
 	{
 		name = "Default";
@@ -35,7 +37,6 @@ public:
 	}
 
 private:
-	std::string name;
 	glm::vec3 ambient;
 	glm::vec3 diffuse;
 	glm::vec3 specular;

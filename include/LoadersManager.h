@@ -12,12 +12,24 @@ public:
         this->scene = scene;
     }
 
-    // Assign Material to each mesh
-    void assignMaterials(std::vector<Mesh> &meshes)
-    {
-        int n = (int)meshes.size();
-        int m = (int)scene->materials.size();
+    // Assign the loaded materials to each mesh of an object
+    void assignMaterials(std::vector<Mesh> &meshes, std::string objPath)
+    {   
+        // Load the respectives materials
+        std::string mtlPath = objPath;
+        mtlPath = mtlPath.substr(0, mtlPath.size() - 4) + ".mtl";
+        std::vector<std::shared_ptr<Material>> loadedMaterials = MtlLoader::load(mtlPath.c_str());
 
+        std::string mtlName = mtlPath;
+        mtlName = mtlName.substr(mtlName.find_last_of("/\\") + 1);
+
+        if(loadedMaterials.empty())
+            std::cout << "The file " << mtlName << " was not found" << std::endl;
+
+        int n = (int)meshes.size();
+        int m = (int)loadedMaterials.size();
+
+        // Assign material to each mesh
         for(int i=0; i < n; i++)
         {
             std::shared_ptr<Material> mtl = nullptr;
@@ -25,16 +37,18 @@ public:
 
             for (int j=0; j < m; j++)
             {
-                if (scene->materials[j]->name == meshMtl)
-                    mtl = scene->materials[j];
+                if (loadedMaterials[j]->name == meshMtl)
+                    mtl = loadedMaterials[j];
             }
             if (!mtl)
-            {
-                std::cout << "El material " << meshMtl<< " no fue encontrado." << std::endl;
                 mtl = scene->materials[0];
-            }
+
             meshes[i].setMaterial(mtl);
         }
+
+        // Add the loaded material to the list of materials
+        for(int i=0; i < m; i++)
+            scene->materials.push_back(loadedMaterials[i]);
     }
 
     // Open File Dialog and load .obj with its respective material (.mtl)
@@ -46,10 +60,10 @@ public:
         if (!objFileName)
             return;
 
-        // Load the respectives materials
-        std::string mtlFileName = objFileName;
-        mtlFileName = mtlFileName.substr(0, mtlFileName.size() - 4) + ".mtl";
-        MtlLoader::load(mtlFileName.c_str(), scene);
+        // Get obj name
+        std::string objName = objFileName;
+        objName = objName.substr(objName.find_last_of("/\\") + 1);
+        objName = objName.substr(0, objName.size() - 4);
 
         // Convert "i", the integer mesh ID, into an RGB color
         int i = (int) scene->objects.size();
@@ -60,15 +74,10 @@ public:
 
         // Load meshes and assign materials
         std::vector<Mesh> meshes = objLoader.loadMeshes(objFileName);
-        assignMaterials(meshes);
+        assignMaterials(meshes, objFileName);
         scene->objects.push_back(Object(meshes, pickingColor, objFileName));
-
-        // Set obj name
-        std::string objName = objFileName;
-        objName = objName.substr(objName.find_last_of("/\\") + 1);
-        objName = objName.substr(0, objName.size() - 4);
         scene->objects.back().name = objName;
-
+        
         // Set loaded object as selected
         selected = (int)(scene->objects.size() - 1);
         scene->selectedObject = &scene->objects.back();
@@ -164,10 +173,8 @@ public:
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vmin.x >> vmin.y >> vmin.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vmax.x >> vmax.y >> vmax.z;
 
-        mtlPath = objPath.substr(0, objPath.size() - 4) + ".mtl";
-        MtlLoader::load((mtlPath).c_str(), scene);
         meshes = objLoader.loadMeshes((objPath).c_str());
-        assignMaterials(meshes);
+        assignMaterials(meshes, objPath);
 
         while (std::getline(infile, line))
         {

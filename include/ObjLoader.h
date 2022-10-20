@@ -79,9 +79,9 @@ private:
 			ss >> prefix;
 			if (prefix == "o" || prefix == "usemtl" && mtl_name != "")
 			{	
-				size_t size = line.size();
+				int size = (int)line.size();
 				infile.putback('\n');
-				for (size_t  i = 0; i < size; i++)
+				for (int i = 0; i < size; i++)
 					infile.putback(line[size - i - 1]);
 
 				break;
@@ -181,7 +181,6 @@ private:
 						}
 
 						faceIndexes.push_back(posindex);
-						
 					}
 
 					if (faceIndexes.size() == 3)

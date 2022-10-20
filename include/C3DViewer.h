@@ -156,10 +156,21 @@ public:
                double xoffset = xpos - lastX;
                double yoffset = (height - ypos) - lastY;
 
+               //std::cout << xoffset << " " << yoffset << std::endl;
                if (scene.selectedObject)
-               {
-                   scene.selectedObject->addXRot(yoffset * -0.25);
-                   scene.selectedObject->addYRot(xoffset *  0.25);
+               {   
+                   if(keys[GLFW_KEY_LEFT_CONTROL])
+                   {
+                        if(abs(xoffset) > abs(yoffset))
+                            scene.selectedObject->addYRot(xoffset *  0.25);
+                        else if(abs(yoffset) > abs(xoffset))
+                            scene.selectedObject->addXRot(yoffset * -0.25);
+                   }
+                   else
+                   {
+                        scene.selectedObject->addXRot(yoffset * -0.25);
+                        scene.selectedObject->addYRot(xoffset *  0.25);
+                   }
                }
                else
                    scene.camera.changeDirection(xoffset, yoffset);

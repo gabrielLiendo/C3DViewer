@@ -2,7 +2,7 @@
 class Object
 {
 public:
-	std::string name;
+	std::string name = "";
 
 	// Model Tranformation Components
 	glm::vec3 center, normalize, scale, translation, oldAngles, angles;
@@ -14,7 +14,6 @@ public:
 
 	Object(std::vector<Mesh> meshes, glm::vec3 pickingColor, std::string path)
 	{
-		name = "";
 		this->path = path;
 		this->meshes = meshes;
 		this->pickingColor = pickingColor;
@@ -26,11 +25,12 @@ public:
 		min_y = max_y = meshes[0].vertices[0].position.y;
 		min_z = max_z = meshes[0].vertices[0].position.z;
 
-		size_t n = meshes.size();
-		for (size_t  i = 0; i < n; i++)
+		// Find min and max values for bounding box
+		int n = (int)meshes.size();
+		for(int  i = 0; i < n; i++)
 		{
-			size_t m = meshes[i].vertices.size();
-			for (size_t  j = 0; j < m; j++)
+			int m = meshes[i].vertices.size();
+			for (int j = 0; j < m; j++)
 			{
 				Vertex vertex = meshes[i].vertices[j];
 				if (vertex.position.x < min_x) min_x = vertex.position.x;
@@ -55,18 +55,7 @@ public:
 		scale = glm::vec3(1.0, 1.0, 1.0);
 		angles = glm::vec3(0.0f, 0.0f, 0.0f);
 		oldAngles = angles;
-
-		// Initialize matrices
-		normalizeMat = glm::scale(glm::mat4(1.0f), normalize);
-		centerMat = glm::translate(glm::mat4(1.0f), center);
-		scaleMat = glm::scale(glm::mat4(1.0f), scale);
-		translationMat = glm::translate(glm::mat4(1.0f), translation);
-		
-		glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(angles.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(angles.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 rotZ = glm::rotate(glm::mat4(1.0f), glm::radians(angles.z), glm::vec3(0.0f, 0.0f, 1.0f));
-		
-		rotationMat = rotX * rotY * rotZ;
+		initMatrices();
 
 		// Create bounding box
 		boundingBox = OBB(vmin, vmax, { 1.0, 1.0, 1.0 });
@@ -97,12 +86,16 @@ public:
 		this->normalsColor = normalsColor;
 
 		this->boundingBox = OBB(vmin, vmax, boxColor);
+	}
 
-		// Initialize matrices
+	// Initialize matrices
+	void initMatrices()
+	{
 		normalizeMat = glm::scale(glm::mat4(1.0f), normalize);
 		centerMat = glm::translate(glm::mat4(1.0f), center);
 		scaleMat = glm::scale(glm::mat4(1.0f), scale);
 		translationMat = glm::translate(glm::mat4(1.0f), translation);
+		rotationMat =  glm::rotate(glm::mat4(1.0f), glm::radians(angles.x), glm::vec3(1.0f, 0.0f, 0.0f));
 	}
 
 	void clampAngle(float &angle)
@@ -220,14 +213,14 @@ public:
 	void draw(bool lighting, int diffuseLoc, int ambientLoc, int specularLoc)
 	{
 		glm::vec3 color;
-		size_t n = meshes.size();
+		int n = (int)meshes.size();
 
 		if (showWireframe)
 		{
 			glEnable(GL_POLYGON_OFFSET_FILL);
 			glPolygonOffset(0.0, -1.0);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			for (size_t  i = 0; i < n; i++)
+			for (int i = 0; i < n; i++)
 			{
 				glUniform3f(diffuseLoc, wireframeColor.x, wireframeColor.y, wireframeColor.z);
 				meshes[i].draw();
@@ -236,7 +229,7 @@ public:
 			glDisable(GL_POLYGON_OFFSET_FILL);
 		}
 
-		for (size_t  i = 0; i < n; i++)
+		for (int i = 0; i < n; i++)
 		{
 			if (*meshes[i].getShow())
 			{
@@ -262,7 +255,8 @@ public:
 		glEnable(GL_PROGRAM_POINT_SIZE);
 
 		glPointSize((float)pointSize);
-		for (size_t  i = 0; i < meshes.size(); i++)
+		int n = (int)meshes.size();
+		for (int i = 0; i < n; i++)
 			meshes[i].drawVertex();
 
 		glDisable(GL_PROGRAM_POINT_SIZE);

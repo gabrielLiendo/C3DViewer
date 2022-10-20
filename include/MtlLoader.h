@@ -1,14 +1,14 @@
 #pragma once
 namespace MtlLoader
 {
-	bool load(const char* file_name, Scene* scene)
+	std::vector<std::shared_ptr<Material>> load(const char* file_name)
 	{	
+		std::vector<std::shared_ptr<Material>> loadedMaterials;
+
 		std::ifstream infile = std::ifstream(file_name);
 
-		if (!infile.is_open()) {
-			std::cout << file_name << " no fue conseguido" << std::endl;
-			return false;
-		}
+		if (!infile.is_open())
+			return {};
 	
 		std::string line, prefix;
 		std::stringstream ss;
@@ -62,10 +62,11 @@ namespace MtlLoader
 						ss >> illum;
 				}
 				
-				scene->addMaterial(name, ka, kd, ks);	
+				std::shared_ptr<Material> newMtl = std::make_shared<Material>(name, ka, kd, ks);
+				loadedMaterials.push_back(newMtl);
 			}
 		}
 
-		return true;
+		return loadedMaterials;
 	}
 }

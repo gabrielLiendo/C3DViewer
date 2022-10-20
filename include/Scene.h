@@ -36,8 +36,7 @@ struct Scene
 
 	void addMaterial(std::string name, glm::vec3 ka, glm::vec3 kd, glm::vec3 ks)
 	{
-		std::shared_ptr<Material> newMtl = std::make_shared<Material>(name, ka, kd, ks);
-		materials.push_back(newMtl);
+		
 	}
 
 	void setDepthTest()

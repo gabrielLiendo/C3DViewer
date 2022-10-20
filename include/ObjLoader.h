@@ -4,11 +4,6 @@ class ObjLoader
 public:
 	ObjLoader() = default;
 
-	ObjLoader(Scene* scene)
-	{
-		this->scene = scene;
-	}
-
 	std::vector<Mesh> loadMeshes(const char* file_name)
 	{	
 		glm::vec3 v3;
@@ -22,8 +17,11 @@ public:
 			ss.str(line);
 
 			ss >> prefix;
+
 			if (prefix == "o" || prefix == "g")
 				meshes.push_back(readMesh());
+			if (prefix == "usemtl")
+				meshes.push_back(readMesh(true));
 			else if (prefix == "v")
 			{
 				ss >> v3.x >> v3.y >> v3.z;
@@ -47,8 +45,6 @@ public:
 	}
 
 private:
-	Scene* scene;
-
 	std::ifstream infile;
 	std::vector<glm::vec3> positions, normals, faceNormals;
 	std::vector<int> positionIndex;
@@ -59,7 +55,7 @@ private:
 	bool checkNormals = true;
 	bool normalsIncluded = true;
 
-	Mesh readMesh()
+	Mesh readMesh(bool unnamed=false)
 	{
 		unsigned int count, index, posindex, normalindex, textcoordindex;
 
@@ -67,18 +63,21 @@ private:
 		std::vector<Vertex> vertices, face;
 
 		std::stringstream sv;
-		std::string name, vertex, mtl_name = "Default";
-		
+		std::string name, vertex, mtl_name = "";
 		glm::vec3 v3, aNormal; //glm::vec2 v2;
 
-		ss >> name;
+		if(unnamed)
+			name = "Unnamed Mesh";
+		else 
+			ss >> name;
+
 		while (std::getline(infile, line))
 		{
 			ss.clear();
 			ss.str(line);
 
 			ss >> prefix;
-			if (prefix == "o")
+			if (prefix == "o" || prefix == "usemtl" && mtl_name != "")
 			{	
 				size_t size = line.size();
 				infile.putback('\n');
@@ -234,6 +233,10 @@ private:
 				vertices.push_back({ positions[positionIndex[i] - 1], glm::normalize(tNormal) });
 			}
 		}
+
+		if(mtl_name == "")
+			mtl_name = "Default";
+
 
 		Mesh newMesh = Mesh(name, mtl_name, vertices);
 

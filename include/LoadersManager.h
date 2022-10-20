@@ -10,7 +10,31 @@ public:
     LoadersManager(Scene* scene)
     {
         this->scene = scene;
-        this->objLoader = ObjLoader(scene);
+    }
+
+    // Assign Material to each mesh
+    void assignMaterials(std::vector<Mesh> &meshes)
+    {
+        int n = (int)meshes.size();
+        int m = (int)scene->materials.size();
+
+        for(int i=0; i < n; i++)
+        {
+            std::shared_ptr<Material> mtl = nullptr;
+            std::string meshMtl = meshes[i].mtlName;
+
+            for (int j=0; j < m; j++)
+            {
+                if (scene->materials[j]->name == meshMtl)
+                    mtl = scene->materials[j];
+            }
+            if (!mtl)
+            {
+                std::cout << "El material " << meshMtl<< " no fue encontrado." << std::endl;
+                mtl = scene->materials[0];
+            }
+            meshes[i].setMaterial(mtl);
+        }
     }
 
     // Open File Dialog and load .obj with its respective material (.mtl)
@@ -36,28 +60,7 @@ public:
 
         // Load meshes and assign materials
         std::vector<Mesh> meshes = objLoader.loadMeshes(objFileName);
-    
-        int n = (int)meshes.size();
-        int m = (int)scene->materials.size();
-
-        for(int i=0; i < n; i++)
-        {
-            std::shared_ptr<Material> mtl = nullptr;
-            std::string meshMtl = meshes[i].mtlName;
-
-            for (int j=0; j < m; j++)
-            {
-                if (scene->materials[j]->name == meshMtl)
-                    mtl = scene->materials[j];
-            }
-            if (!mtl)
-            {
-                std::cout << "El material " << meshMtl<< " no fue encontrado." << std::endl;
-                mtl = scene->materials[0];
-            }
-            meshes[i].setMaterial(mtl);
-        }
-
+        assignMaterials(meshes);
         scene->objects.push_back(Object(meshes, pickingColor, objFileName));
 
         // Set obj name
@@ -161,10 +164,10 @@ public:
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vmin.x >> vmin.y >> vmin.z;
         std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> vmax.x >> vmax.y >> vmax.z;
 
-       
         mtlPath = objPath.substr(0, objPath.size() - 4) + ".mtl";
         MtlLoader::load((mtlPath).c_str(), scene);
         meshes = objLoader.loadMeshes((objPath).c_str());
+        assignMaterials(meshes);
 
         while (std::getline(infile, line))
         {

@@ -29,7 +29,7 @@ public:
 		int n = (int)meshes.size();
 		for(int  i = 0; i < n; i++)
 		{
-			int m = meshes[i].vertices.size();
+			int m = (int)meshes[i].vertices.size();
 			for (int j = 0; j < m; j++)
 			{
 				Vertex vertex = meshes[i].vertices[j];
@@ -106,24 +106,24 @@ public:
 			angle += 360.0f;
 	}
 
-	void addXRot(double xoffset)
+	void addXRot(float xoffset)
 	{
 		glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians((float)xoffset), glm::vec3(1.0f, 0.0f, 0.0f));
 		rotationMat = rotX * rotationMat;
 
 		oldAngles.x = angles.x;
-		angles.x += xoffset;
+		angles.x += (float)xoffset;
 
 		clampAngle(angles.x);
 	}
 
-	void addYRot(double yoffset)
+	void addYRot(float yoffset)
 	{
 		glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians((float)yoffset), glm::vec3(0.0f, 1.0f, 0.0f));
 		rotationMat = rotY * rotationMat;
 
 		oldAngles.y = angles.y;
-		angles.y += yoffset;
+		angles.y += (float)yoffset;
 
 		clampAngle(angles.y);
 	}

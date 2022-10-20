@@ -144,17 +144,19 @@ public:
        ImGuiIO& io = ImGui::GetIO();
 
        if (!io.WantCaptureMouse)
-       {
+       {    
+           float xpos_ = (float)xpos, ypos_ = (float)ypos;
+
            if (firstMouse)
            {
-               lastX = xpos;
-               lastY = height - ypos;
+               lastX = xpos_;
+               lastY = height - ypos_;
                firstMouse = false;
            }
            else
            {
-               double xoffset = xpos - lastX;
-               double yoffset = (height - ypos) - lastY;
+               float xoffset = xpos_ - lastX;
+               float yoffset = (height - ypos_) - lastY;
 
                //std::cout << xoffset << " " << yoffset << std::endl;
                if (scene.selectedObject)
@@ -162,21 +164,21 @@ public:
                    if(keys[GLFW_KEY_LEFT_CONTROL])
                    {
                         if(abs(xoffset) > abs(yoffset))
-                            scene.selectedObject->addYRot(xoffset *  0.25);
+                            scene.selectedObject->addYRot(xoffset *  0.25f);
                         else if(abs(yoffset) > abs(xoffset))
-                            scene.selectedObject->addXRot(yoffset * -0.25);
+                            scene.selectedObject->addXRot(yoffset * -0.25f);
                    }
                    else
                    {
-                        scene.selectedObject->addXRot(yoffset * -0.25);
-                        scene.selectedObject->addYRot(xoffset *  0.25);
+                        scene.selectedObject->addXRot(yoffset * -0.25f);
+                        scene.selectedObject->addYRot(xoffset *  0.25f);
                    }
                }
                else
                    scene.camera.changeDirection(xoffset, yoffset);
 
-               lastX = xpos;
-               lastY = height - ypos;
+               lastX = xpos_;
+               lastY = height - ypos_;
            }
 
            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
@@ -201,7 +203,7 @@ public:
         return value;
     }
 
-    void do_movement(double delta)
+    void do_movement(float delta)
     {
         double yScroll = getYScroll();
 
@@ -248,7 +250,7 @@ public:
         view = scene.camera.getView();
 
         // Calculate deltatime of current frame
-        double currentFrame = glfwGetTime();
+        float currentFrame = (float)glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -392,8 +394,8 @@ private:
     int width = 1600, height = 800;
 
     // Mouse Position
-    double lastX = width / 2.0;
-    double lastY = height / 2.0;
+    float lastX = width / 2.0f;
+    float lastY = height / 2.0f;
    
     bool processColorPicker = false;
 
@@ -401,8 +403,8 @@ private:
     double yScroll = 0.0f;
 
     // Deltatime
-    double deltaTime = 0.0f;	// Time between current frame and last frame
-    double lastFrame = 0.0f; // Time of last frame
+    float deltaTime = 0.0f;	// Time between current frame and last frame
+    float lastFrame = 0.0f; // Time of last frame
 
     // Keys and Mouse boolean state
     bool keys[1024] = {false};

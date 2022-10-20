@@ -194,7 +194,7 @@ public:
             {
                 ss >> mtl;
                 std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> diffuseColor.x >> diffuseColor.y >> diffuseColor.z;
-                for (size_t i = scene->materials.size() - 1; i >= 0; i--)
+                for (int i = (int)scene->materials.size() - 1; i >= 0; i--)
                 {
                     if (*(scene->materials[i])->getName() == mtl)
                     {

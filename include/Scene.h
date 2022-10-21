@@ -1,10 +1,11 @@
 #pragma once
-struct Scene
+class Scene
 {
+public:
 	// Models Information
-	std::vector<Object> objects;
+	std::vector<std::shared_ptr<Object>> objects;
 	std::vector<std::shared_ptr<Material>> materials;
-	Object* selectedObject = nullptr;
+	std::shared_ptr<Object> selectedObject = nullptr;
 
 	// Camera
 	Camera camera;
@@ -22,22 +23,13 @@ struct Scene
 	bool useCullFace = true;
 	bool useMultisample = true;
 
+	// Establish default values for scene
 	Scene()
 	{
-		// Establish default background color
 		bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
-
-		// Create Default Material
 		materials.push_back(std::make_shared<Material>());
-
-		// Create Main Light Source
 		light = Light();
 	};
-
-	void addMaterial(std::string name, glm::vec3 ka, glm::vec3 kd, glm::vec3 ks)
-	{
-		
-	}
 
 	void setDepthTest()
 	{
@@ -63,7 +55,7 @@ struct Scene
 			glDisable(GL_MULTISAMPLE);
 	}
 
-	void setSelectedObject(Object* selectedObject)
+	void setSelectedObject(std::shared_ptr<Object> selectedObject)
 	{
 		this->selectedObject = selectedObject;
 	}
@@ -79,11 +71,12 @@ struct Scene
 	{
 		if (selectedObject)
 		{
+			/*
 			std::vector<Object>::size_type i = selectedObject - &objects[0];
 			assert(i < objects.size());
 			std::vector<Object>::iterator it = objects.begin() + i;
 			objects.erase(it);
-			selectedObject = nullptr;
+			selectedObject = nullptr;*/
 		}
 	}
 
@@ -98,7 +91,7 @@ struct Scene
         // Write each objects' properties
 		int n = (int)objects.size();
         for (int i = 0; i < n; i++)
-            objects[i].getInfo(outfile);
+            objects[i]->getInfo(outfile);
 	}
 
 	void loadInfo(std::ifstream& infile)

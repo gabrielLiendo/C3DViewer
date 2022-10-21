@@ -75,12 +75,12 @@ public:
         // Load meshes and assign materials
         std::vector<Mesh> meshes = objLoader.loadMeshes(objFileName);
         assignMaterials(meshes, objFileName);
-        scene->objects.push_back(Object(meshes, pickingColor, objFileName));
-        scene->objects.back().name = objName;
+        scene->objects.push_back(std::make_shared<Object>(meshes, pickingColor, objFileName));
+        scene->objects.back()->name = objName;
         
         // Set loaded object as selected
         selected = (int)(scene->objects.size() - 1);
-        scene->selectedObject = &scene->objects.back();
+        scene->selectedObject = scene->objects.back();
     }
 
     // Save the current scene in a .txt
@@ -133,7 +133,7 @@ public:
         }
     }
 
-    Object loadObject()
+    std::shared_ptr<Object> loadObject()
     {
         std::vector<Mesh> meshes;
         std::string buffName, name, mtl, buffPath, objPath, mtlPath;
@@ -149,7 +149,6 @@ public:
             name += buffName + " ";
         name.pop_back();
 
-       
         std::getline(infile, line);  ss.clear(); ss.str(line);  ss >> prefix;
         while (ss >> buffPath) 
             objPath += buffPath + " ";
@@ -183,7 +182,7 @@ public:
             ss >> prefix;
             if (prefix == "o")
             {
-                size_t size = line.size();
+                int size = (int)line.size();
                 infile.putback('\n');
                 for (int i = 0; i < size; i++)
                     infile.putback(line[size - i - 1]);
@@ -196,16 +195,16 @@ public:
                 std::getline(infile, line);  ss.clear(); ss.str(line); ss >> prefix >> diffuseColor.x >> diffuseColor.y >> diffuseColor.z;
                 for (int i = (int)scene->materials.size() - 1; i >= 0; i--)
                 {
-                    if (*(scene->materials[i])->getName() == mtl)
+                    if (*scene->materials[i]->getName() == mtl)
                     {
-                        (*scene->materials[i]).setDiffuse(diffuseColor);
+                        scene->materials[i]->setDiffuse(diffuseColor);
                         break;
                     }
                 }
             }
         }
 
-        return Object(meshes, objPath, name, normalize, scale, translation, rotationMat, angles, 
+        return std::make_shared<Object>(meshes, objPath, name, normalize, scale, translation, rotationMat, angles, 
             showWireframe, showVertices, showNormals, pointSize, pickingColor, wireframeColor, vertexColor, normalsColor, boxColor, vmin, vmax);
     }
 

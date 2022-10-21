@@ -45,7 +45,6 @@
 
 int main()
 {
-    C3DViewer app = C3DViewer();
-    app.run();
-    app.terminate();
+    std::unique_ptr<C3DViewer> app = std::make_unique<C3DViewer>();
+    app->run();
 }

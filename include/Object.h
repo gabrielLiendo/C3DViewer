@@ -86,6 +86,8 @@ public:
 		this->normalsColor = normalsColor;
 
 		this->boundingBox = OBB(vmin, vmax, boxColor);
+
+		initMatrices();
 	}
 
 	// Initialize matrices
@@ -279,7 +281,7 @@ public:
 						<< rotationMat[2][0] << " " << rotationMat[2][1] << " " << rotationMat[2][2] << " " 
 						<< rotationMat[3][0] << " " << rotationMat[3][1] << " " << rotationMat[3][2] << "\n"
 				<< "a " << angles.x << " " << angles.y << " " << angles.z << "\n"
-				<< "rs " << " " << showWireframe << " " << showVertices << " " << showNormals << "\n"
+				<< "rs " << showWireframe << " " << showVertices << " " << showNormals << "\n"
 				<< "pt " << pointSize << "\n"
 				<< "pc " << pickingColor.x << " " << pickingColor.y << " " << pickingColor.z << "\n"
 				<< "wc " << wireframeColor.x << " " << wireframeColor.y << " " << wireframeColor.z << "\n"

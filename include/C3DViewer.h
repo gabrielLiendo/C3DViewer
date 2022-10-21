@@ -64,7 +64,13 @@ public:
         setCallbacks();
 
         // Create and initialize UI 
-        ui = UI(window, &scene);
+        ui = std::make_unique<UI>(window, &scene);
+    }
+
+    ~C3DViewer()
+    {
+        glfwDestroyWindow(window);
+        glfwTerminate();
     }
 
     // Set the required callback functions
@@ -231,11 +237,11 @@ public:
 
         if (pickedID == 0x00ffffff) {
             scene.selectedObject = nullptr;
-            ui.setSelected(-1);
+            ui->setSelected(-1);
         }
         else if (pickedID <= scene.objects.size()) {
-            scene.selectedObject = &scene.objects[pickedID];
-            ui.setSelected(pickedID);
+            scene.selectedObject = scene.objects[pickedID];
+            ui->setSelected(pickedID);
         }
     }
 
@@ -269,13 +275,13 @@ public:
             int n = (int)scene.objects.size();
             for (int i = 0; i < n; i++)
             {
-                objModel = scene.objects[i].getModelTransformation();
+                objModel = scene.objects[i]->getModelTransformation();
 
                 // Pass the mvp matrix to the shader
                 MVP = projection * view * objModel;
                 glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
 
-                scene.objects[i].drawFlatPicking(colorLoc_bs);
+                scene.objects[i]->drawFlatPicking(colorLoc_bs);
             }
 
             readPixel();
@@ -301,7 +307,7 @@ public:
         // Render objects
         for (int i = 0; i < scene.objects.size(); i++)
         {
-            objModel = scene.objects[i].getModelTransformation();
+            objModel = scene.objects[i]->getModelTransformation();
 
             // Pass the mvp matrix to the shader
             MVP = projection * view * objModel;
@@ -312,37 +318,37 @@ public:
                 glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(MVP));
                 glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(objModel));
                 glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-                scene.objects[i].draw(true, mtlDiffuseLoc, mtlAmbientLoc, mtlSpecularLoc);
+                scene.objects[i]->draw(true, mtlDiffuseLoc, mtlAmbientLoc, mtlSpecularLoc);
             }
             else
             {
                 basic_shader.use();
                 glUniformMatrix4fv(mvpLoc_bs, 1, GL_FALSE, glm::value_ptr(MVP));
-                scene.objects[i].draw(false, colorLoc_bs, 0, 0);
+                scene.objects[i]->draw(false, colorLoc_bs, 0, 0);
             }
                 
-            if (*scene.objects[i].getShowNormals())
+            if (*scene.objects[i]->getShowNormals())
             {
                 // Use other shader to draw the normals
                 normals_shader.use();
 
                 glUniformMatrix4fv(mvpLoc_ns, 1, GL_FALSE, glm::value_ptr(MVP));
-                color = *scene.objects[i].getNormalsColor();
+                color = *scene.objects[i]->getNormalsColor();
                 glUniform3f(colorLoc_ns, color.x, color.y, color.z);
-                glUniform1f(scaleLoc_ns, scene.objects[i].getScaleNormal());
-                scene.objects[i].drawVertices();
+                glUniform1f(scaleLoc_ns, scene.objects[i]->getScaleNormal());
+                scene.objects[i]->drawVertices();
             }
 
-            if (*scene.objects[i].getShowVertices())
+            if (*scene.objects[i]->getShowVertices())
             {
                 // Use other shader to draw the normals
                 circularVertex_shader.use();
 
                 glUniformMatrix4fv(mvpLoc_cps, 1, GL_FALSE, glm::value_ptr(MVP));
-                color = *scene.objects[i].getVerticesColor();
+                color = *scene.objects[i]->getVerticesColor();
                 glUniform3f(colorLoc_cps, color.x, color.y, color.z);
-                glUniform1f(pointSizeLoc_cps, float(*scene.objects[i].getPointSize()));
-                scene.objects[i].drawVertices();
+                glUniform1f(pointSizeLoc_cps, float(*scene.objects[i]->getPointSize()));
+                scene.objects[i]->drawVertices();
             }
         }
 
@@ -361,7 +367,7 @@ public:
         }
 
         // Render UI frame
-        ui.render();
+        ui->render();
 
         // Swap the screen buffers
         glfwSwapBuffers(window);
@@ -373,21 +379,14 @@ public:
             draw();
     }
 
-    void terminate()
-    {
-        ui.terminate();
-
-        glfwDestroyWindow(window);
-        glfwTerminate();
-    }
-
 private:
     // Pointer to window
     GLFWwindow* window;
     
     // User Interface
-    UI ui;
+    std::unique_ptr<UI> ui;
 
+    // Group of scene variables
     Scene scene;
 
     // Window dimensions
@@ -411,7 +410,7 @@ private:
     bool firstMouse = true;
 
     // Projection matriX
-    glm::mat4  projection;
+    glm::mat4 projection;
 
     //Shaders
     Shader basic_shader, lighting_shader, normals_shader, circularVertex_shader;

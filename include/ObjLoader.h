@@ -6,6 +6,8 @@ public:
 
 	std::vector<Mesh> loadMeshes(const char* file_name)
 	{	
+		checkNormals = true, normalsIncluded = true;
+
 		glm::vec3 v3;
 		std::vector<Mesh> meshes;
 		
@@ -75,7 +77,7 @@ private:
 		{
 			ss.clear();
 			ss.str(line);
-
+		
 			ss >> prefix;
 			if (prefix == "o" || prefix == "usemtl" && mtl_name != "")
 			{	

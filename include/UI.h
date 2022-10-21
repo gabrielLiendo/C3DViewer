@@ -13,10 +13,14 @@ public:
         init();
     }
 
-    void setSelected(int selected)
+    ~UI()
     {
-        this->selected = selected;
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
     }
+
+    void setSelected(int selected){ this->selected = selected;}
 
     void render()
     {
@@ -30,20 +34,9 @@ public:
         renderSceneConfigWindows();
         renderObjectConfigWindows();
 
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
-
         // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
-
-    void terminate()
-    {
-        // Cleanup
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
     }
 
 private:
@@ -259,7 +252,7 @@ private:
            
             for (int i = 0; i < m; i++)
             {
-                Object* obj = &scene->objects[i];
+                std::shared_ptr<Object> obj = scene->objects[i];
                 if (ImGui::Selectable(obj->name.c_str(), selected == i))
                 {
                     selected = i;
@@ -274,7 +267,7 @@ private:
     // Draw the 'Properties' and 'Meshes' windows 
     void renderObjectConfigWindows()
     {
-        Object* selectedObject = scene->selectedObject;
+        std::shared_ptr<Object> selectedObject = scene->selectedObject;
 
         ImGui::Begin("Meshes");
         {
@@ -383,7 +376,7 @@ private:
         ImGui::EndTable();
     }
 
-    static void Vec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max, void (Object::*updateMat)(), Object* selectedObject)
+    static void Vec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max, void (Object::*updateMat)(), std::shared_ptr<Object> selectedObject)
     {
         ImGui::BeginTable(label.c_str(), 4, ImGuiTableFlags_NoPadOuterX);
         ImGui::TableNextRow();
@@ -394,7 +387,7 @@ private:
         ImGui::PopStyleColor(1);
         ImGui::SameLine();
         if(ImGui::DragFloat("##X", &values.x, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
-            (selectedObject->*updateMat)();
+            (&(*selectedObject)->*updateMat)();
 
         ImGui::TableSetColumnIndex(1);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
@@ -402,7 +395,7 @@ private:
         ImGui::PopStyleColor(1);
         ImGui::SameLine();
         if(ImGui::DragFloat("##Y", &values.y, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
-            (selectedObject->*updateMat)();
+            (&(*selectedObject)->*updateMat)();
             
         ImGui::TableSetColumnIndex(2);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
@@ -410,7 +403,7 @@ private:
         ImGui::PopStyleColor(1);
         ImGui::SameLine();
         if(ImGui::DragFloat("##Z", &values.z, v_speed, v_min, v_max, "%.2f", ImGuiSliderFlags_AlwaysClamp))
-            (selectedObject->*updateMat)();
+            (&(*selectedObject)->*updateMat)();
 
         ImGui::TableSetColumnIndex(3);
         ImGui::Text(label.c_str());
@@ -462,7 +455,6 @@ private:
 
     // State
     int selected = -1;
-    bool show_demo_window = true;
     bool openPopupDelete = false;
 
     // Slider limit values

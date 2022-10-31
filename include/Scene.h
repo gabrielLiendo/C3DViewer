@@ -13,7 +13,8 @@ public:
 	// Light
 	Light light;
 
-	bool useLighting = false;
+	
+	int lightingModel = 0;
 
 	// Background Color
 	glm::vec3 bgColor;

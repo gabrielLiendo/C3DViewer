@@ -3,7 +3,7 @@
 class Shader
 {
 public:
-    GLuint Program;
+    unsigned int ID;
     Shader() = default;
 
     // Constructor generates the shader on the fly
@@ -100,18 +100,18 @@ public:
         }
 
         // Shader Program
-        this->Program = glCreateProgram();
-        glAttachShader(this->Program, vertex);
+        this->ID = glCreateProgram();
+        glAttachShader(this->ID, vertex);
         if (geometryPath)
-            glAttachShader(this->Program, geometry);
-        glAttachShader(this->Program, fragment);
-        glLinkProgram(this->Program);
+            glAttachShader(this->ID, geometry);
+        glAttachShader(this->ID, fragment);
+        glLinkProgram(this->ID);
 
         // Print linking errors if any
-        glGetProgramiv(this->Program, GL_LINK_STATUS, &success);
+        glGetProgramiv(this->ID, GL_LINK_STATUS, &success);
         if (!success)
         {
-            glGetProgramInfoLog(this->Program, 512, NULL, infoLog);
+            glGetProgramInfoLog(this->ID, 512, NULL, infoLog);
             std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
         }
 
@@ -125,7 +125,37 @@ public:
     // Uses the current shader
     void use() 
     { 
-        glUseProgram(this->Program); 
+        glUseProgram(this->ID); 
+    }
+
+    void setVec3f(const std::string &name, glm::vec3 value)
+    {
+        glUniform3f(getUniformLocation(name), value.x, value.y, value.z);
+    }
+
+    void setMat4f(const std::string &name, glm::mat4 value)
+    {
+        glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
+    }
+
+    void setBool(const std::string &name, bool value)
+    {
+        glUniform1i(getUniformLocation(name), (int)value);
+    }
+
+    void setInt(const std::string &name, int value)
+    {
+        glUniform1i(getUniformLocation(name), value);
+    }
+    void setFloat(const std::string &name, float value)
+    {
+        glUniform1f(getUniformLocation(name), value);
+    }
+
+private:
+    int getUniformLocation(const std::string &name)
+    {
+        return glGetUniformLocation(ID, name.c_str());
     }
 };
 

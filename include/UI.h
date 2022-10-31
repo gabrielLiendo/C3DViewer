@@ -34,6 +34,9 @@ public:
         renderSceneConfigWindows();
         renderObjectConfigWindows();
 
+        if (show_demo_window)
+            ImGui::ShowDemoWindow(&show_demo_window);
+
         // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -145,10 +148,10 @@ private:
     void renderSceneConfigWindows()
     {
         ImGui::Begin("Lighting");
-        {
+        {   
             if (ImGui::TreeNodeEx("Configuration##Ligthing", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::Checkbox("Use Lighting", &scene->useLighting);
+                ImGui::Combo("Model", &scene->lightingModel, "Ambient\0Lambert\0Phong\0\0");
                 ImGui::TreePop();
             }
 
@@ -456,6 +459,7 @@ private:
     // State
     int selected = -1;
     bool openPopupDelete = false;
+    bool show_demo_window = true;
 
     // Slider limit values
     float max_float = std::numeric_limits<float>::max();

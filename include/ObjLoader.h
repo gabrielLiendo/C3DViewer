@@ -48,7 +48,7 @@ public:
 
 private:
 	std::ifstream infile;
-	std::vector<glm::vec3> positions, normals, faceNormals;
+	std::vector<glm::vec3> positions, normals, textCoords, faceNormals;
 	std::vector<int> positionIndex;
 
 	std::string line, prefix;
@@ -66,7 +66,7 @@ private:
 
 		std::stringstream sv;
 		std::string name, vertex, mtl_name = "";
-		glm::vec3 v3, aNormal; //glm::vec2 v2;
+		glm::vec3 v3, aNormal;
 
 		if(unnamed)
 			name = "Unnamed Mesh";
@@ -98,11 +98,11 @@ private:
 				ss >> v3.x >> v3.y >> v3.z;
 				normals.push_back(v3);
 			}
-			/*else if (prefix == "vt")
+			else if (prefix == "vt")
 			{
-				ss >> v2.x >> v2.y;
-				text_coords.push_back(v2);
-			}*/
+				ss >> v3.x >> v3.y;
+				textCoords.push_back(v3);
+			}
 			else if (prefix == "usemtl")
 				ss >> mtl_name;
 			else if (prefix == "f")

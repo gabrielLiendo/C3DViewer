@@ -11,3 +11,5 @@ struct Vertex
 		this->normal = normal;
 	}
 };
+
+enum LightingModel {AMBIENT, LAMBERT, PHONG};

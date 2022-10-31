@@ -202,17 +202,17 @@ public:
 		return translationMat * rotationMat * scaleMat * normalizeMat * centerMat;
 	}
 
-	void drawFlatPicking(int colorLoc)
+	void drawFlatPicking(Shader shader)
 	{	
 		int n = (int)meshes.size();
 		for (int i = 0; i < n; i++)
 		{
-			glUniform3f(colorLoc, pickingColor.x, pickingColor.y, pickingColor.z);
+			shader.setVec3f("color", pickingColor);
 			meshes[i].draw();
 		}
 	}
 
-	void draw(bool lighting, int diffuseLoc, int ambientLoc, int specularLoc)
+	void draw(LightingModel model, Shader shader)
 	{
 		glm::vec3 color;
 		int n = (int)meshes.size();
@@ -224,7 +224,7 @@ public:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			for (int i = 0; i < n; i++)
 			{
-				glUniform3f(diffuseLoc, wireframeColor.x, wireframeColor.y, wireframeColor.z);
+				shader.setVec3f("gMaterial.diffuseColor", wireframeColor);
 				meshes[i].draw();
 			}
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -235,16 +235,13 @@ public:
 		{
 			if (*meshes[i].getShow())
 			{
-				color = *meshes[i].mtl->getDiffuse();
-				glUniform3f(diffuseLoc, color.x, color.y, color.z);
+				shader.setVec3f("gMaterial.diffuseColor", *meshes[i].mtl->getDiffuse());
+				shader.setVec3f("gMaterial.ambientColor", *meshes[i].mtl->getAmbient());
 
-				if (lighting)
+				if (model == PHONG)
 				{
-					color = *meshes[i].mtl->getAmbient();
-					glUniform3f(ambientLoc, color.x, color.y, color.z);
-
-					color = *meshes[i].mtl->getSpecular();
-					glUniform3f(specularLoc, color.x, color.y, color.z);
+					shader.setVec3f("gMaterial.diffuseColor", *meshes[i].mtl->getDiffuse());
+					shader.setVec3f("gMaterial.specularColor", *meshes[i].mtl->getSpecular());
 				}
 				
 				meshes[i].draw();
@@ -255,8 +252,8 @@ public:
 	void drawVertices()
 	{
 		glEnable(GL_PROGRAM_POINT_SIZE);
-
 		glPointSize((float)pointSize);
+
 		int n = (int)meshes.size();
 		for (int i = 0; i < n; i++)
 			meshes[i].drawVertex();

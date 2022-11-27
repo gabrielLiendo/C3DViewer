@@ -2,12 +2,13 @@
 class Camera
 {
 public:
-	glm::vec3 position, front, up;
+	glm::vec3 position, front, up, right;
 
 	Camera() {
 		position = glm::vec3(0.0, 0.0, 3.0);
 		front = glm::vec3(0.0f, 0.0f, -1.0f);
 		up = glm::vec3(0.0f, 1.0f, 0.0f);
+		right = glm::normalize(glm::cross(up, front));
 
 		speed = 2.5f;
 		yaw = -90.f;
@@ -52,6 +53,13 @@ public:
 	void moveLeftRight(float delta)
 	{
 		position += speed * delta * glm::normalize(glm::cross(front, up));
+		updateView();
+	}
+
+	// Update position and view moving up or down
+	void moveUpDown(float delta)
+	{
+		position += speed * delta * glm::normalize(glm::cross(front, right));
 		updateView();
 	}
 	

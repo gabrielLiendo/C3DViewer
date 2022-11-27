@@ -202,6 +202,10 @@ public:
             scene.camera.moveLeftRight(delta);
         else if (keys[GLFW_KEY_A])
             scene.camera.moveLeftRight(-delta);
+        else if (keys[GLFW_KEY_Q])
+            scene.camera.moveUpDown(delta);
+        else if (keys[GLFW_KEY_E])
+            scene.camera.moveUpDown(-delta);
     }
 
     void readPixel()

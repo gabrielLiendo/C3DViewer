@@ -82,6 +82,19 @@ public:
         selected = (int)(scene->objects.size() - 1);
         scene->selectedObject = scene->objects.back();
     }
+    
+    std::shared_ptr<Texture> loadTexture()
+    {
+        char const* lFilterPatterns[2] = { "*.pnj", "*.jpg" };
+        char const* textureFileName = tinyfd_openFileDialog("Open", "", 2, lFilterPatterns, NULL, 0);
+
+        if (!textureFileName)
+            return nullptr;
+
+        std::string texturePath = textureFileName; 
+        std::string textureName= texturePath.substr(texturePath.find_last_of("/\\") + 1, texturePath.size()); 
+		return std::make_shared<Texture>(texturePath, textureName);
+    }
 
     // Save the current scene in a .txt
     void saveScene()

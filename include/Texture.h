@@ -45,9 +45,9 @@ public:
         return textureMesh;
     }
 
-    std::string getName()
+    std::string *getName()
     {
-        return name;
+        return &name;
     }
 
 private:

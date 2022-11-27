@@ -76,21 +76,24 @@ namespace MtlLoader
 				if(mapKa != "")
 				{	
 					std::string texturePath = mtlPath.substr(0, mtlPath.find_last_of("/\\") + 1) + mapKa; 
-					std::shared_ptr<Texture> newTexture = std::make_shared<Texture>(texturePath, mapKa);
+					std::string textureName = texturePath.substr(texturePath.find_last_of("/\\") + 1, texturePath.size()); 
+					std::shared_ptr<Texture> newTexture = std::make_shared<Texture>(texturePath, textureName);
                 	newMtl->setTextureMap(newTexture, AMBIENT_MAP);
 				}
 
 				if(mapKd != "")
 				{	
 					std::string texturePath = mtlPath.substr(0, mtlPath.find_last_of("/\\") + 1) + mapKd; 
-					std::shared_ptr<Texture> newTexture = std::make_shared<Texture>(texturePath, mapKd);
+					std::string textureName = texturePath.substr(texturePath.find_last_of("/\\") + 1, texturePath.size()); 
+					std::shared_ptr<Texture> newTexture = std::make_shared<Texture>(texturePath, textureName);
                 	newMtl->setTextureMap(newTexture, DIFFUSE_MAP);
 				}
 
 				if(mapKs != "")
 				{	
 					std::string texturePath = mtlPath.substr(0, mtlPath.find_last_of("/\\") + 1) + mapKs; 
-					std::shared_ptr<Texture> newTexture = std::make_shared<Texture>(texturePath, mapKs);
+					std::string textureName = texturePath.substr(texturePath.find_last_of("/\\") + 1, texturePath.size()); 
+					std::shared_ptr<Texture> newTexture = std::make_shared<Texture>(texturePath, textureName);
                 	newMtl->setTextureMap(newTexture, SPECULAR_MAP);
 				}
 

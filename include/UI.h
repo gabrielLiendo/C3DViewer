@@ -235,9 +235,21 @@ private:
                     ImGui::ColorEdit3("Specular##Material", glm::value_ptr(*mtl->getSpecular()));
                     ImGui::DragFloat("Shininess##Material", mtl->getShininess(), 1.0f, 0.5f, 128.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
                     
+                    if (ImGui::TreeNode("Ambient Map"))
+                    {
+                        TextureMapNode(mtl, mtl->kaMap, AMBIENT_MAP);
+                        ImGui::TreePop();
+                    }
+
                     if (ImGui::TreeNode("Diffuse Map"))
                     {
-                        TextureControl(mtl->kdMap->getName(), mtl->kdMap->getIdentifier(), 45);
+                        TextureMapNode(mtl, mtl->kdMap, DIFFUSE_MAP);
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNode("Specular Map"))
+                    {   
+                        TextureMapNode(mtl, mtl->ksMap, SPECULAR_MAP);
                         ImGui::TreePop();
                     }
  
@@ -346,19 +358,41 @@ private:
         }
     }
 
-    static void TextureControl(const std::string name, GLuint texture_id, int texSize)
-    {   
+    void TextureMapNode(std::shared_ptr<Material> mtl, std::shared_ptr<Texture> textureMap, TextureMap mapType)
+    {
+        if(textureMap)
+            TextureControl(mtl, mapType, textureMap->getName(), textureMap->getIdentifier(), 45);
+        else{
+            if(ImGui::Button("Add Texture Map"))
+            {
+                std::shared_ptr<Texture> newTexture = loadersManager.loadTexture();
+                mtl->setTextureMap(newTexture, mapType);
+            }
+        }
+    }
 
-        ImGui::BeginTable(name.c_str(), 2, ImGuiTableFlags_PadOuterX);
+    void TextureControl(std::shared_ptr<Material> mtl, TextureMap mapType, const std::string *name, GLuint texture_id, int texSize)
+    {   
+        ImGui::BeginTable((*name).c_str(), 2, ImGuiTableFlags_PadOuterX);
         ImGui::TableNextRow();
 
         ImGui::TableSetColumnIndex(0);
-        ImGui::Text(name.c_str());
-        ImGui::Button("Change Texture");
+        ImGui::Text((*name).c_str());
+        if(ImGui::Button("Change"))
+        {
+            std::shared_ptr<Texture> newTexture = loadersManager.loadTexture();
+            mtl->setTextureMap(newTexture, mapType);
+        };
+        ImGui::SameLine();
+        if(ImGui::Button("Delete"))
+        {
+            mtl->setTextureMap(nullptr, mapType);
+        };
 
         ImGui::TableSetColumnIndex(1);
+        ImGui::SetCursorPosX(ImGui::GetCursorPos().x + (ImGui::GetContentRegionAvail().x - texSize) * 0.5f);
         ImGui::Image((void*)(intptr_t)texture_id, ImVec2(texSize, texSize));
-            
+                
         ImGui::EndTable();  
     }
 

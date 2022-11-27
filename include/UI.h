@@ -386,7 +386,7 @@ private:
         ImGui::SameLine();
         if(ImGui::Button("Delete"))
         {
-            mtl->setTextureMap(nullptr, mapType);
+            mtl->removeTextureMap(mapType);
         };
 
         ImGui::TableSetColumnIndex(1);

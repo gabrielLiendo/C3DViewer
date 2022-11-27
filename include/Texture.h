@@ -38,6 +38,11 @@ public:
     {   
         glActiveTexture(texture);
         glBindTexture(GL_TEXTURE_2D, textureMesh);
+    } 
+
+    void remove()
+    {
+        glDeleteTextures(1, &textureMesh);
     }
 
     GLuint getIdentifier()

@@ -28,17 +28,39 @@ public:
 	{	
 		switch (map)
 		{
-		case AMBIENT_MAP:
-			this->kaMap = texMap;
-			break;
-		case DIFFUSE_MAP:
-			this->kdMap = texMap;
-			break;
-		case SPECULAR_MAP:
-			this->ksMap = texMap;
-			break;
-		default:
-			break;
+			case AMBIENT_MAP:
+				this->kaMap = texMap;
+				break;
+			case DIFFUSE_MAP:
+				this->kdMap = texMap;
+				break;
+			case SPECULAR_MAP:
+				this->ksMap = texMap;
+				break;
+			default:
+				break;
+		}	
+	}
+
+
+	void removeTextureMap(TextureMap mapType)
+	{	
+		switch (mapType)
+		{
+			case AMBIENT_MAP:
+				kaMap->remove();
+				kaMap = nullptr;
+				break;
+			case DIFFUSE_MAP:
+				kdMap->remove();
+				kdMap = nullptr;
+				break;
+			case SPECULAR_MAP:
+				ksMap->remove();
+				ksMap = nullptr;
+				break;
+			default:
+				break;
 		}	
 	}
 

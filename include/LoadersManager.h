@@ -85,7 +85,7 @@ public:
     
     std::shared_ptr<Texture> loadTexture()
     {
-        char const* lFilterPatterns[2] = { "*.pnj", "*.jpg" };
+        char const* lFilterPatterns[2] = { "*.png", "*.jpg" };
         char const* textureFileName = tinyfd_openFileDialog("Open", "", 2, lFilterPatterns, NULL, 0);
 
         if (!textureFileName)

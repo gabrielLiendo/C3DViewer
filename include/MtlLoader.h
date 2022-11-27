@@ -24,7 +24,7 @@ namespace MtlLoader
 				int illum;
 				float ns = 0.0f, ni, d;
 				glm::vec3 ka, kd, ks, ke;
-				std::string name, mapKd = "";
+				std::string name, mapKa = "", mapKd = "", mapKs = "";
 
 				// Read one mtl at the time
 				ss >> name;
@@ -60,11 +60,40 @@ namespace MtlLoader
 						ss >> d;
 					else if (prefix == "illum")
 						ss >> illum;
+					else if (prefix == "map_Ka")
+						ss >> mapKa;
 					else if (prefix == "map_Kd")
 						ss >> mapKd;
+					else if (prefix == "map_Ks")
+						ss >> mapKs;
 				}
 				
-				std::shared_ptr<Material> newMtl = std::make_shared<Material>(name, ka, kd, ks, ns, mapKd);
+				std::shared_ptr<Material> newMtl = std::make_shared<Material>(name, ka, kd, ks, ns);
+
+				std::string mtlPath = file_name;
+
+				// Load and set textures maps
+				if(mapKa != "")
+				{	
+					std::string texturePath = mtlPath.substr(0, mtlPath.find_last_of("/\\") + 1) + mapKa; 
+					std::shared_ptr<Texture> newTexture = std::make_shared<Texture>(texturePath, mapKa);
+                	newMtl->setTextureMap(newTexture, AMBIENT_MAP);
+				}
+
+				if(mapKd != "")
+				{	
+					std::string texturePath = mtlPath.substr(0, mtlPath.find_last_of("/\\") + 1) + mapKd; 
+					std::shared_ptr<Texture> newTexture = std::make_shared<Texture>(texturePath, mapKd);
+                	newMtl->setTextureMap(newTexture, DIFFUSE_MAP);
+				}
+
+				if(mapKs != "")
+				{	
+					std::string texturePath = mtlPath.substr(0, mtlPath.find_last_of("/\\") + 1) + mapKs; 
+					std::shared_ptr<Texture> newTexture = std::make_shared<Texture>(texturePath, mapKs);
+                	newMtl->setTextureMap(newTexture, SPECULAR_MAP);
+				}
+
 				loadedMaterials.push_back(newMtl);
 			}
 		}

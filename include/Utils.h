@@ -21,3 +21,4 @@ struct Vertex
 };
 
 enum LightingModel {AMBIENT, LAMBERT, PHONG};
+enum TextureMap {AMBIENT_MAP, DIFFUSE_MAP, SPECULAR_MAP};

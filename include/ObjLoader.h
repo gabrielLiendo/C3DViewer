@@ -80,7 +80,6 @@ private:
 		if(unnamed)
 		{	
 			ss >> mtl_name;
-			std::cout << mtl_name << std::endl;
 			name = "Unnamed Mesh";
 		}
 		else 

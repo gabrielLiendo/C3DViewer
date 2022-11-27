@@ -223,25 +223,24 @@ private:
 
         ImGui::Begin("Materials");
         {
-            size_t n = scene->materials.size();
-            std::shared_ptr<Material> mtl = scene->materials[0];
-
-            if (ImGui::TreeNode(mtl->getName()->c_str()))
+            int n = (int)scene->materials.size();
+            
+            for (int i = 0; i < n; i++)
             {
-                ImGui::ColorEdit3("Diffuse##Material", glm::value_ptr(*mtl->getDiffuse()));
-                ImGui::ColorEdit3("Ambient##Material", glm::value_ptr(*mtl->getAmbient()));
-                ImGui::ColorEdit3("Specular##Material", glm::value_ptr(*mtl->getSpecular()));
-                ImGui::TreePop();
-            }
-
-            for (size_t i = 1; i < n; i++)
-            {
-                mtl = scene->materials[i];
-                if (ImGui::TreeNodeEx(mtl->getName()->c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+                std::shared_ptr<Material> mtl = scene->materials[i];
+                if (ImGui::TreeNodeEx(mtl->getName()->c_str()))
                 {
                     ImGui::ColorEdit3("Diffuse##Material", glm::value_ptr(*mtl->getDiffuse()));
                     ImGui::ColorEdit3("Ambient##Material", glm::value_ptr(*mtl->getAmbient()));
                     ImGui::ColorEdit3("Specular##Material", glm::value_ptr(*mtl->getSpecular()));
+                    ImGui::DragFloat("Shininess##Material", mtl->getShininess(), 1.0f, 0.5f, 128.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+                    
+                    if (ImGui::TreeNode("Diffuse Map"))
+                    {
+                        TextureControl(mtl->kdMap->getName(), mtl->kdMap->getIdentifier(), 45);
+                        ImGui::TreePop();
+                    }
+ 
                     ImGui::TreePop();
                 }
             }
@@ -345,6 +344,22 @@ private:
 
             ImGui::End();
         }
+    }
+
+    static void TextureControl(const std::string name, GLuint texture_id, int texSize)
+    {   
+
+        ImGui::BeginTable(name.c_str(), 2, ImGuiTableFlags_PadOuterX);
+        ImGui::TableNextRow();
+
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text(name.c_str());
+        ImGui::Button("Change Texture");
+
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Image((void*)(intptr_t)texture_id, ImVec2(texSize, texSize));
+            
+        ImGui::EndTable();  
     }
 
     static void Vec3Control(const std::string label, glm::vec3& values, float v_speed, float v_min, float v_max)

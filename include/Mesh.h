@@ -77,11 +77,17 @@ private:
 		// Texture attribute
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, textCoord));
 		glEnableVertexAttribArray(2);  
+		
 	}
 
 	void bind()
-	{
-		mtl->texture->bind();
+	{	
+		if(mtl->kdMap != nullptr)
+			mtl->kdMap->bind(GL_TEXTURE0);
+
+		if(mtl->ksMap != nullptr)
+			mtl->ksMap->bind(GL_TEXTURE1);
+			
 		glBindVertexArray(VAO);
 	}
 };

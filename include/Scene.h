@@ -14,7 +14,7 @@ public:
 	Light light;
 
 	
-	int lightingModel = 0;
+	int lightingModel = 2;
 
 	// Background Color
 	glm::vec3 bgColor;

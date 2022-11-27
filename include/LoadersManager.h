@@ -20,17 +20,8 @@ public:
         mtlPath = mtlPath.substr(0, mtlPath.size() - 4) + ".mtl";
         std::vector<std::shared_ptr<Material>> loadedMaterials = MtlLoader::load(mtlPath.c_str());
 
-        
         std::string mtlName = mtlPath;
         mtlName = mtlName.substr(mtlName.find_last_of("/\\") + 1);
-
-        for(int i=0; i< loadedMaterials.size(); i++)
-        {   
-            std::string texturePath = mtlPath.substr(0, mtlPath.size() - mtlName.size()) + loadedMaterials[i]->kdMapName; 
-            std::shared_ptr<Texture> newTexture = std::make_shared<Texture>(texturePath);
-            loadedMaterials[i]->setTexture(newTexture);
-        }
-        
 
         if(loadedMaterials.empty())
             std::cout << "The file " << mtlName << " was not found" << std::endl;

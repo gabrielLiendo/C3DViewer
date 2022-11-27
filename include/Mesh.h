@@ -73,10 +73,15 @@ private:
 		// Normal attribute
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
 		glEnableVertexAttribArray(1);
+
+		// Texture attribute
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, textCoord));
+		glEnableVertexAttribArray(2);  
 	}
 
 	void bind()
 	{
+		mtl->texture->bind();
 		glBindVertexArray(VAO);
 	}
 };

@@ -8,6 +8,7 @@ public:
 	{	
 		checkNormals = true, normalsIncluded = true;
 
+		glm::vec2 v2;
 		glm::vec3 v3;
 		std::vector<Mesh> meshes;
 		
@@ -17,7 +18,7 @@ public:
 		{
 			ss.clear();
 			ss.str(line);
-
+			
 			ss >> prefix;
 
 			if (prefix == "o" || prefix == "g")
@@ -34,6 +35,11 @@ public:
 				ss >> v3.x >> v3.y >> v3.z;
 				normals.push_back(v3);
 			}
+			else if (prefix == "vt")
+			{
+				ss >> v2.x >> v2.y;
+				textCoords.push_back(v2);
+			}
 		}
 
 		infile.close();
@@ -42,13 +48,15 @@ public:
 		normals.clear();
 		faceNormals.clear();
 		positionIndex.clear();
+		textCoords.clear();
 
 		return meshes;
 	}
 
 private:
 	std::ifstream infile;
-	std::vector<glm::vec3> positions, normals, textCoords, faceNormals;
+	std::vector<glm::vec2> textCoords;
+	std::vector<glm::vec3> positions, normals, faceNormals;
 	std::vector<int> positionIndex;
 
 	std::string line, prefix;
@@ -66,10 +74,15 @@ private:
 
 		std::stringstream sv;
 		std::string name, vertex, mtl_name = "";
+		glm::vec2 v2;
 		glm::vec3 v3, aNormal;
 
 		if(unnamed)
+		{	
+			ss >> mtl_name;
+			std::cout << mtl_name << std::endl;
 			name = "Unnamed Mesh";
+		}
 		else 
 			ss >> name;
 
@@ -100,8 +113,8 @@ private:
 			}
 			else if (prefix == "vt")
 			{
-				ss >> v3.x >> v3.y;
-				textCoords.push_back(v3);
+				ss >> v2.x >> v2.y;
+				textCoords.push_back(v2);
 			}
 			else if (prefix == "usemtl")
 				ss >> mtl_name;
@@ -138,25 +151,25 @@ private:
 								normalindex = index;
 						}
 
-						face.push_back({ positions[posindex - 1], normals[normalindex - 1] });
+						face.push_back({ positions[posindex - 1], normals[normalindex - 1], textCoords[textcoordindex - 1]});
 					}
 
 					if (face.size() == 3)
 					{
-						vertices.push_back({ face[0].position, face[0].normal });
-						vertices.push_back({ face[1].position, face[1].normal }); 
-						vertices.push_back({ face[2].position, face[2].normal });
+						vertices.push_back({ face[0].position, face[0].normal, face[0].textCoord });
+						vertices.push_back({ face[1].position, face[1].normal, face[1].textCoord }); 
+						vertices.push_back({ face[2].position, face[2].normal, face[2].textCoord });
 					}
 					else
 					{
 						// Triangulate
-						vertices.push_back({ face[0].position, face[0].normal });
-						vertices.push_back({ face[1].position, face[1].normal });
-						vertices.push_back({ face[3].position, face[3].normal });
+						vertices.push_back({ face[0].position, face[0].normal, face[0].textCoord });
+						vertices.push_back({ face[1].position, face[1].normal, face[1].textCoord });
+						vertices.push_back({ face[3].position, face[3].normal, face[3].textCoord });
 
-						vertices.push_back({ face[1].position, face[1].normal });
-						vertices.push_back({ face[2].position, face[2].normal });
-						vertices.push_back({ face[3].position, face[3].normal });
+						vertices.push_back({ face[1].position, face[1].normal, face[1].textCoord });
+						vertices.push_back({ face[2].position, face[2].normal, face[2].textCoord });
+						vertices.push_back({ face[3].position, face[3].normal, face[3].textCoord });
 					}
 				}
 				else
@@ -237,7 +250,6 @@ private:
 
 		if(mtl_name == "")
 			mtl_name = "Default";
-
 
 		Mesh newMesh = Mesh(name, mtl_name, vertices);
 

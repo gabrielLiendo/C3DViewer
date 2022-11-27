@@ -22,9 +22,9 @@ namespace MtlLoader
 			if (prefix == "newmtl")
 			{
 				int illum;
-				float ns, ni, d;
+				float ns = 0.0f, ni, d;
 				glm::vec3 ka, kd, ks, ke;
-				std::string name;
+				std::string name, mapKd = "";
 
 				// Read one mtl at the time
 				ss >> name;
@@ -60,9 +60,11 @@ namespace MtlLoader
 						ss >> d;
 					else if (prefix == "illum")
 						ss >> illum;
+					else if (prefix == "map_Kd")
+						ss >> mapKd;
 				}
 				
-				std::shared_ptr<Material> newMtl = std::make_shared<Material>(name, ka, kd, ks);
+				std::shared_ptr<Material> newMtl = std::make_shared<Material>(name, ka, kd, ks, ns, mapKd);
 				loadedMaterials.push_back(newMtl);
 			}
 		}

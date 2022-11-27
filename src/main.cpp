@@ -20,6 +20,10 @@
 #include <limits>
 #include "tinyfiledialogs.h"
 
+// Image loader
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 // GLM Mathematics
 #define GLM_FORCE_RADIANS// force everything in radian
 #include <glm/glm.hpp>
@@ -28,6 +32,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 // Other includes
+#include "Texture.h"
 #include "Shader.h"
 #include "Utils.h"
 #include "Material.h"

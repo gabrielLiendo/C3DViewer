@@ -2,6 +2,7 @@
 
 in vec3 Normal;
 in vec3 FragPos;
+in vec2 TexCoord;
 
 out vec4 fragColor;
 
@@ -23,6 +24,7 @@ struct Material
 uniform Light gLight;
 uniform Material gMaterial;
 uniform vec3 view;
+uniform sampler2D gSampler;
 
 void main()
 {
@@ -46,5 +48,5 @@ void main()
 						 gMaterial.specularColor *
 						 gLight.color;  
 
-	fragColor = (ambientColor + diffuseColor + specularColor) * diffuseColor;
+	fragColor = (ambientColor + diffuseColor + specularColor) * texture(gSampler, TexCoord);;
 } 

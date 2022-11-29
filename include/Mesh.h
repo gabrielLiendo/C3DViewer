@@ -16,6 +16,12 @@ public:
 
 		initMesh();
 	}
+	
+	~Mesh()
+	{
+		vertices.clear();
+		mtl = nullptr;
+	}
 
 	void setMaterial(std::shared_ptr<Material> mtl)
 	{

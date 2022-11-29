@@ -20,6 +20,8 @@ struct Vertex
 	}
 };
 
+enum Origin {MATERIAL, TEXTURE};
+enum Colors {AMBIENT_COLOR, DIFFUSE_COLOR, SPECULAR_COLOR};
 enum LightingModel {AMBIENT, LAMBERT, PHONG_L};
 enum ShadingModel {FLAT, GOURAND, PHONG_S};
 enum TextureMap {AMBIENT_MAP, DIFFUSE_MAP, SPECULAR_MAP};

@@ -90,6 +90,11 @@ public:
 		initMatrices();
 	}
 
+	~Object()
+	{
+		meshes.clear();
+	}
+
 	// Initialize matrices
 	void initMatrices()
 	{

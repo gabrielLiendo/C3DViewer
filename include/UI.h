@@ -22,6 +22,46 @@ public:
 
     void setSelected(int selected){ this->selected = selected;}
 
+    bool getCombination(Colors color, Origin origin)  
+    {   
+        int combinationIdx;
+        switch(color)
+        {
+            case AMBIENT_COLOR:
+                combinationIdx = ambientCombinationIdx;
+                break;
+            case DIFFUSE_COLOR:
+                combinationIdx = diffuseCombinationIdx;
+                break;
+            case SPECULAR_COLOR:
+                combinationIdx = specularCombinationIdx;
+                break;
+        }
+
+        if(origin==MATERIAL)
+            return !(combinationIdx == 1);
+        else // origin == TEXTURE
+            return !(combinationIdx == 0);
+    }
+
+    bool useTextureColor(Colors type)  
+    {   
+        int combinationIdx;
+        switch(type)
+        {
+            case AMBIENT_COLOR:
+                combinationIdx = ambientCombinationIdx;
+                break;
+            case DIFFUSE_COLOR:
+                combinationIdx = diffuseCombinationIdx;
+                break;
+            case SPECULAR_COLOR:
+                combinationIdx = specularCombinationIdx;
+                break;
+        }
+        return !(combinationIdx == 1);
+    }
+
     void render()
     {
         // Start the Dear ImGui frame
@@ -235,49 +275,6 @@ private:
             ImGui::End();
         }
 
-        ImGui::Begin("Materials");
-        {
-            int n = (int)scene->materials.size();
-            
-            for (int i = 0; i < n; i++)
-            {
-                std::shared_ptr<Material> mtl = scene->materials[i];
-                if (ImGui::TreeNodeEx(mtl->getName()->c_str()))
-                {
-
-                    
-                    ImGui::ColorEdit3("Diffuse##Material", glm::value_ptr(*mtl->getDiffuse()));
-                    ImGui::ColorEdit3("Ambient##Material", glm::value_ptr(*mtl->getAmbient()));
-                    ImGui::ColorEdit3("Specular##Material", glm::value_ptr(*mtl->getSpecular()));
-                    ImGui::DragFloat("Shininess##Material", mtl->getShininess(), 1.0f, 0.5f, 128.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-                    
-
-
-                    if (ImGui::TreeNode("Ambient Map"))
-                    {
-                        TextureMapNode(mtl, mtl->kaMap, AMBIENT_MAP);
-                        ImGui::TreePop();
-                    }
-
-                    if (ImGui::TreeNode("Diffuse Map"))
-                    {
-                        TextureMapNode(mtl, mtl->kdMap, DIFFUSE_MAP);
-                        ImGui::TreePop();
-                    }
-
-                    if (ImGui::TreeNode("Specular Map"))
-                    {   
-                        TextureMapNode(mtl, mtl->ksMap, SPECULAR_MAP);
-                        ImGui::TreePop();
-                    }
- 
-                    ImGui::TreePop();
-                }
-            }
-
-            ImGui::End();
-        }
-
         ImGui::Begin("Objects");
         {
             int m = (int)scene->objects.size();
@@ -306,22 +303,28 @@ private:
             if (selectedObject)
             {
                 std::vector<Mesh>* meshes = selectedObject->getMeshes();
-                size_t n = meshes->size();
+                int n = (int)meshes->size();
 
-                for (size_t i = 0; i < n; i++)
+                for (int i = 0; i < n; i++)
                 {
-                    Mesh* m = &(*meshes)[i];
+                    Mesh* mesh = &(*meshes)[i];
+                    std::shared_ptr<Material> mtl = mesh->mtl;
 
-                    if (ImGui::TreeNode(m->getName().c_str()))
-                    {
-                        ImGui::Checkbox("Show Mesh##showMesh", m->getShow());
-                        if (ImGui::TreeNode("Material##MeshMaterial"))
+                    std::string meshID = mesh->getName() + "##" +std::to_string(i);
+                    if (ImGui::TreeNode(meshID.c_str()))
+                    {   
+                        ImGui::Checkbox("Show Mesh", mesh->getShow());
+                        if (ImGui::TreeNode("Material"))
                         {
-                            ImGui::Text("Material Name: ");
-                            ImGui::SameLine();
-                            std::string mtlName = *m->mtl->getName();
-                            ImGui::Text(mtlName.c_str());
-                            ImGui::ColorEdit3("Diffuse##MeshDiffuse", glm::value_ptr(*m->mtl->getDiffuse()));
+                            ImGui::ColorEdit3("Diffuse", glm::value_ptr(*mtl->getDiffuse()));
+                            ImGui::ColorEdit3("Ambient", glm::value_ptr(*mtl->getAmbient()));
+                            ImGui::ColorEdit3("Specular", glm::value_ptr(*mtl->getSpecular()));
+                            ImGui::DragFloat("Shininess", mtl->getShininess(), 1.0f, 0.5f, 128.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+                            
+                            TextureMapNode("Ambient Map", mtl, mtl->kaMap, AMBIENT_MAP);
+                            TextureMapNode("Diffuse Map", mtl, mtl->kdMap, DIFFUSE_MAP);
+                            TextureMapNode("Specular Map", mtl, mtl->ksMap, SPECULAR_MAP);
+
                             ImGui::TreePop();
                         }
                         ImGui::TreePop();
@@ -376,16 +379,20 @@ private:
         }
     }
 
-    void TextureMapNode(std::shared_ptr<Material> mtl, std::shared_ptr<Texture> textureMap, TextureMap mapType)
+    void TextureMapNode(const char* nodeName, std::shared_ptr<Material> mtl, std::shared_ptr<Texture> textureMap, TextureMap mapType)
     {
-        if(textureMap)
-            TextureControl(mtl, mapType, textureMap->getName(), textureMap->getIdentifier(), 45);
-        else{
-            if(ImGui::Button("Add Texture Map"))
-            {
-                std::shared_ptr<Texture> newTexture = loadersManager.loadTexture();
-                mtl->setTextureMap(newTexture, mapType);
+        if (ImGui::TreeNode(nodeName))
+        {
+            if(textureMap)
+                TextureControl(mtl, mapType, textureMap->getName(), textureMap->getIdentifier(), 45);
+            else{
+                if(ImGui::Button("Add Texture Map"))
+                {
+                    std::shared_ptr<Texture> newTexture = loadersManager.loadTexture();
+                    mtl->setTextureMap(newTexture, mapType);
+                }   
             }
+            ImGui::TreePop();
         }
     }
 
@@ -549,7 +556,7 @@ private:
     bool show_demo_window = true;
 
     int ambientCombinationIdx = 2, specularCombinationIdx = 2, diffuseCombinationIdx = 2;
-    char* combinations[3] = { "Only use object color", "Only use texture map color", "Combine both colors" };
+    char* combinations[3] = { "Only use material color", "Only use texture map color", "Combine both colors" };
 
     // Slider limit values
     float max_float = std::numeric_limits<float>::max();

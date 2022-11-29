@@ -34,7 +34,6 @@ public:
         stbi_image_free(imageData);
     }
 
-
     void bind(GLuint unit)
     {   
         glActiveTexture(GL_TEXTURE0 + unit);

@@ -19,12 +19,23 @@ struct Material
 	float shininess;
 };
 
+struct ColorCombination
+{
+	bool useAmbMtlColor;
+	bool useAmbTexColor;
+	bool useDiffMtlColor;
+	bool useDiffTexColor;
+	bool useSpecMtlColor;
+	bool useSpecTexColor;
+};
+
 in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoord;
 
 uniform Light gLight;
 uniform Material gMaterial;
+uniform ColorCombination gCombination;
 
 out vec4 fragColor;
 
@@ -42,22 +53,36 @@ void main()
 		specular = pow(specAngle, gMaterial.shininess);
 	}
 	
-	vec3 Iamb = gLight.color *
-				gLight.ambientIntensity * 
-				gMaterial.ambientColor;
-
-	vec3 Idif = gLight.color *
-				gLight.diffuseIntensity *
-				lambertian *
-				gMaterial.diffuseColor;
+	// Ambient Color
+	vec3 Iamb = gLight.color * gLight.ambientIntensity;
+	if(gCombination.useAmbMtlColor)
+	{
+		Iamb = Iamb* gMaterial.ambientColor;
+	}
 	
-	vec3 Ispe = gLight.color *
-				gLight.specularIntensity * 
-				specular *
-				gMaterial.specularColor *
-				vec3(texture(gMaterial.specularMap, TexCoord));
+	// Diffuse Color
+	vec3 Idif = gLight.color * gLight.diffuseIntensity * lambertian;
 
-	vec3 diffuseColor = vec3(texture(gMaterial.diffuseMap, TexCoord));
+	vec3 diffuseColor = vec3(1.0);
+	if(gCombination.useDiffMtlColor)
+	{
+		diffuseColor = diffuseColor * gMaterial.diffuseColor;
+	}
+	if(gCombination.useDiffTexColor)
+	{
+		diffuseColor = diffuseColor * vec3(texture(gMaterial.diffuseMap, TexCoord));
+	}
 
+	// Specular Color
+	vec3 Ispe = gLight.color * gLight.specularIntensity * specular;
+	if(gCombination.useSpecMtlColor)
+	{
+		Ispe = Ispe* gMaterial.specularColor;
+	}
+	if(gCombination.useSpecTexColor)
+	{
+		Ispe = Ispe * vec3(texture(gMaterial.specularMap, TexCoord));
+	}
+				
 	fragColor = vec4( (Iamb + Idif + Ispe) * diffuseColor, 1.0 );
 } 

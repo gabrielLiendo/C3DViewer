@@ -325,6 +325,14 @@ public:
                 currentShader.use();
                 currentShader.setMat4f("MVP", MVP);
                 currentShader.setMat4f("model", objModel);
+
+                currentShader.setBool("gCombination.useAmbMtlColor", ui->getCombination(AMBIENT_COLOR, MATERIAL));
+                currentShader.setBool("gCombination.useAmbTexColor", ui->getCombination(AMBIENT_COLOR, TEXTURE));
+                currentShader.setBool("gCombination.useDiffMtlColor", ui->getCombination(DIFFUSE_COLOR, MATERIAL));
+                currentShader.setBool("gCombination.useDiffTexColor", ui->getCombination(DIFFUSE_COLOR, TEXTURE));
+                currentShader.setBool("gCombination.useSpecMtlColor", ui->getCombination(SPECULAR_COLOR, MATERIAL));
+                currentShader.setBool("gCombination.useSpecTexColor", ui->getCombination(SPECULAR_COLOR, TEXTURE));
+
                 scene.objects[i]->draw(PHONG_L, currentShader);
             }
             

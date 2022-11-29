@@ -238,7 +238,7 @@ public:
 				shader.setVec3f("gMaterial.diffuseColor", *meshes[i].mtl->getDiffuse());
 				shader.setVec3f("gMaterial.ambientColor", *meshes[i].mtl->getAmbient());
 
-				if (model == PHONG)
+				if (model == PHONG_L)
 				{
 					shader.setVec3f("gMaterial.diffuseColor", *meshes[i].mtl->getDiffuse());
 					shader.setVec3f("gMaterial.specularColor", *meshes[i].mtl->getSpecular());
@@ -246,7 +246,7 @@ public:
 				}
 				
 
-				meshes[i].draw();
+				meshes[i].draw(shader);
 			}
 		}
 	}

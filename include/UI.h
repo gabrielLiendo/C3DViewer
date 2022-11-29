@@ -151,7 +151,8 @@ private:
         {   
             if (ImGui::TreeNodeEx("Configuration##Ligthing", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::Combo("Model", &scene->lightingModel, "Ambient\0Lambert\0Phong\0\0");
+                ImGui::Combo("Lighting", &scene->lightingModel, "Ambient\0Lambert\0Phong\0\0");
+                ImGui::Combo("Shading", &scene->shadingModel, "Flat\0Gourand\0Phong\0\0");
                 ImGui::TreePop();
             }
 
@@ -165,10 +166,14 @@ private:
                 Vec3Control(" ", *scene->light.getPosition(), 0.05f, -max_float, max_float);
                 ImGui::TreePop();
             }
+
+
+
             if (ImGui::TreeNode("Intesity##Ligthing"))
             {
                 ImGui::DragFloat("Ambient", scene->light.getAmbientIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::DragFloat("Diffuse", scene->light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::DragFloat("Specular", scene->light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::TreePop();
             }
 
@@ -212,6 +217,15 @@ private:
                 ImGui::TreePop();
             }
 
+            if (ImGui::TreeNodeEx("Fragment Colors", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ColorCombinationControl("Ambient", ambientCombinationIdx);
+                ColorCombinationControl("Diffuse", diffuseCombinationIdx);
+                ColorCombinationControl("Specular", specularCombinationIdx);
+
+                ImGui::TreePop();
+            }
+
             if (ImGui::TreeNode("Framerate"))
             {
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -230,11 +244,15 @@ private:
                 std::shared_ptr<Material> mtl = scene->materials[i];
                 if (ImGui::TreeNodeEx(mtl->getName()->c_str()))
                 {
+
+                    
                     ImGui::ColorEdit3("Diffuse##Material", glm::value_ptr(*mtl->getDiffuse()));
                     ImGui::ColorEdit3("Ambient##Material", glm::value_ptr(*mtl->getAmbient()));
                     ImGui::ColorEdit3("Specular##Material", glm::value_ptr(*mtl->getSpecular()));
                     ImGui::DragFloat("Shininess##Material", mtl->getShininess(), 1.0f, 0.5f, 128.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
                     
+
+
                     if (ImGui::TreeNode("Ambient Map"))
                     {
                         TextureMapNode(mtl, mtl->kaMap, AMBIENT_MAP);
@@ -319,8 +337,8 @@ private:
             {
                 if (ImGui::TreeNodeEx("Model Transformation", ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    Vec3Control("Scale", selectedObject->scale, 0.05f, -10.0f, 10.0f, &Object::setScaleMat, selectedObject);
-                    Vec3Control("Rotation", selectedObject->angles, 5.0f, -360.0f, 360.0f, &Object::setRotationsMats, selectedObject);
+                    Vec3Control("Scale", selectedObject->scale, 0.5f, -30.0f, 30.0f, &Object::setScaleMat, selectedObject);
+                    Vec3Control("Rotation", selectedObject->angles, 3.0f, -360.0f, 360.0f, &Object::setRotationsMats, selectedObject);
                     Vec3Control("Translation", selectedObject->translation, 0.05f, -max_float, max_float, &Object::setTranslationMat, selectedObject);
                     ImGui::TreePop();
                 }
@@ -369,6 +387,26 @@ private:
                 mtl->setTextureMap(newTexture, mapType);
             }
         }
+    }
+
+    void ColorCombinationControl(std::string colorInput, int &current_combination_idx)
+    {
+        const char* combo_preview_value = combinations[current_combination_idx]; 
+
+        if (ImGui::BeginCombo(colorInput.c_str(), combo_preview_value))
+        {
+            for (int n = 0; n < 3; n++)
+            {
+                const bool is_selected = (current_combination_idx == n);
+                if (ImGui::Selectable(combinations[n], is_selected))
+                    current_combination_idx= n;
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
     }
 
     void TextureControl(std::shared_ptr<Material> mtl, TextureMap mapType, const std::string *name, GLuint texture_id, int texSize)
@@ -509,6 +547,9 @@ private:
     int selected = -1;
     bool openPopupDelete = false;
     bool show_demo_window = true;
+
+    int ambientCombinationIdx = 2, specularCombinationIdx = 2, diffuseCombinationIdx = 2;
+    char* combinations[3] = { "Only use object color", "Only use texture map color", "Combine both colors" };
 
     // Slider limit values
     float max_float = std::numeric_limits<float>::max();

@@ -5,12 +5,14 @@ public:
 	std::string name;
 	std::shared_ptr<Texture> kaMap, kdMap, ksMap;
 
+
+
 	Material()
 	{
 		name = "Default";
 		ambient = glm::vec3(0.0, 0.0, 0.0);
 		diffuse = glm::vec3(0.7, 0.7, 0.7);
-		specular = glm::vec3(0.5, 0.5, 0.5);
+		specular = glm::vec3(0.7, 0.7, 0.7);
 		shininess = 20.0f;
 	}
 
@@ -64,18 +66,17 @@ public:
 		}	
 	}
 
-	std::string *getName()
-	{
-		return &name;
-	}
+	std::string *getName(){ return &name; }
 
 	glm::vec3 *getDiffuse(){ return &diffuse; }
 
 	glm::vec3 *getAmbient() { return &ambient; }
+	
 
 	glm::vec3 *getSpecular() { return &specular; }
 
 	float *getShininess() { return &shininess; }
+
 
 	void setDiffuse(glm::vec3 diffuse)
 	{
@@ -83,17 +84,6 @@ public:
 	}
 
 private:
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
-
+	glm::vec3 ambient, diffuse, specular;
 	float shininess;
-
-	/*
-	vec3 emissive;
-	float specularExponent;
-	float opticalDensity;
-	float transparency;
-	short illum;
-	*/
 };

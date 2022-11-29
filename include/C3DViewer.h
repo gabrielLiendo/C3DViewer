@@ -35,7 +35,8 @@ public:
         circularVertex_shader = Shader("misc/shaders/vertex/basic.vs", "misc/shaders/fragment/pointColor.frag");
 
         ambientShader = Shader("misc/shaders/vertex/basic.vs", "misc/shaders/fragment/ambientLight.frag");
-        phongShader = Shader("misc/shaders/vertex/ilumNormal.vs", "misc/shaders/fragment/phongLight.frag");
+        phongShader = Shader("misc/shaders/vertex/ilumNormal.vs", "misc/shaders/fragment/phongShading.frag");
+        gourandShader = Shader("misc/shaders/vertex/gourandShading.vs", "misc/shaders/fragment/gourandFrag.frag");
 
         // Initialize the view and projection matrices
         projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(width) / float(height), 0.1f, 100.0f);
@@ -285,12 +286,18 @@ public:
         }
         else if(scene.lightingModel == 2)
         {
-            phongShader.use();
-            phongShader.setVec3f("view", scene.camera.position);
-            phongShader.setVec3f("gLight.color", *scene.light.getColor());
-            phongShader.setVec3f("gLight.position", *scene.light.getPosition());
-            phongShader.setFloat("gLight.ambientIntensity", *scene.light.getAmbientIntensity());
-            phongShader.setFloat("gLight.diffuseIntensity", *scene.light.getDiffuseIntensity());
+            Shader currentShader;
+            if(scene.shadingModel == 1)
+                currentShader = gourandShader;
+            else if(scene.shadingModel == 2)
+                currentShader = phongShader;
+                    
+            currentShader.use();
+            currentShader.setVec3f("gLight.color", *scene.light.getColor());
+            currentShader.setVec3f("gLight.position", *scene.light.getPosition());
+            currentShader.setFloat("gLight.ambientIntensity", *scene.light.getAmbientIntensity());
+            currentShader.setFloat("gLight.diffuseIntensity", *scene.light.getDiffuseIntensity());
+            currentShader.setFloat("gLight.specularIntensity", *scene.light.getSpecularIntensity());
         }
         
         // Render objects
@@ -308,11 +315,17 @@ public:
                 scene.objects[i]->draw(AMBIENT, ambientShader);
             }
             else if(scene.lightingModel == 2)
-            {
-                phongShader.use();
-                phongShader.setMat4f("MVP", MVP);
-                phongShader.setMat4f("model", objModel);
-                scene.objects[i]->draw(PHONG, phongShader);
+            {   
+                Shader currentShader;
+                if(scene.shadingModel == 1)
+                    currentShader = gourandShader;
+                else if(scene.shadingModel == 2)
+                    currentShader = phongShader;
+                    
+                currentShader.use();
+                currentShader.setMat4f("MVP", MVP);
+                currentShader.setMat4f("model", objModel);
+                scene.objects[i]->draw(PHONG_L, currentShader);
             }
             
             if (*scene.objects[i]->getShowNormals())
@@ -396,5 +409,6 @@ private:
     glm::mat4 projection;
 
     //Shaders
-    Shader basicShader, normals_Shader, circularVertex_shader, ambientShader, phongShader;
+    Shader basicShader, normals_Shader, circularVertex_shader, ambientShader, 
+           phongShader, gourandShader;
 };

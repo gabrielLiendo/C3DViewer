@@ -7,6 +7,7 @@ public:
         load();
     }
 
+
     // Load and generate the texture
     bool load(){
         stbi_set_flip_vertically_on_load(1);
@@ -34,9 +35,9 @@ public:
     }
 
 
-    void bind(GLenum texture)
+    void bind(GLuint unit)
     {   
-        glActiveTexture(texture);
+        glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_2D, textureMesh);
     } 
 

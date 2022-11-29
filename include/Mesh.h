@@ -13,6 +13,7 @@ public:
 		this->mtlName = mtlName;
 		showTriangles = true;
 
+
 		initMesh();
 	}
 
@@ -32,7 +33,18 @@ public:
 	}
 
 	void draw()
+	{		
+		bind();
+		glDrawArrays(GL_TRIANGLES, 0, (int)vertices.size());
+	}
+
+	void draw(Shader shader)
 	{
+		if(mtl->kdMap)
+			shader.setInt("gMaterial.diffuseMap", 0);
+		if(mtl->ksMap)
+			shader.setInt("gMaterial.specularMap", 1);
+
 		bind();
 		glDrawArrays(GL_TRIANGLES, 0, (int)vertices.size());
 	}
@@ -80,13 +92,14 @@ private:
 		
 	}
 
+
 	void bind()
 	{	
 		if(mtl->kdMap != nullptr)
-			mtl->kdMap->bind(GL_TEXTURE0);
+			mtl->kdMap->bind(0);
 
 		if(mtl->ksMap != nullptr)
-			mtl->ksMap->bind(GL_TEXTURE1);
+			mtl->ksMap->bind(1);
 			
 		glBindVertexArray(VAO);
 	}

@@ -2,9 +2,9 @@
 
 struct Light
 {
-	vec3 color;
 	vec3 position;
-	float ambientIntensity;
+	vec3 diffuseColor;
+	vec3 specularColor;
 	float diffuseIntensity;
 	float specularIntensity;
 };
@@ -33,6 +33,9 @@ in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoord;
 
+uniform vec3 ambientColor;
+uniform float ambientIntensity;
+
 uniform Light gLight;
 uniform Material gMaterial;
 uniform ColorCombination gCombination;
@@ -54,14 +57,14 @@ void main()
 	}
 	
 	// Ambient Color
-	vec3 Iamb = gLight.color * gLight.ambientIntensity;
+	vec3 Iamb = ambientColor * ambientIntensity;
 	if(gCombination.useAmbMtlColor)
 	{
-		Iamb = Iamb* gMaterial.ambientColor;
+		Iamb = Iamb * gMaterial.ambientColor;
 	}
 	
 	// Diffuse Color
-	vec3 Idif = gLight.color * gLight.diffuseIntensity * lambertian;
+	vec3 Idif = gLight.diffuseColor * gLight.diffuseIntensity * lambertian;
 
 	vec3 diffuseColor = vec3(1.0);
 	if(gCombination.useDiffMtlColor)
@@ -74,7 +77,7 @@ void main()
 	}
 
 	// Specular Color
-	vec3 Ispe = gLight.color * gLight.specularIntensity * specular;
+	vec3 Ispe = gLight.specularColor * gLight.specularIntensity * specular;
 	if(gCombination.useSpecMtlColor)
 	{
 		Ispe = Ispe* gMaterial.specularColor;

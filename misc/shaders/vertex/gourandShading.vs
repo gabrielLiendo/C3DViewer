@@ -5,9 +5,9 @@ layout (location = 2) in vec2 texCoord;
 
 struct Light
 {
-	vec3 color;
 	vec3 position;
-	float ambientIntensity;
+	vec3 diffuseColor;
+	vec3 specularColor;
 	float diffuseIntensity;
 	float specularIntensity;
 };
@@ -22,10 +22,23 @@ struct Material
 	float shininess;
 };
 
+struct ColorCombination
+{
+	bool useAmbMtlColor;
+	bool useAmbTexColor;
+	bool useDiffMtlColor;
+	bool useDiffTexColor;
+	bool useSpecMtlColor;
+	bool useSpecTexColor;
+};
+
+uniform vec3 ambientColor;
+uniform float ambientIntensity;
 uniform mat4 model;
 uniform mat4 MVP;
 uniform Light gLight;
 uniform Material gMaterial;
+uniform ColorCombination gCombination;
 
 out vec3 lightingColor;
 out vec3 diffuseColor;
@@ -47,21 +60,37 @@ void main()
 		specular = pow(specAngle, gMaterial.shininess);
 	}
 
-    vec3 Iamb = gLight.color *
-				gLight.ambientIntensity * 
-				gMaterial.ambientColor;
+    // Ambient Color
+	vec3 Iamb = ambientColor * ambientIntensity;
+	if(gCombination.useAmbMtlColor)
+	{
+		Iamb = Iamb* gMaterial.ambientColor;
+	}
+	
+	// Diffuse Color
+	vec3 Idif = gLight.diffuseColor * gLight.diffuseIntensity * lambertian;
 
-    vec3 Idif = gLight.color *
-				gLight.diffuseIntensity *
-				lambertian *
-				gMaterial.diffuseColor;
-    
-	vec3 Ispe = gLight.color *
-				gLight.specularIntensity * 
-				specular *
-				gMaterial.specularColor *
-				vec3(texture(gMaterial.specularMap, texCoord));
+	vec3 objectColor = vec3(1.0);
+	if(gCombination.useDiffMtlColor)
+	{
+		objectColor = objectColor * gMaterial.diffuseColor;
+	}
+	if(gCombination.useDiffTexColor)
+	{
+		objectColor = objectColor * vec3(texture(gMaterial.diffuseMap, texCoord));
+	}
+
+	// Specular Color
+	vec3 Ispe = gLight.specularColor * gLight.specularIntensity * specular;
+	if(gCombination.useSpecMtlColor)
+	{
+		Ispe = Ispe* gMaterial.specularColor;
+	}
+	if(gCombination.useSpecTexColor)
+	{
+		Ispe = Ispe * vec3(texture(gMaterial.specularMap, texCoord));
+	}
 
 	lightingColor = Iamb + Idif + Ispe;
-	diffuseColor = vec3(texture(gMaterial.diffuseMap, texCoord));
+	diffuseColor = objectColor;
 }

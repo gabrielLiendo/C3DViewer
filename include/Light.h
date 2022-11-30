@@ -4,30 +4,30 @@ class Light
 public:
 	Light()
 	{
-		color = glm::vec3(1.0f, 1.0f, 1.0f);
 		position = glm::vec3(1.0f, 1.0f, 2.0f);
-		ambientIntensity = 1.0f;
+		diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		diffuseIntensity = 1.0f;
 		specularIntensity = 1.0f;
 	}
 
+	
 
-	Light(glm::vec3 color, float ambientIntensity)
+	Light(glm::vec3 diffuseColor, glm::vec3 specularColor)
 	{
-		this->color = color;
-		this->ambientIntensity = ambientIntensity;
+		this->diffuseColor = diffuseColor;
+		this->specularColor = specularColor;
 	}
 
 	// Getters
-	glm::vec3* getColor(){ return &color; }
 	glm::vec3* getPosition() { return &position; }
-	float* getAmbientIntensity(){ return &ambientIntensity; }
+	glm::vec3* getDiffuseColor(){ return &diffuseColor; }
+	glm::vec3* getSpecularColor(){ return &specularColor; }
 	float* getDiffuseIntensity() { return &diffuseIntensity; }
 	float* getSpecularIntensity() { return &specularIntensity; }
 	
-
 private:
-	glm::vec3 color;
 	glm::vec3 position;
-	float ambientIntensity, diffuseIntensity, specularIntensity;
+	glm::vec3 diffuseColor, specularColor;
+	float diffuseIntensity, specularIntensity;
 };

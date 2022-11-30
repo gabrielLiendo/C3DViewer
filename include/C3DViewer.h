@@ -281,8 +281,6 @@ public:
         if (scene.lightingModel == 0)
         {   
             ambientShader.use();
-            ambientShader.setVec3f("gLight.color", *scene.light.getColor());
-            ambientShader.setFloat("gLight.ambientIntensity", *scene.light.getAmbientIntensity());
         }
         else if(scene.lightingModel == 2)
         {
@@ -293,11 +291,13 @@ public:
                 currentShader = phongShader;
                     
             currentShader.use();
-            currentShader.setVec3f("gLight.color", *scene.light.getColor());
             currentShader.setVec3f("gLight.position", *scene.light.getPosition());
-            currentShader.setFloat("gLight.ambientIntensity", *scene.light.getAmbientIntensity());
+            currentShader.setVec3f("gLight.diffuseColor", *scene.light.getDiffuseColor());
+            currentShader.setVec3f("gLight.specularColor", *scene.light.getSpecularColor());
             currentShader.setFloat("gLight.diffuseIntensity", *scene.light.getDiffuseIntensity());
             currentShader.setFloat("gLight.specularIntensity", *scene.light.getSpecularIntensity());
+            currentShader.setVec3f("ambientColor", scene.ambientColor);
+            currentShader.setFloat("ambientIntensity", scene.ambientIntensity);
         }
         
         // Render objects
@@ -325,6 +325,7 @@ public:
                 currentShader.use();
                 currentShader.setMat4f("MVP", MVP);
                 currentShader.setMat4f("model", objModel);
+
 
                 currentShader.setBool("gCombination.useAmbMtlColor", ui->getCombination(AMBIENT_COLOR, MATERIAL));
                 currentShader.setBool("gCombination.useAmbTexColor", ui->getCombination(AMBIENT_COLOR, TEXTURE));

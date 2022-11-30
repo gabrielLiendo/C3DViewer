@@ -44,24 +44,6 @@ public:
             return !(combinationIdx == 0);
     }
 
-    bool useTextureColor(Colors type)  
-    {   
-        int combinationIdx;
-        switch(type)
-        {
-            case AMBIENT_COLOR:
-                combinationIdx = ambientCombinationIdx;
-                break;
-            case DIFFUSE_COLOR:
-                combinationIdx = diffuseCombinationIdx;
-                break;
-            case SPECULAR_COLOR:
-                combinationIdx = specularCombinationIdx;
-                break;
-        }
-        return !(combinationIdx == 1);
-    }
-
     void render()
     {
         // Start the Dear ImGui frame
@@ -184,11 +166,12 @@ private:
         ImGui::End();
     }
 
-    // Draw the 'Lighting', 'Scene', 'Camera', 'Objects' and 'Materials' windows 
+    // Draw the 'Lighting', 'Scene', 'Camera', and'Objects' windows 
     void renderSceneConfigWindows()
     {
         ImGui::Begin("Lighting");
         {   
+            
             if (ImGui::TreeNodeEx("Configuration##Ligthing", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::Combo("Lighting", &scene->lightingModel, "Ambient\0Lambert\0Phong\0\0");
@@ -196,9 +179,17 @@ private:
                 ImGui::TreePop();
             }
 
+            if (ImGui::TreeNode("Ambient##Ligthing"))
+            {
+                ImGui::ColorEdit3("Color##LightColor", glm::value_ptr(scene->ambientColor));
+                ImGui::DragFloat("Intensity", &scene->ambientIntensity, 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::TreePop();
+            }
+
             if (ImGui::TreeNode("Color##Ligthing"))
             {
-                ImGui::ColorEdit3("##LightColor", glm::value_ptr(*scene->light.getColor()));
+                ImGui::ColorEdit3("Diffuse##LightColor", glm::value_ptr(*scene->light.getDiffuseColor()));
+                ImGui::ColorEdit3("Specular##LightColor", glm::value_ptr(*scene->light.getSpecularColor()));
                 ImGui::TreePop();
             }
             if (ImGui::TreeNode("Position##Ligthing"))
@@ -207,11 +198,8 @@ private:
                 ImGui::TreePop();
             }
 
-
-
-            if (ImGui::TreeNode("Intesity##Ligthing"))
+            if (ImGui::TreeNode("Intensity##Ligthing"))
             {
-                ImGui::DragFloat("Ambient", scene->light.getAmbientIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::DragFloat("Diffuse", scene->light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::DragFloat("Specular", scene->light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::TreePop();
@@ -219,6 +207,7 @@ private:
 
             ImGui::End();
         }
+        
 
         ImGui::Begin("Camera");
         {

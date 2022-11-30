@@ -16,8 +16,10 @@ public:
 	int lightingModel = 2;
 	int shadingModel = 2;
 
-	// Background Color
+	// Colors
 	glm::vec3 bgColor;
+	glm::vec3 ambientColor = glm::vec3(1.0, 1.0, 1.0);
+	float ambientIntensity = 1.0f;
 
 	// Rendering State
 	bool useDepthTest = true;

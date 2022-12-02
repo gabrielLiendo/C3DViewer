@@ -291,11 +291,30 @@ public:
                 currentShader = phongShader;
                     
             currentShader.use();
-            currentShader.setVec3f("gLight.position", *scene.light.getPosition());
-            currentShader.setVec3f("gLight.diffuseColor", *scene.light.getDiffuseColor());
-            currentShader.setVec3f("gLight.specularColor", *scene.light.getSpecularColor());
-            currentShader.setFloat("gLight.diffuseIntensity", *scene.light.getDiffuseIntensity());
-            currentShader.setFloat("gLight.specularIntensity", *scene.light.getSpecularIntensity());
+
+            currentShader.setInt("nDirLights", scene.dirLights.size());
+            for(int i=0; i < scene.dirLights.size(); i++)
+            {
+                currentShader.setVec3f("gDirLights["+ std::to_string(i) +"].direction", *scene.dirLights[i].getDirection());
+                currentShader.setVec3f("gDirLights["+ std::to_string(i) +"].diffuseColor", *scene.dirLights[i].getDiffuseColor());
+                currentShader.setVec3f("gDirLights["+ std::to_string(i) +"].specularColor", *scene.dirLights[i].getSpecularColor());
+                currentShader.setFloat("gDirLights["+ std::to_string(i) +"].diffuseIntensity", *scene.dirLights[i].getDiffuseIntensity());
+                currentShader.setFloat("gDirLights["+ std::to_string(i) +"].specularIntensity", *scene.dirLights[i].getSpecularIntensity());
+            }
+
+            currentShader.setInt("nPointLights", scene.pointLights.size());
+            for(int i=0; i < scene.pointLights.size(); i++)
+            {
+                currentShader.setVec3f("gPointLights["+ std::to_string(i) +"].direction", *scene.pointLights[i].getDirection());
+                currentShader.setVec3f("gPointLights["+ std::to_string(i) +"].diffuseColor", *scene.pointLights[i].getDiffuseColor());
+                currentShader.setVec3f("gPointLights["+ std::to_string(i) +"].specularColor", *scene.pointLights[i].getSpecularColor());
+                currentShader.setFloat("gPointLights["+ std::to_string(i) +"].diffuseIntensity", *scene.pointLights[i].getDiffuseIntensity());
+                currentShader.setFloat("gPointLights["+ std::to_string(i) +"].specularIntensity", *scene.pointLights[i].getSpecularIntensity());
+                currentShader.setFloat("gPointLights["+ std::to_string(i) +"].constant", *scene.pointLights[i].getConstantComponent());
+                currentShader.setFloat("gPointLights["+ std::to_string(i) +"].linear", *scene.pointLights[i].getLinearComponent());
+                currentShader.setFloat("gPointLights["+ std::to_string(i) +"].quadratic", *scene.pointLights[i].getQuadraticComponent());
+            }
+           
             currentShader.setVec3f("ambientColor", scene.ambientColor);
             currentShader.setFloat("ambientIntensity", scene.ambientIntensity);
         }
@@ -327,6 +346,7 @@ public:
                 currentShader.setMat4f("model", objModel);
 
 
+                currentShader.setInt("gCombination.lightingModel", scene.lightingModel);
                 currentShader.setBool("gCombination.useAmbMtlColor", ui->getCombination(AMBIENT_COLOR, MATERIAL));
                 currentShader.setBool("gCombination.useAmbTexColor", ui->getCombination(AMBIENT_COLOR, TEXTURE));
                 currentShader.setBool("gCombination.useDiffMtlColor", ui->getCombination(DIFFUSE_COLOR, MATERIAL));

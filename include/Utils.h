@@ -20,6 +20,7 @@ struct Vertex
 	}
 };
 
+enum LightType {POINT, DIRECTIONAL};
 enum Origin {MATERIAL, TEXTURE};
 enum Colors {AMBIENT_COLOR, DIFFUSE_COLOR, SPECULAR_COLOR};
 enum LightingModel {AMBIENT, LAMBERT, PHONG_L};

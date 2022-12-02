@@ -179,29 +179,62 @@ private:
                 ImGui::TreePop();
             }
 
-            if (ImGui::TreeNode("Ambient##Ligthing"))
+            if (ImGui::TreeNode("Ambiental##Ligthing"))
             {
                 ImGui::ColorEdit3("Color##LightColor", glm::value_ptr(scene->ambientColor));
                 ImGui::DragFloat("Intensity", &scene->ambientIntensity, 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::TreePop();
             }
 
-            if (ImGui::TreeNode("Color##Ligthing"))
+            if (ImGui::TreeNode("Lights##Ligthing"))
             {
-                ImGui::ColorEdit3("Diffuse##LightColor", glm::value_ptr(*scene->light.getDiffuseColor()));
-                ImGui::ColorEdit3("Specular##LightColor", glm::value_ptr(*scene->light.getSpecularColor()));
-                ImGui::TreePop();
-            }
-            if (ImGui::TreeNode("Position##Ligthing"))
-            {
-                Vec3Control(" ", *scene->light.getPosition(), 0.05f, -max_float, max_float);
-                ImGui::TreePop();
-            }
+                if (ImGui::TreeNode("New Light##Ligthing"))
+                {   
+                    ImGui::Combo("Lighting", &typeNewLight, "Point Light\0Directional Light\0\0");
 
-            if (ImGui::TreeNode("Intensity##Ligthing"))
-            {
-                ImGui::DragFloat("Diffuse", scene->light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
-                ImGui::DragFloat("Specular", scene->light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+                    if(typeNewLight == 0)
+                    {
+                        PointLightControl(scene->newPointLight);
+                        if(ImGui::Button("Add Light"))
+                            scene->addNewPointLight();
+                    }
+                    else
+                    {
+                        DirectionalLightControl(scene->newDirLight);
+                        if(ImGui::Button("Add Light"))
+                            scene->addNewDirLight();
+                    }
+
+                    ImGui::TreePop();
+
+                }
+                if (ImGui::TreeNodeEx("Active Lights##Ligthing", ImGuiTreeNodeFlags_DefaultOpen))
+                {   
+                    int n = scene->dirLights.size();
+                    for(int i = 0; i < n; i++)
+                    {   
+                        std::string lightID = "Directional Light #" + std::to_string(i+1) +  "##" + std::to_string(i+1);
+                        if (ImGui::TreeNode(lightID.c_str()))
+                        {
+                            DirectionalLightControl(scene->dirLights[i]);
+                            ImGui::TreePop();
+                        }
+                    }
+                        
+                    int m = scene->pointLights.size();
+                    for(int i = 0; i < m; i++)
+                    {   
+                        std::string lightID = "Point Light #" + std::to_string(i+1) +  "##" + std::to_string(i+1);
+                        if (ImGui::TreeNode(lightID.c_str()))
+                        {
+                            PointLightControl(scene->pointLights[i]);
+                            ImGui::TreePop();
+                        }
+                    }
+                        
+
+                    ImGui::TreePop();
+                }
                 ImGui::TreePop();
             }
 
@@ -368,6 +401,42 @@ private:
         }
     }
 
+    void PointLightControl(PointLight &light)
+    {
+        Vec3Control("Position", *light.getDirection(), 0.05f, -max_float, max_float);
+        if (ImGui::TreeNodeEx("Diffuse", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::ColorEdit3("Color##LightColorD", glm::value_ptr(*light.getDiffuseColor()));
+            ImGui::DragFloat("Intensity##LightColor", light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNodeEx("Specular", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::ColorEdit3("Color##LightColorS", glm::value_ptr(*light.getSpecularColor()));
+            ImGui::DragFloat("Intensity", light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Attenuation"))
+        {
+            ImGui::DragFloat("A", light.getConstantComponent(), 0.01f, 1.0f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::DragFloat("B", light.getLinearComponent(), 0.01f, 1.0f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::DragFloat("C", light.getQuadraticComponent(), 0.01f, 1.0f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::TreePop();
+        }
+        
+    }
+
+    void DirectionalLightControl(DirectionalLight &light)
+    {
+        Vec3Control("Direction", *light.getDirection(), 0.05f, -max_float, max_float);
+        ImGui::ColorEdit3("Diffuse##LightColor", glm::value_ptr(*light.getDiffuseColor()));
+        ImGui::DragFloat("Diffuse", light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::ColorEdit3("Specular##LightColor", glm::value_ptr(*light.getSpecularColor()));
+        ImGui::DragFloat("Specular", light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+    }
+    
     void TextureMapNode(const char* nodeName, std::shared_ptr<Material> mtl, std::shared_ptr<Texture> textureMap, TextureMap mapType)
     {
         if (ImGui::TreeNode(nodeName))
@@ -544,6 +613,7 @@ private:
     bool openPopupDelete = false;
     bool show_demo_window = true;
 
+    int typeNewLight = 0; 
     int ambientCombinationIdx = 2, specularCombinationIdx = 2, diffuseCombinationIdx = 2;
     char* combinations[3] = { "Only use material color", "Only use texture map color", "Combine both colors" };
 

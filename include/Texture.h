@@ -7,7 +7,6 @@ public:
         load();
     }
 
-
     // Load and generate the texture
     bool load(){
         stbi_set_flip_vertically_on_load(1);

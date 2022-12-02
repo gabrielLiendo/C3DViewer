@@ -10,8 +10,12 @@ public:
 	// Camera
 	Camera camera;
 
-	// Light
-	Light light;
+	// Lights
+	DirectionalLight newDirLight;
+	PointLight newPointLight;
+	std::vector<DirectionalLight> dirLights;
+	std::vector<PointLight> pointLights;
+	int numberOfLights = 1;
 
 	int lightingModel = 2;
 	int shadingModel = 2;
@@ -31,8 +35,10 @@ public:
 	{
 		bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
 		materials.push_back(std::make_shared<Material>());
-		light = Light();
-	};
+		newDirLight = DirectionalLight();
+		newPointLight = PointLight();
+		dirLights.push_back(DirectionalLight());
+	}
 
 	void setDepthTest()
 	{
@@ -84,6 +90,28 @@ public:
 				}
 			}
 		}
+	}
+
+	bool addNewDirLight()
+	{
+		if(numberOfLights >=3)
+			return false;
+
+		numberOfLights++;
+		dirLights.push_back(newDirLight);
+		newDirLight = DirectionalLight();
+		return true;
+	}
+
+	bool addNewPointLight()
+	{
+		if(numberOfLights >=3)
+			return false;
+
+		numberOfLights++;
+		pointLights.push_back(newPointLight);
+		newPointLight = PointLight();
+		return true;
 	}
 
 	void saveInfo(std::ofstream& outfile)

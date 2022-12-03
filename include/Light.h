@@ -40,8 +40,8 @@ public:
 	PointLight() : DirectionalLight()
 	{
 		constant = 1.0f;
-		linear = 1.0f;
-		quadratic = 1.0f;
+		linear = 0.1f;
+		quadratic = 0.01f;
 	}
 
 	PointLight(glm::vec3 direction, glm::vec3 diffuseColor, glm::vec3 specularColor, float diffuseIntensity, float specularIntensity,

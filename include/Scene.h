@@ -92,26 +92,34 @@ public:
 		}
 	}
 
-	bool addNewDirLight()
+	bool addNewLight(LightType light)
 	{
 		if(numberOfLights >=3)
 			return false;
 
 		numberOfLights++;
-		dirLights.push_back(newDirLight);
-		newDirLight = DirectionalLight();
+
+		if(light == POINT)
+		{
+			pointLights.push_back(newPointLight);
+			newPointLight = PointLight();
+		}
+		else
+		{
+			dirLights.push_back(newDirLight);
+			newDirLight = DirectionalLight();
+		}
+		
 		return true;
+
 	}
 
-	bool addNewPointLight()
+	void removeLight(LightType light, int index)
 	{
-		if(numberOfLights >=3)
-			return false;
-
-		numberOfLights++;
-		pointLights.push_back(newPointLight);
-		newPointLight = PointLight();
-		return true;
+		if(light == POINT)
+			pointLights.erase( pointLights.begin() + index );
+		else
+			dirLights.erase( dirLights.begin() + index );
 	}
 
 	void saveInfo(std::ofstream& outfile)
@@ -130,6 +138,8 @@ public:
 
 	void loadInfo(std::ifstream& infile)
 	{	
+
+		
 		std::string line, prefix;
     	std::stringstream ss;
 

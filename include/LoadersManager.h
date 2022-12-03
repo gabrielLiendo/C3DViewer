@@ -73,6 +73,9 @@ public:
         glm::vec3 pickingColor = glm::vec3(r / 255.0f, g / 255.0f, b / 255.0f);
 
         // Load meshes and assign materials
+
+
+    
         std::vector<Mesh> meshes = objLoader.loadMeshes(objFileName);
         assignMaterials(meshes, objFileName);
         scene->objects.push_back(std::make_shared<Object>(meshes, pickingColor, objFileName));

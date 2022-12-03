@@ -249,8 +249,7 @@ public:
 					shader.setVec3f("gMaterial.specularColor", *meshes[i].mtl->getSpecular());
 					shader.setFloat("gMaterial.shininess", *meshes[i].mtl->getShininess());
 				}
-				
-
+			
 				meshes[i].draw(shader);
 			}
 		}

@@ -6,7 +6,6 @@ public:
 	std::shared_ptr<Texture> kaMap, kdMap, ksMap;
 
 
-
 	Material()
 	{
 		name = "Default";
@@ -71,12 +70,10 @@ public:
 	glm::vec3 *getDiffuse(){ return &diffuse; }
 
 	glm::vec3 *getAmbient() { return &ambient; }
-	
 
 	glm::vec3 *getSpecular() { return &specular; }
 
 	float *getShininess() { return &shininess; }
-
 
 	void setDiffuse(glm::vec3 diffuse)
 	{

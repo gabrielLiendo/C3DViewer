@@ -43,9 +43,10 @@ struct ColorCombination
 };
 
 in vec3 Normal;
-in vec3 FragPos;
 in vec2 TexCoord;
+in vec3 VertPosition;
 
+uniform vec3 viewPos;
 uniform vec3 ambientColor;
 uniform float ambientIntensity;
 
@@ -57,7 +58,7 @@ uniform PointLight gPointLights[3];
 uniform Material gMaterial;
 uniform ColorCombination gCombination;
 
-out vec4 fragColor;
+out vec4 FragColor;
 
 vec3 getAmbient()
 {
@@ -69,9 +70,9 @@ vec3 getAmbient()
 	return Iamb;
 }
 
-vec3 getDiffuse(float lambertian, vec3 diffuseColor, float diffuseIntensity)
+vec3 getDiffuse(float diff, int i)
 {
-	vec3 Idif = diffuseColor * diffuseIntensity * lambertian;
+	vec3 Idif = gDirLights[i].diffuseColor * diff * gDirLights[i].diffuseIntensity;
 	if(gCombination.useDiffMtlColor)
 	{
 		Idif = Idif  * gMaterial.diffuseColor;
@@ -83,21 +84,12 @@ vec3 getDiffuse(float lambertian, vec3 diffuseColor, float diffuseIntensity)
 	return Idif;
 }
 
-vec3 getSpecular(vec3 N, vec3 L, float lambertian, vec3 specularColor, float specularIntensity)
+vec3 getSpecular(float spec, int i)
 {
-	float specular = 0.0;
-	if(lambertian > 0.0)
-	{
-		vec3 R = reflect(-L, N);
-		vec3 V = normalize(-FragPos);
-		float specAngle = max(dot(R, V), 0.0);
-		specular = pow(specAngle, gMaterial.shininess);
-	}
-
-	vec3 Ispe = specularColor * specularIntensity * specular;
+	vec3 Ispe = gDirLights[i].specularColor * spec * gDirLights[i].specularIntensity;
 	if(gCombination.useSpecMtlColor)
 	{
-		Ispe = Ispe* gMaterial.specularColor;
+		Ispe = Ispe * gMaterial.specularColor;
 	}
 	if(gCombination.useSpecTexColor)
 	{
@@ -107,58 +99,11 @@ vec3 getSpecular(vec3 N, vec3 L, float lambertian, vec3 specularColor, float spe
 	return Ispe;
 }
 
-vec3 CalcDirectionalLight(DirectionalLight light)
-{
-	// Light contribution
-	vec3 ambient = vec3(0.0), diffuse = vec3(0.0), specular = vec3(0.0);
-	ambient = getAmbient();
-
-	if (gCombination.lightingModel != 0)
-	{   
-		vec3 N = normalize(Normal);
-		vec3 L = normalize(-light.direction);
-		float lambertian = max(dot(N, L), 0.0);
-
-		diffuse = getDiffuse(lambertian, light.diffuseColor, light.diffuseIntensity);
-
-		if(gCombination.lightingModel == 1)
-		{	
-			specular = getSpecular(N, L, lambertian, light.specularColor, light.specularIntensity);
-		}
-	}
-
-    return (ambient + diffuse + specular);
-} 
-
-vec3 CalcPointLight(PointLight light)
-{
-    // Attenuation
-    float dist = length(light.position - FragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * dist +  light.quadratic * (dist * dist));    
-
-	// Light contribution
-	vec3 ambient = vec3(0.0), diffuse = vec3(0.0), specular = vec3(0.0);
-	ambient = getAmbient() * attenuation;
-
-	if (gCombination.lightingModel != 0)
-	{   
-		vec3 N = normalize(Normal);
-		vec3 L = normalize(light.position - FragPos);
-		float lambertian = max(dot(N, L), 0.0);
-
-		diffuse = getDiffuse(lambertian, light.diffuseColor, light.diffuseIntensity) * attenuation;
-
-		if(gCombination.lightingModel == 1)
-		{	
-			specular = getSpecular(N, L, lambertian, light.specularColor, light.specularIntensity) * attenuation;
-		}
-	}
-
-    return (ambient + diffuse + specular);
-} 
-
 void main()
 {	
+	vec3 N = normalize(Normal);
+	vec3 viewDir = normalize(viewPos - VertPosition);
+
 	// Object Color
 	vec3 objectColor = vec3(1.0);
 	if(gCombination.useDiffMtlColor)
@@ -170,13 +115,59 @@ void main()
 		objectColor = objectColor * vec3(texture(gMaterial.diffuseMap, TexCoord));
 	}
 
-	vec3 lightReflection;
+	// Compute scattered and reflected light
+	vec3 ambient = vec3(0.0), diffuse = vec3(0.0), specular = vec3(0.0);
+
+	ambient = getAmbient();
 
 	for(int i=0; i < nDirLights; i++)
-		lightReflection += CalcDirectionalLight(gDirLights[i]);
+	{	
+		if (gCombination.lightingModel != 0)
+		{   
+			vec3 L = normalize(-gDirLights[i].direction);
+			float diff = max(dot(N, L), 0.0);
+
+			diffuse += getDiffuse(diff, i);
+
+			if (gCombination.lightingModel == 2)
+			{ 
+				if(diff > 0.0)
+				{
+					vec3 R = reflect(-L, N);
+					float specAngle = max(dot(viewDir, R), 0.0);
+					float spec = pow(specAngle, gMaterial.shininess);
+					specular += getSpecular(spec, i);
+				}
+			}
+		}
+	}
 
 	for(int i=0; i < nPointLights; i++)
-		lightReflection += CalcPointLight(gPointLights[i]);
-	
-	fragColor = vec4( lightReflection * objectColor, 1.0 );
+	{
+		if (gCombination.lightingModel != 0)
+		{   
+			vec3 L = normalize(gPointLights[i].position - VertPosition);
+			float diff = max(dot(N, L), 0.0);
+
+			// Attenuation
+			float dist = length(gPointLights[i].position - VertPosition);
+			float attenuation = 1.0 / (gPointLights[i].constant + gPointLights[i].linear * dist +  gPointLights[i].quadratic * (dist * dist));    
+
+			diffuse += getDiffuse(diff, i) * attenuation;
+
+			if(gCombination.lightingModel == 2)
+			{	
+				if(diff > 0.0)
+				{
+					vec3 R = reflect(-L, N);
+					float specAngle = max(dot(R, viewDir), 0.0);
+					float spec = pow(specAngle, gMaterial.shininess);
+					specular += getSpecular(spec, i) * attenuation;
+				}
+			}
+		}
+	}
+
+	vec3 rgb = min(objectColor * (ambient + diffuse + specular), vec3(1.0));
+	FragColor = vec4(rgb , 1.0);
 } 

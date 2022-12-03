@@ -291,7 +291,7 @@ public:
                 currentShader = phongShader;
                     
             currentShader.use();
-
+            currentShader.setVec3f("viewPos", scene.camera.position);
             currentShader.setInt("nDirLights", scene.dirLights.size());
             for(int i=0; i < scene.dirLights.size(); i++)
             {
@@ -344,7 +344,6 @@ public:
                 currentShader.use();
                 currentShader.setMat4f("MVP", MVP);
                 currentShader.setMat4f("model", objModel);
-
 
                 currentShader.setInt("gCombination.lightingModel", scene.lightingModel);
                 currentShader.setBool("gCombination.useAmbMtlColor", ui->getCombination(AMBIENT_COLOR, MATERIAL));

@@ -44,6 +44,7 @@ public:
             return !(combinationIdx == 0);
     }
 
+
     void render()
     {
         // Start the Dear ImGui frame
@@ -64,6 +65,7 @@ public:
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
+
 private:
     // Setup Dear ImGui context and style
     void init()
@@ -81,6 +83,7 @@ private:
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 2.0f));
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(6.0f, 8.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 10.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
 
         auto& colors = ImGui::GetStyle().Colors;
@@ -179,12 +182,13 @@ private:
                 ImGui::TreePop();
             }
 
-            if (ImGui::TreeNode("Ambiental##Ligthing"))
+            if (ImGui::TreeNodeEx("Ambiental##Ligthing", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::ColorEdit3("Color##LightColor", glm::value_ptr(scene->ambientColor));
                 ImGui::DragFloat("Intensity", &scene->ambientIntensity, 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::TreePop();
             }
+
 
             if (ImGui::TreeNode("Lights##Ligthing"))
             {
@@ -196,16 +200,17 @@ private:
                     {
                         PointLightControl(scene->newPointLight);
                         if(ImGui::Button("Add Light"))
-                            scene->addNewPointLight();
+                            scene->addNewLight(POINT);
                     }
                     else
                     {
                         DirectionalLightControl(scene->newDirLight);
                         if(ImGui::Button("Add Light"))
-                            scene->addNewDirLight();
+                            scene->addNewLight(DIRECTIONAL);
                     }
 
                     ImGui::TreePop();
+
 
                 }
                 if (ImGui::TreeNodeEx("Active Lights##Ligthing", ImGuiTreeNodeFlags_DefaultOpen))
@@ -217,6 +222,8 @@ private:
                         if (ImGui::TreeNode(lightID.c_str()))
                         {
                             DirectionalLightControl(scene->dirLights[i]);
+                            if(ImGui::Button("Remove Light"))
+                                scene->removeLight(DIRECTIONAL, i);
                             ImGui::TreePop();
                         }
                     }
@@ -228,6 +235,8 @@ private:
                         if (ImGui::TreeNode(lightID.c_str()))
                         {
                             PointLightControl(scene->pointLights[i]);
+                            if(ImGui::Button("Remove Light"))
+                                scene->removeLight(POINT, i);
                             ImGui::TreePop();
                         }
                     }
@@ -421,8 +430,8 @@ private:
         if (ImGui::TreeNode("Attenuation"))
         {
             ImGui::DragFloat("A", light.getConstantComponent(), 0.01f, 1.0f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
-            ImGui::DragFloat("B", light.getLinearComponent(), 0.01f, 1.0f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
-            ImGui::DragFloat("C", light.getQuadraticComponent(), 0.01f, 1.0f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::DragFloat("B", light.getLinearComponent(), 0.01f, 0.01f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::DragFloat("C", light.getQuadraticComponent(), 0.01f, 0.001f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
             ImGui::TreePop();
         }
         
@@ -613,8 +622,8 @@ private:
     bool openPopupDelete = false;
     bool show_demo_window = true;
 
-    int typeNewLight = 0; 
-    int ambientCombinationIdx = 2, specularCombinationIdx = 2, diffuseCombinationIdx = 2;
+    int typeNewLight = 1; 
+    int ambientCombinationIdx = 1, specularCombinationIdx = 1, diffuseCombinationIdx = 1;
     char* combinations[3] = { "Only use material color", "Only use texture map color", "Combine both colors" };
 
     // Slider limit values

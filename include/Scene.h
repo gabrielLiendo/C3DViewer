@@ -11,10 +11,9 @@ public:
 	Camera camera;
 
 	// Lights
-	DirectionalLight newDirLight;
-	PointLight newPointLight;
-	std::vector<DirectionalLight> dirLights;
-	std::vector<PointLight> pointLights;
+	Light newLight = Light(true, false);
+	std::vector<Light> lights;
+
 	int numberOfLights = 1;
 
 	int lightingModel = 2;
@@ -35,10 +34,10 @@ public:
 	{
 		bgColor = glm::vec3(0.2745f, 0.2745f, 0.2745f);
 		materials.push_back(std::make_shared<Material>());
-		newDirLight = DirectionalLight();
-		newPointLight = PointLight();
-		dirLights.push_back(DirectionalLight());
+		// QUITAR ESTA LINEA
+		lights.push_back(Light(true, false));
 	}
+
 
 	void setDepthTest()
 	{
@@ -99,27 +98,22 @@ public:
 
 		numberOfLights++;
 
-		if(light == POINT)
-		{
-			pointLights.push_back(newPointLight);
-			newPointLight = PointLight();
-		}
-		else
-		{
-			dirLights.push_back(newDirLight);
-			newDirLight = DirectionalLight();
-		}
 		
-		return true;
+		if(light==POINT)
+		{
+			newLight.isDirectional = false;
+			newLight.isPoint = true;	
+		}
 
+		lights.push_back(newLight);
+		newLight = Light(true, false);
+		return true;
 	}
 
 	void removeLight(LightType light, int index)
 	{
-		if(light == POINT)
-			pointLights.erase( pointLights.begin() + index );
-		else
-			dirLights.erase( dirLights.begin() + index );
+		lights.erase( lights.begin() + index );
+		numberOfLights--;
 	}
 
 	void saveInfo(std::ofstream& outfile)

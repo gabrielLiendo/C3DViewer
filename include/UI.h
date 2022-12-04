@@ -44,7 +44,6 @@ public:
             return !(combinationIdx == 0);
     }
 
-
     void render()
     {
         // Start the Dear ImGui frame
@@ -64,7 +63,6 @@ public:
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
-
 
 private:
     // Setup Dear ImGui context and style
@@ -189,8 +187,7 @@ private:
                 ImGui::TreePop();
             }
 
-
-            if (ImGui::TreeNode("Lights##Ligthing"))
+            if (ImGui::TreeNodeEx("Lights##Ligthing", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (ImGui::TreeNode("New Light##Ligthing"))
                 {   
@@ -198,58 +195,57 @@ private:
 
                     if(typeNewLight == 0)
                     {
-                        PointLightControl(scene->newPointLight);
+                        PointLightControl(scene->newLight);
                         if(ImGui::Button("Add Light"))
                             scene->addNewLight(POINT);
                     }
                     else
                     {
-                        DirectionalLightControl(scene->newDirLight);
+                        DirectionalLightControl(scene->newLight);
                         if(ImGui::Button("Add Light"))
                             scene->addNewLight(DIRECTIONAL);
                     }
 
                     ImGui::TreePop();
-
-
                 }
                 if (ImGui::TreeNodeEx("Active Lights##Ligthing", ImGuiTreeNodeFlags_DefaultOpen))
                 {   
-                    int n = scene->dirLights.size();
+                    int n = scene->lights.size();
                     for(int i = 0; i < n; i++)
                     {   
-                        std::string lightID = "Directional Light #" + std::to_string(i+1) +  "##" + std::to_string(i+1);
-                        if (ImGui::TreeNode(lightID.c_str()))
+                        std::string lightID;
+                        if(scene->lights[i].isDirectional)
                         {
-                            DirectionalLightControl(scene->dirLights[i]);
-                            if(ImGui::Button("Remove Light"))
-                                scene->removeLight(DIRECTIONAL, i);
-                            ImGui::TreePop();
-                        }
-                    }
-                        
-                    int m = scene->pointLights.size();
-                    for(int i = 0; i < m; i++)
-                    {   
-                        std::string lightID = "Point Light #" + std::to_string(i+1) +  "##" + std::to_string(i+1);
-                        if (ImGui::TreeNode(lightID.c_str()))
-                        {
-                            PointLightControl(scene->pointLights[i]);
-                            if(ImGui::Button("Remove Light"))
-                                scene->removeLight(POINT, i);
-                            ImGui::TreePop();
-                        }
-                    }
-                        
+                            std::string lightID = "Directional Light##" + std::to_string(i+1);
+                            if (ImGui::TreeNode(lightID.c_str()))
+                            {
+                                DirectionalLightControl(scene->lights[i]);
+                                if(ImGui::Button("Remove Light"))
+                                    scene->removeLight(DIRECTIONAL, i);
 
+                                ImGui::TreePop();
+                            }
+                        }
+                        else if(scene->lights[i].isPoint)
+                        {
+                            std::string lightID = "Point Light##" + std::to_string(i+1);
+                            if (ImGui::TreeNode(lightID.c_str()))
+                            {
+                                PointLightControl(scene->lights[i]);
+                                if(ImGui::Button("Remove Light"))
+                                    scene->removeLight(POINT, i);
+                                    
+                                ImGui::TreePop();
+                            }
+                        }
+                    }
                     ImGui::TreePop();
                 }
+
                 ImGui::TreePop();
             }
-
             ImGui::End();
         }
-        
 
         ImGui::Begin("Camera");
         {
@@ -410,22 +406,13 @@ private:
         }
     }
 
-    void PointLightControl(PointLight &light)
+    void PointLightControl(Light &light)
     {
         Vec3Control("Position", *light.getDirection(), 0.05f, -max_float, max_float);
-        if (ImGui::TreeNodeEx("Diffuse", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::ColorEdit3("Color##LightColorD", glm::value_ptr(*light.getDiffuseColor()));
-            ImGui::DragFloat("Intensity##LightColor", light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNodeEx("Specular", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::ColorEdit3("Color##LightColorS", glm::value_ptr(*light.getSpecularColor()));
-            ImGui::DragFloat("Intensity", light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
-            ImGui::TreePop();
-        }
+        ImGui::ColorEdit3("Diffuse##DC", glm::value_ptr(*light.getDiffuseColor()));
+        ImGui::DragFloat("Intensity", light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::ColorEdit3("Specular##SC", glm::value_ptr(*light.getSpecularColor()));
+        ImGui::DragFloat("Intensity", light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
 
         if (ImGui::TreeNode("Attenuation"))
         {
@@ -437,13 +424,13 @@ private:
         
     }
 
-    void DirectionalLightControl(DirectionalLight &light)
+    void DirectionalLightControl(Light &light)
     {
         Vec3Control("Direction", *light.getDirection(), 0.05f, -max_float, max_float);
-        ImGui::ColorEdit3("Diffuse##LightColor", glm::value_ptr(*light.getDiffuseColor()));
-        ImGui::DragFloat("Diffuse", light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::ColorEdit3("Specular##LightColor", glm::value_ptr(*light.getSpecularColor()));
-        ImGui::DragFloat("Specular", light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::ColorEdit3("Diffuse##DC", glm::value_ptr(*light.getDiffuseColor()));
+        ImGui::DragFloat("Intensity", light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::ColorEdit3("Specular##SC", glm::value_ptr(*light.getSpecularColor()));
+        ImGui::DragFloat("Intensity", light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
     }
     
     void TextureMapNode(const char* nodeName, std::shared_ptr<Material> mtl, std::shared_ptr<Texture> textureMap, TextureMap mapType)

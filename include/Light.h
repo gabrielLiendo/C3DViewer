@@ -19,6 +19,7 @@ public:
 		constant = 1.0f;
 		linear = 0.1f;
 		quadratic = 0.01f;
+		
 	}
 
 

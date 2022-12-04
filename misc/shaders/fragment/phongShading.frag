@@ -115,11 +115,11 @@ void main()
 	{
 		if (gCombination.lightingModel != 0)
 		{  	
-			vec3 L; float attenuation;
+			vec3 L; 
+			float attenuation = 1.0;
 			if(gLights[i].isDirectional)
 			{	
 				L = normalize(-gLights[i].direction);
-				attenuation = 1.0f;
 			}
 			else if(gLights[i].isPoint)
 			{
@@ -131,7 +131,7 @@ void main()
 				
 			float diff = max(dot(N, L), 0.0);
 			
-			diffuse += getDiffuse(diff, i);
+			diffuse += getDiffuse(diff, i) * attenuation;
 
 			if(gCombination.lightingModel == 2)
 			{	
@@ -140,7 +140,7 @@ void main()
 					vec3 R = reflect(-L, N);
 					float specAngle = max(dot(R, viewDir), 0.0);
 					float spec = pow(specAngle, gMaterial.shininess);
-					specular += getSpecular(spec, i);
+					specular += getSpecular(spec, i) * attenuation;
 				}
 			}
 		}

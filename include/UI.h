@@ -410,27 +410,26 @@ private:
     {
         Vec3Control("Position", *light.getDirection(), 0.05f, -max_float, max_float);
         ImGui::ColorEdit3("Diffuse##DC", glm::value_ptr(*light.getDiffuseColor()));
-        ImGui::DragFloat("Intensity", light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::DragFloat("Intensity##DC", light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::ColorEdit3("Specular##SC", glm::value_ptr(*light.getSpecularColor()));
-        ImGui::DragFloat("Intensity", light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::DragFloat("Intensity##SC", light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
 
         if (ImGui::TreeNode("Attenuation"))
         {
-            ImGui::DragFloat("A", light.getConstantComponent(), 0.01f, 1.0f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
-            ImGui::DragFloat("B", light.getLinearComponent(), 0.01f, 0.01f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
-            ImGui::DragFloat("C", light.getQuadraticComponent(), 0.01f, 0.001f, 10.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::DragFloat("A", light.getConstantComponent(), 0.01f, 0.01f, 2.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::DragFloat("B", light.getLinearComponent(), 0.01f, 0.01f, 2.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::DragFloat("C", light.getQuadraticComponent(), 0.01f, 0.001f, 2.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
             ImGui::TreePop();
         }
-        
     }
 
     void DirectionalLightControl(Light &light)
     {
         Vec3Control("Direction", *light.getDirection(), 0.05f, -max_float, max_float);
         ImGui::ColorEdit3("Diffuse##DC", glm::value_ptr(*light.getDiffuseColor()));
-        ImGui::DragFloat("Intensity", light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::DragFloat("Intensity##DC", light.getDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::ColorEdit3("Specular##SC", glm::value_ptr(*light.getSpecularColor()));
-        ImGui::DragFloat("Intensity", light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::DragFloat("Intensity##SC", light.getSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.02f", ImGuiSliderFlags_AlwaysClamp);
     }
     
     void TextureMapNode(const char* nodeName, std::shared_ptr<Material> mtl, std::shared_ptr<Texture> textureMap, TextureMap mapType)

@@ -388,6 +388,19 @@ private:
                     ImGui::TreePop();
                 }
 
+                if (ImGui::TreeNodeEx("Texture Coordinates", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    ImGui::Combo("Mapping", &typeMapping, "Planar XY\0Spherical\0\0");
+                    if(ImGui::Button("Generate Coordinates"))
+                    {
+                        if(typeMapping==0)
+                            selectedObject->setPlanarTextCoords();
+                        else if(typeMapping==1)
+                            selectedObject->setSphericalTextCoords();
+                    }
+                    ImGui::TreePop();
+                }
+
                 if (ImGui::TreeNodeEx("Wireframe", ImGuiTreeNodeFlags_DefaultOpen))
                 {
                     ImGui::Checkbox("Show Wireframe##Wireframe", selectedObject->getWireframeBool());
@@ -608,7 +621,8 @@ private:
     bool openPopupDelete = false;
     bool show_demo_window = true;
 
-    int typeNewLight = 1; 
+    int typeNewLight = 0; 
+    int typeMapping = 0; 
     int ambientCombinationIdx = 1, specularCombinationIdx = 1, diffuseCombinationIdx = 1;
     char* combinations[3] = { "Only use material color", "Only use texture map color", "Combine both colors" };
 

@@ -13,7 +13,6 @@ public:
 		this->mtlName = mtlName;
 		showTriangles = true;
 
-
 		initMesh();
 	}
 	
@@ -44,7 +43,6 @@ public:
 		glDrawArrays(GL_TRIANGLES, 0, (int)vertices.size());
 	}
 
-
 	void draw(Shader shader)
 	{
 		if(mtl->kdMap)
@@ -61,6 +59,11 @@ public:
 			
 		bind();
 		glDrawArrays(GL_TRIANGLES, 0, (int)vertices.size());
+		
+		if(mtl->kdMap)
+			mtl->kdMap->unbind();
+		if(mtl->ksMap)
+			mtl->ksMap->unbind();
 	}
 	
 	void drawVertex()
@@ -75,6 +78,11 @@ public:
 		outfile << "om " << name << "\n"
 			    << "mtl " << *mtl->getName() << "\n"
 			    << "d " << diffuse.x << " " << diffuse.y  << " " << diffuse.z << "\n";
+	}
+
+	void resetMesh()
+	{
+		initMesh();
 	}
 
 private:

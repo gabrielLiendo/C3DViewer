@@ -38,7 +38,6 @@ public:
 		lights.push_back(Light(true, false));
 	}
 
-
 	void setDepthTest()
 	{
 		if (useDepthTest)

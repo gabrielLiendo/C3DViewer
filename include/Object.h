@@ -303,6 +303,43 @@ public:
 		return &meshes;
 	}
 
+	void setPlanarTextCoords()
+	{	
+		glm::mat4 model = getModelTransformation();
+
+		int n = meshes.size();
+		for(int i=0; i < n; i++)
+		{
+			int m = meshes[i].vertices.size();
+			for(int j = 0; j < m; j++)
+			{	
+				glm::vec4 worldPos = model * glm::vec4(meshes[i].vertices[j].position, 1.0f);
+				meshes[i].vertices[j].textCoord.x = worldPos.x;
+				meshes[i].vertices[j].textCoord.y = worldPos.y;
+ 			}
+			meshes[i].resetMesh();
+		}
+	}
+
+	void setSphericalTextCoords()
+	{	
+		glm::mat4 model = getModelTransformation();
+
+		int n = meshes.size();
+		for(int i=0; i < n; i++)
+		{
+			int m = meshes[i].vertices.size();
+			for(int j = 0; j < m; j++)
+			{	
+				glm::vec4 worldPos = model * glm::vec4(meshes[i].vertices[j].position, 1.0f);
+				glm::vec3 normal = meshes[i].vertices[j].normal;
+				meshes[i].vertices[j].textCoord.x = asin(normal.x)/PI + 0.5;
+				meshes[i].vertices[j].textCoord.y = asin(normal.y)/PI + 0.5;
+ 			}
+			meshes[i].resetMesh();
+		}
+	}
+
 private:
 	// Object basic components
 	std::string path;

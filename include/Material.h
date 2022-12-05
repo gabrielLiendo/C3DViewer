@@ -5,7 +5,6 @@ public:
 	std::string name;
 	std::shared_ptr<Texture> kaMap, kdMap, ksMap;
 
-
 	Material()
 	{
 		name = "Default";
@@ -42,7 +41,6 @@ public:
 				break;
 		}	
 	}
-
 
 	void removeTextureMap(TextureMap mapType)
 	{	

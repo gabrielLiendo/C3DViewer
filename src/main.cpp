@@ -26,6 +26,7 @@
 
 // GLM Mathematics
 #define GLM_FORCE_RADIANS// force everything in radian
+#define PI 3.141592654
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>

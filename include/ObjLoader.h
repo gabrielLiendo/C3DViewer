@@ -74,7 +74,7 @@ private:
 
 		std::stringstream sv;
 		std::string name, vertex, mtl_name = "";
-		glm::vec2 v2;
+		glm::vec2 v2, textCoord;
 		glm::vec3 v3, aNormal;
 
 		if(unnamed)
@@ -150,7 +150,12 @@ private:
 								normalindex = index;
 						}
 
-						face.push_back({ positions[posindex - 1], normals[normalindex - 1], textCoords[textcoordindex - 1]});
+						if(textcoordindex == 0)
+							textCoord = glm::vec2(0.0f);
+						else 
+							textCoord =  textCoords[textcoordindex - 1];
+							
+						face.push_back({ positions[posindex - 1], normals[normalindex - 1], textCoord});
 					}
 
 					if (face.size() == 3)

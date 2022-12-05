@@ -303,9 +303,11 @@ public:
 		return &meshes;
 	}
 
-	void setPlanarTextCoords()
+	void setPlanarXYTextCoords()
 	{	
-		glm::mat4 model = getModelTransformation();
+		glm::vec3 vmin = boundingBox.vmin, vmax = boundingBox.vmax;
+		float kx = vmax.x - vmin.x;
+		float ky = vmax.y - vmin.y;
 
 		int n = meshes.size();
 		for(int i=0; i < n; i++)
@@ -313,9 +315,29 @@ public:
 			int m = meshes[i].vertices.size();
 			for(int j = 0; j < m; j++)
 			{	
-				glm::vec4 worldPos = model * glm::vec4(meshes[i].vertices[j].position, 1.0f);
-				meshes[i].vertices[j].textCoord.x = worldPos.x;
-				meshes[i].vertices[j].textCoord.y = worldPos.y;
+				glm::vec3 pos = meshes[i].vertices[j].position;
+				meshes[i].vertices[j].textCoord.x = (pos.x - vmin.x) / kx;
+				meshes[i].vertices[j].textCoord.y = (pos.y - vmin.y) / ky;
+ 			}
+			meshes[i].resetMesh();
+		}
+	}
+
+	void setPlanarYZTextCoords()
+	{	
+		glm::vec3 vmin = boundingBox.vmin, vmax = boundingBox.vmax;
+		float ky = vmax.y - vmin.y;
+		float kz = vmax.z - vmin.z;
+
+		int n = meshes.size();
+		for(int i=0; i < n; i++)
+		{
+			int m = meshes[i].vertices.size();
+			for(int j = 0; j < m; j++)
+			{	
+				glm::vec3 pos = meshes[i].vertices[j].position;
+				meshes[i].vertices[j].textCoord.x = (pos.y - vmin.y) / ky;
+				meshes[i].vertices[j].textCoord.y = (pos.z - vmin.z) / kz;
  			}
 			meshes[i].resetMesh();
 		}
@@ -323,15 +345,12 @@ public:
 
 	void setSphericalTextCoords()
 	{	
-		glm::mat4 model = getModelTransformation();
-
 		int n = meshes.size();
 		for(int i=0; i < n; i++)
 		{
 			int m = meshes[i].vertices.size();
 			for(int j = 0; j < m; j++)
 			{	
-				glm::vec4 worldPos = model * glm::vec4(meshes[i].vertices[j].position, 1.0f);
 				glm::vec3 normal = meshes[i].vertices[j].normal;
 				meshes[i].vertices[j].textCoord.x = asin(normal.x)/PI + 0.5;
 				meshes[i].vertices[j].textCoord.y = asin(normal.y)/PI + 0.5;

@@ -60,10 +60,8 @@ public:
 		bind();
 		glDrawArrays(GL_TRIANGLES, 0, (int)vertices.size());
 		
-		if(mtl->kdMap)
-			mtl->kdMap->unbind();
-		if(mtl->ksMap)
-			mtl->ksMap->unbind();
+		mtl->kdMap->unbind();
+		mtl->ksMap->unbind();
 	}
 	
 	void drawVertex()

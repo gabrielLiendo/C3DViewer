@@ -233,6 +233,7 @@ private:
 			}
 		}
 
+
 		if (!normalsIncluded)
 		{
 			for (int i = 0; i < positionIndex.size(); i++)

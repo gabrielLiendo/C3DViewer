@@ -37,7 +37,9 @@ public:
         ambientShader = Shader("misc/shaders/vertex/basic.vs", "misc/shaders/fragment/ambientLight.frag");
         phongShader = Shader("misc/shaders/vertex/ilumNormal.vs", "misc/shaders/fragment/phongShading.frag");
         gourandShader = Shader("misc/shaders/vertex/gourandShading.vs", "misc/shaders/fragment/gourandFrag.frag");
+        flatShader = Shader("misc/shaders/vertex/ilumNormal.vs", "misc/shaders/fragment/takeColor.frag", "misc/shaders/geometry/flatShading.geom");
 
+        
         // Initialize the view and projection matrices
         projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(width) / float(height), 0.1f, 100.0f);
 
@@ -122,10 +124,7 @@ public:
     {
         ImGuiIO& io = ImGui::GetIO();
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && !io.WantCaptureMouse)
-        {
             processColorPicker = true;
-            std::cout << "click !" << std::endl;
-        }
     }
 
     void mouse_callback(double xpos, double ypos)
@@ -146,7 +145,6 @@ public:
                float xoffset = xpos - lastX;
                float yoffset = (height - ypos) - lastY;
 
-               std::cout << xoffset << " " << yoffset << std::endl;
                if (scene.selectedObject)
                {   
                    if(keys[GLFW_KEY_LEFT_CONTROL])
@@ -223,8 +221,6 @@ public:
         glReadPixels((int)xpos, (int)(height - ypos), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
         int pickedID = data[0] + data[1] * 256 + data[2] * 256 * 256;
 
-         std::cout << "click !" << std::endl;
-
         if (pickedID == 0xffffff) {
             scene.selectedObject = nullptr;
             ui->setSelected(-1);
@@ -290,7 +286,9 @@ public:
         else if(scene.lightingModel == 2)
         {
             Shader currentShader;
-            if(scene.shadingModel == 1)
+            if(scene.shadingModel == 0)
+                currentShader = flatShader;
+            else if(scene.shadingModel == 1)
                 currentShader = gourandShader;
             else if(scene.shadingModel == 2)
                 currentShader = phongShader;
@@ -338,7 +336,9 @@ public:
             else if(scene.lightingModel == 2)
             {   
                 Shader currentShader;
-                if(scene.shadingModel == 1)
+                if(scene.shadingModel == 0)
+                    currentShader = flatShader;
+                else if(scene.shadingModel == 1)
                     currentShader = gourandShader;
                 else if(scene.shadingModel == 2)
                     currentShader = phongShader;
@@ -440,5 +440,5 @@ private:
 
     //Shaders
     Shader basicShader, normals_Shader, circularVertex_shader, ambientShader, 
-           phongShader, gourandShader;
+           phongShader, gourandShader, flatShader;
 };

@@ -390,14 +390,16 @@ private:
 
                 if (ImGui::TreeNodeEx("Texture Coordinates", ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    ImGui::Combo("Mapping", &typeMapping, "Planar XY\0Planar YZ\0Spherical\0\0");
+                    ImGui::Combo("Mapping", &typeMapping, "Planar XY\0Planar YZ\0Planar XZ\0Spherical\0\0");
                     if(ImGui::Button("Generate Coordinates"))
                     {
                         if(typeMapping==0)
                             selectedObject->setPlanarXYTextCoords();
-                        if(typeMapping==1)
+                        else if(typeMapping==1)
                             selectedObject->setPlanarYZTextCoords();
                         else if(typeMapping==2)
+                            selectedObject->setPlanarXZTextCoords();
+                        else if(typeMapping==3)
                             selectedObject->setSphericalTextCoords();
                     }
                     ImGui::TreePop();

@@ -343,6 +343,26 @@ public:
 		}
 	}
 
+	void setPlanarXZTextCoords()
+	{	
+		glm::vec3 vmin = boundingBox.vmin, vmax = boundingBox.vmax;
+		float kx = vmax.x - vmin.x;
+		float kz = vmax.z - vmin.z;
+
+		int n = meshes.size();
+		for(int i=0; i < n; i++)
+		{
+			int m = meshes[i].vertices.size();
+			for(int j = 0; j < m; j++)
+			{	
+				glm::vec3 pos = meshes[i].vertices[j].position;
+				meshes[i].vertices[j].textCoord.x = (pos.x - vmin.x) / kx;
+				meshes[i].vertices[j].textCoord.y = (pos.z - vmin.z) / kz;
+ 			}
+			meshes[i].resetMesh();
+		}
+	}
+
 	void setSphericalTextCoords()
 	{	
 		int n = meshes.size();
@@ -351,9 +371,10 @@ public:
 			int m = meshes[i].vertices.size();
 			for(int j = 0; j < m; j++)
 			{	
-				glm::vec3 normal = meshes[i].vertices[j].normal;
-				meshes[i].vertices[j].textCoord.x = asin(normal.x)/PI + 0.5;
+				glm::vec3 normal = glm::normalize(meshes[i].vertices[j].normal);
+				meshes[i].vertices[j].textCoord.x = atan2(normal.x, normal.z)/(2*PI) + 0.5;
 				meshes[i].vertices[j].textCoord.y = asin(normal.y)/PI + 0.5;
+				//meshes[i].vertices[j].textCoord.y = normal.y * 0.5 + 0.5;
  			}
 			meshes[i].resetMesh();
 		}

@@ -255,6 +255,7 @@ private:
                 Vec3Control("Position", scene->camera.position, 0.05f, -max_float, max_float, &Camera::updateView, camera);
                 Vec3Control("Front", scene->camera.front, 0.05f, -max_float, max_float, &Camera::updateView, camera);
                 Vec3Control("Up", scene->camera.up, 0.05f, -max_float, max_float, &Camera::updateView, camera);
+                Vec3Control("Right", scene->camera.right, 0.05f, -max_float, max_float, &Camera::updateView, camera);
             
                 ImGui::TreePop();
             }

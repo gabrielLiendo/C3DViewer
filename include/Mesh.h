@@ -80,9 +80,10 @@ public:
 			    << "d " << diffuse.x << " " << diffuse.y  << " " << diffuse.z << "\n";
 	}
 
-	void resetMesh()
+	void resetData()
 	{
-		initMesh();
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 	}
 
 private:

@@ -39,6 +39,7 @@ public:
 		direction.y = sin(glm::radians(pitch));
 		direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 		front = glm::normalize(direction);
+		right = glm::normalize(glm::cross(up, front));
 		updateView();
 	}
 

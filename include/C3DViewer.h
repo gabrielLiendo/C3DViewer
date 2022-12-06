@@ -121,31 +121,32 @@ public:
     void button_callback(int button, int action, int mods)
     {
         ImGuiIO& io = ImGui::GetIO();
-
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && !io.WantCaptureMouse)
+        {
             processColorPicker = true;
+            std::cout << "click !" << std::endl;
+        }
     }
 
     void mouse_callback(double xpos, double ypos)
     { 
        ImGuiIO& io = ImGui::GetIO();
 
-       if (!io.WantCaptureMouse)
+       if (!io.WantCaptureMouse && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
        {    
-           float xpos_ = (float)xpos, ypos_ = (float)ypos;
-
            if (firstMouse)
-           {
-               lastX = xpos_;
-               lastY = height - ypos_;
+           {    
+               lastX = xpos;
+               lastY = height - ypos;
+               
                firstMouse = false;
            }
            else
            {
-               float xoffset = xpos_ - lastX;
-               float yoffset = (height - ypos_) - lastY;
+               float xoffset = xpos - lastX;
+               float yoffset = (height - ypos) - lastY;
 
-               //std::cout << xoffset << " " << yoffset << std::endl;
+               std::cout << xoffset << " " << yoffset << std::endl;
                if (scene.selectedObject)
                {   
                    if(keys[GLFW_KEY_LEFT_CONTROL])
@@ -164,13 +165,12 @@ public:
                else
                    scene.camera.changeDirection(xoffset, yoffset);
 
-               lastX = xpos_;
-               lastY = height - ypos_;
-           }
-
-           if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-               firstMouse = true;   
-       }
+               lastX = xpos;
+               lastY = height - ypos;
+           }                
+       }    
+       else if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) ==  GLFW_RELEASE)
+           firstMouse = true;
     }
 
     void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -216,11 +216,16 @@ public:
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
         unsigned char data[4];
-        glReadPixels((int)lastX, (int)lastY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glReadPixels((int)xpos, (int)(height - ypos), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
         int pickedID = data[0] + data[1] * 256 + data[2] * 256 * 256;
 
-        if (pickedID == 0x00ffffff) {
+         std::cout << "click !" << std::endl;
+
+        if (pickedID == 0xffffff) {
             scene.selectedObject = nullptr;
             ui->setSelected(-1);
         }
@@ -414,8 +419,8 @@ private:
     int width = 1600, height = 800;
 
     // Mouse Position
-    float lastX = width / 2.0f;
-    float lastY = height / 2.0f;
+    float lastX = width / 2.0f, _xpos;
+    float lastY = height / 2.0f, _ypos;
    
     bool processColorPicker = false;
 

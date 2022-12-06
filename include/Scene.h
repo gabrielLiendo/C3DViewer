@@ -131,8 +131,6 @@ public:
 
 	void loadInfo(std::ifstream& infile)
 	{	
-
-		
 		std::string line, prefix;
     	std::stringstream ss;
 

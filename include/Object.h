@@ -217,7 +217,7 @@ public:
 		}
 	}
 
-	void draw(LightingModel model, Shader shader)
+	void draw(Shader shader)
 	{
 		glm::vec3 color;
 		int n = (int)meshes.size();
@@ -242,14 +242,9 @@ public:
 			{
 				shader.setVec3f("gMaterial.diffuseColor", *meshes[i].mtl->getDiffuse());
 				shader.setVec3f("gMaterial.ambientColor", *meshes[i].mtl->getAmbient());
-
-				if (model == PHONG_L)
-				{
-					shader.setVec3f("gMaterial.diffuseColor", *meshes[i].mtl->getDiffuse());
-					shader.setVec3f("gMaterial.specularColor", *meshes[i].mtl->getSpecular());
-					shader.setFloat("gMaterial.shininess", *meshes[i].mtl->getShininess());
-				}
-			
+				shader.setVec3f("gMaterial.diffuseColor", *meshes[i].mtl->getDiffuse());
+				shader.setVec3f("gMaterial.specularColor", *meshes[i].mtl->getSpecular());
+				shader.setFloat("gMaterial.shininess", *meshes[i].mtl->getShininess());
 				meshes[i].draw(shader);
 			}
 		}

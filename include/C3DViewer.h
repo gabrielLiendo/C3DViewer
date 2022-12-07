@@ -15,7 +15,7 @@ public:
         glfwWindowHint(GLFW_SAMPLES, 4);
 
         // Create a GLFWwindow object that we can use for GLFW's functions
-        window = glfwCreateWindow(width, height, "Proyecto 2 CG1 - UCV", nullptr, nullptr);
+        window = glfwCreateWindow(width, height, "Proyecto 3 CG1 - UCV", nullptr, nullptr);
         glfwMakeContextCurrent(window);
 
         // Init Glad
@@ -36,10 +36,9 @@ public:
 
         ambientShader = Shader("misc/shaders/vertex/basic.vs", "misc/shaders/fragment/ambientLight.frag");
         phongShader = Shader("misc/shaders/vertex/ilumNormal.vs", "misc/shaders/fragment/phongShading.frag");
-        gourandShader = Shader("misc/shaders/vertex/gourandShading.vs", "misc/shaders/fragment/gourandFrag.frag");
+        gourandShader = Shader("misc/shaders/vertex/gourandShading.vs", "misc/shaders/fragment/takeColor.frag");
         flatShader = Shader("misc/shaders/vertex/ilumNormal.vs", "misc/shaders/fragment/takeColor.frag", "misc/shaders/geometry/flatShading.geom");
 
-        
         // Initialize the view and projection matrices
         projection = glm::perspective(60.0f * 3.14159f / 180.0f, float(width) / float(height), 0.1f, 100.0f);
 
@@ -279,84 +278,60 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Use corresponding shader when setting uniforms/drawing objects
-        if (scene.lightingModel == 0)
-        {   
-            ambientShader.use();
-        }
-        else if(scene.lightingModel == 2)
-        {
-            Shader currentShader;
-            if(scene.shadingModel == 0)
-                currentShader = flatShader;
-            else if(scene.shadingModel == 1)
-                currentShader = gourandShader;
-            else if(scene.shadingModel == 2)
-                currentShader = phongShader;
+        Shader currentShader;
+        if(scene.shadingModel == 0)
+            currentShader = flatShader;
+        else if(scene.shadingModel == 1)
+            currentShader = gourandShader;
+        else if(scene.shadingModel == 2)
+            currentShader = phongShader;
+
+        currentShader.use();
+        currentShader.setInt("gCombination.lightingModel", scene.lightingModel);
+        currentShader.setBool("gCombination.useAmbMtlColor", ui->getCombination(AMBIENT_COLOR, MATERIAL));
+        currentShader.setBool("gCombination.useAmbTexColor", ui->getCombination(AMBIENT_COLOR, TEXTURE));
+        currentShader.setBool("gCombination.useDiffMtlColor", ui->getCombination(DIFFUSE_COLOR, MATERIAL));
+        currentShader.setBool("gCombination.useDiffTexColor", ui->getCombination(DIFFUSE_COLOR, TEXTURE));
+        currentShader.setBool("gCombination.useSpecMtlColor", ui->getCombination(SPECULAR_COLOR, MATERIAL));
+        currentShader.setBool("gCombination.useSpecTexColor", ui->getCombination(SPECULAR_COLOR, TEXTURE));
                     
-            currentShader.use();
-            currentShader.setVec3f("viewPos", scene.camera.position);
-            currentShader.setVec3f("ambientColor", scene.ambientColor);
-            currentShader.setFloat("ambientIntensity", scene.ambientIntensity);
-            currentShader.setInt("nLights", scene.numberOfLights);
-            for(int i=0; i < scene.numberOfLights; i++)
+        currentShader.setVec3f("viewPos", scene.camera.position);
+        currentShader.setVec3f("ambientColor", scene.ambientColor);
+        currentShader.setFloat("ambientIntensity", scene.ambientIntensity);
+
+        currentShader.setInt("nLights", scene.numberOfLights);
+        for(int i=0; i < scene.numberOfLights; i++)
+        {
+            currentShader.setBool("gLights["+ std::to_string(i) +"].isDirectional", scene.lights[i].isDirectional);
+            currentShader.setBool("gLights["+ std::to_string(i) +"].isPoint", scene.lights[i].isPoint);
+
+            currentShader.setVec3f("gLights["+ std::to_string(i) +"].direction", *scene.lights[i].getDirection());
+            currentShader.setVec3f("gLights["+ std::to_string(i) +"].diffuseColor", *scene.lights[i].getDiffuseColor());
+            currentShader.setVec3f("gLights["+ std::to_string(i) +"].specularColor", *scene.lights[i].getSpecularColor());
+            currentShader.setFloat("gLights["+ std::to_string(i) +"].diffuseIntensity", *scene.lights[i].getDiffuseIntensity());
+            currentShader.setFloat("gLights["+ std::to_string(i) +"].specularIntensity", *scene.lights[i].getSpecularIntensity());
+            
+            if(scene.lights[i].isPoint)
             {
-                currentShader.setBool("gLights["+ std::to_string(i) +"].isDirectional", scene.lights[i].isDirectional);
-                currentShader.setBool("gLights["+ std::to_string(i) +"].isPoint", scene.lights[i].isPoint);
-
-                currentShader.setVec3f("gLights["+ std::to_string(i) +"].direction", *scene.lights[i].getDirection());
-                currentShader.setVec3f("gLights["+ std::to_string(i) +"].diffuseColor", *scene.lights[i].getDiffuseColor());
-                currentShader.setVec3f("gLights["+ std::to_string(i) +"].specularColor", *scene.lights[i].getSpecularColor());
-                currentShader.setFloat("gLights["+ std::to_string(i) +"].diffuseIntensity", *scene.lights[i].getDiffuseIntensity());
-                currentShader.setFloat("gLights["+ std::to_string(i) +"].specularIntensity", *scene.lights[i].getSpecularIntensity());
-               
-                if(scene.lights[i].isPoint)
-                {
-                    currentShader.setFloat("gLights["+ std::to_string(i) +"].constant", *scene.lights[i].getConstantComponent());
-                    currentShader.setFloat("gLights["+ std::to_string(i) +"].linear", *scene.lights[i].getLinearComponent());
-                    currentShader.setFloat("gLights["+ std::to_string(i) +"].quadratic", *scene.lights[i].getQuadraticComponent());
-                }
-            }           
-        }
-        
-
-        // Render objects
+                currentShader.setFloat("gLights["+ std::to_string(i) +"].constant", *scene.lights[i].getConstantComponent());
+                currentShader.setFloat("gLights["+ std::to_string(i) +"].linear", *scene.lights[i].getLinearComponent());
+                currentShader.setFloat("gLights["+ std::to_string(i) +"].quadratic", *scene.lights[i].getQuadraticComponent());
+            }
+        }           
+      
+        // Render objects   
         for (int i = 0; i < scene.objects.size(); i++)
         {
             objModel = scene.objects[i]->getModelTransformation();
 
             // Pass the mvp matrix to the shader
             MVP = projection * view * objModel;
-           
-            if (scene.lightingModel == 0)
-            {
-                ambientShader.use();
-                ambientShader.setMat4f("MVP", MVP);
-                scene.objects[i]->draw(AMBIENT, ambientShader);
-            }
-            else if(scene.lightingModel == 2)
-            {   
-                Shader currentShader;
-                if(scene.shadingModel == 0)
-                    currentShader = flatShader;
-                else if(scene.shadingModel == 1)
-                    currentShader = gourandShader;
-                else if(scene.shadingModel == 2)
-                    currentShader = phongShader;
-                    
-                currentShader.use();
-                currentShader.setMat4f("MVP", MVP);
-                currentShader.setMat4f("model", objModel);
 
-                currentShader.setInt("gCombination.lightingModel", scene.lightingModel);
-                currentShader.setBool("gCombination.useAmbMtlColor", ui->getCombination(AMBIENT_COLOR, MATERIAL));
-                currentShader.setBool("gCombination.useAmbTexColor", ui->getCombination(AMBIENT_COLOR, TEXTURE));
-                currentShader.setBool("gCombination.useDiffMtlColor", ui->getCombination(DIFFUSE_COLOR, MATERIAL));
-                currentShader.setBool("gCombination.useDiffTexColor", ui->getCombination(DIFFUSE_COLOR, TEXTURE));
-                currentShader.setBool("gCombination.useSpecMtlColor", ui->getCombination(SPECULAR_COLOR, MATERIAL));
-                currentShader.setBool("gCombination.useSpecTexColor", ui->getCombination(SPECULAR_COLOR, TEXTURE));
+            currentShader.use();
+            currentShader.setMat4f("MVP", MVP);
+            currentShader.setMat4f("model", objModel);
 
-                scene.objects[i]->draw(PHONG_L, currentShader);
-            }
+            scene.objects[i]->draw(currentShader);
             
             if (*scene.objects[i]->getShowNormals())
             {

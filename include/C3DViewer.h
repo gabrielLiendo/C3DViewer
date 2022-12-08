@@ -103,20 +103,23 @@ public:
 
     // Is called whenever a key is pressed/released via GLFW
     void key_callback(int key, int scancode, int action, int mode)
-    {
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, GL_TRUE);
-
-        else if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
-            scene.deleteSelected();
-
-        if (key >= 0 && key < 1024)
+    {   
+        ImGuiIO& io = ImGui::GetIO();
+        if (!io.WantTextInput)
         {
-            if (action == GLFW_PRESS)
-                keys[key] = true;
-            else if (action == GLFW_RELEASE)
-                keys[key] = false;
-        }
+            if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
+                scene.deleteSelected();  
+            else if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+                glfwSetWindowShouldClose(window, GL_TRUE);
+
+            if (key >= 0 && key < 1024)
+            {
+                if (action == GLFW_PRESS)
+                    keys[key] = true;
+                else if (action == GLFW_RELEASE)
+                    keys[key] = false;
+            } 
+        }        
     }
 
     void button_callback(int button, int action, int mods)

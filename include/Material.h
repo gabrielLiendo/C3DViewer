@@ -3,7 +3,7 @@ class Material
 {
 public:
 	std::string name;
-	std::shared_ptr<Texture> kaMap, kdMap, ksMap;
+	std::shared_ptr<Texture> kaMap, kdMap, ksMap; 
 
 	Material()
 	{
@@ -41,7 +41,7 @@ public:
 				break;
 		}	
 	}
-
+	
 	void removeTextureMap(TextureMap mapType)
 	{	
 		switch (mapType)

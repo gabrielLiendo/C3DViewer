@@ -44,24 +44,43 @@ public:
 	}
 
 	void draw(Shader shader)
-	{
-		if(mtl->kdMap)
+	{	
+		if(mtl->kaMap)
 		{
-			shader.setInt("gMaterial.diffuseMap", 0);
+			shader.setInt("gMaterial.ambientMap", 0);
+			shader.setBool("gMaterial.ambMapLoaded", true);
 			mtl->kdMap->activate(0);
 		}
+		else 
+			shader.setBool("gMaterial.ambMapLoaded", false);
+
+		if(mtl->kdMap)
+		{
+			shader.setInt("gMaterial.diffuseMap", 1);
+			shader.setBool("gMaterial.diffMapLoaded", true);
+			mtl->kdMap->activate(1);
+		}
+		else	
+			shader.setBool("gMaterial.diffMapLoaded", false);
 
 		if(mtl->ksMap)
 		{
-			shader.setInt("gMaterial.specularMap", 1);
-			mtl->ksMap->activate(1);
+			shader.setInt("gMaterial.specularMap", 2);
+			shader.setBool("gMaterial.specMapLoaded", true);
+			mtl->ksMap->activate(2);
 		}
+		else
+			shader.setBool("gMaterial.specMapLoaded", false);
 			
 		bind();
 		glDrawArrays(GL_TRIANGLES, 0, (int)vertices.size());
 		
-		mtl->kdMap->unbind();
-		mtl->ksMap->unbind();
+		if(mtl->kaMap)
+			mtl->kaMap->unbind();
+		if(mtl->kdMap)
+			mtl->kdMap->unbind();
+		if(mtl->ksMap)
+			mtl->ksMap->unbind();
 	}
 	
 	void drawVertex()

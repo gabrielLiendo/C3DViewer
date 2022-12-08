@@ -19,12 +19,16 @@ struct Light
 
 struct Material
 {
+	sampler2D ambientMap;
 	sampler2D diffuseMap;
     sampler2D specularMap;
 	vec3 ambientColor;
 	vec3 diffuseColor;
 	vec3 specularColor;
 	float shininess;
+	bool ambMapLoaded;
+	bool diffMapLoaded;
+	bool specMapLoaded;
 };
 
 struct ColorCombination
@@ -58,7 +62,11 @@ vec3 getAmbient()
 	vec3 Iamb = ambientColor * ambientIntensity;
 	if(gCombination.useAmbMtlColor)
 	{
-		Iamb = Iamb * gMaterial.ambientColor;
+		Iamb *= gMaterial.ambientColor;
+	}
+	if(gCombination.useAmbTexColor && gMaterial.ambMapLoaded)
+	{
+		Iamb *= vec3(texture(gMaterial.ambientMap, texCoord));
 	}
 	return Iamb;
 }
@@ -68,11 +76,11 @@ vec3 getDiffuse(float diff, int i)
 	vec3 Idif = gLights[i].diffuseColor * diff * gLights[i].diffuseIntensity;
 	if(gCombination.useDiffMtlColor)
 	{
-		Idif = Idif  * gMaterial.diffuseColor;
+		Idif *= gMaterial.diffuseColor;
 	}
-	if(gCombination.useDiffTexColor)
+	if(gCombination.useDiffTexColor && gMaterial.diffMapLoaded)
 	{
-		Idif = Idif  * vec3(texture(gMaterial.diffuseMap, texCoord));
+		Idif *= vec3(texture(gMaterial.diffuseMap, texCoord));
 	}
 	return Idif;
 }
@@ -82,11 +90,11 @@ vec3 getSpecular(float spec, int i)
 	vec3 Ispe = gLights[i].specularColor * spec * gLights[i].specularIntensity;
 	if(gCombination.useSpecMtlColor)
 	{
-		Ispe = Ispe * gMaterial.specularColor;
+		Ispe *= gMaterial.specularColor;
 	}
-	if(gCombination.useSpecTexColor)
+	if(gCombination.useSpecTexColor && gMaterial.specMapLoaded)
 	{
-		Ispe = Ispe * vec3(texture(gMaterial.specularMap, texCoord));
+		Ispe *= vec3(texture(gMaterial.specularMap, texCoord));
 	}
 
 	return Ispe;

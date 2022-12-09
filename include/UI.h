@@ -626,12 +626,12 @@ private:
     // State
     int selected = -1;
     bool openPopupDelete = false;
-    bool show_demo_window = true;
+    bool show_demo_window = false;
 
     int typeNewLight = 0; 
     int typeMapping = 0; 
     int ambientCombinationIdx = 1, specularCombinationIdx = 1, diffuseCombinationIdx = 1;
-    char* combinations[3] = { "Only use material color", "Only use texture map color", "Combine both colors" };
+    const char* combinations[3] = { "Only use material color", "Only use texture map color", "Combine both colors" };
 
     // Slider limit values
     float max_float = std::numeric_limits<float>::max();

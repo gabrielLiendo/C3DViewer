@@ -124,6 +124,8 @@ private:
             {
                 if (ImGui::MenuItem("Load Object"))
                     loadersManager.loadObj(selected);
+                if (ImGui::MenuItem("Save Object"))
+                    loadersManager.saveObj(selected);
                 if (ImGui::MenuItem("Load Scene"))
                     loadersManager.loadScene();
                 if (ImGui::MenuItem("Save Scene"))

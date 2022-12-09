@@ -1,8 +1,9 @@
 class Texture
 {
 public:
-    Texture(const std::string& filePath, std::string name){
+    Texture(const std::string filePath, std::string relativeName, std::string name){
         this->filePath = filePath;
+        this->relativeName = relativeName;
         this->name = name;
         load();
     }
@@ -68,7 +69,17 @@ public:
         return &name;
     }
 
+    std::string *getPath()
+    {
+        return &filePath;
+    }
+
+    std::string *getRelativeName()
+    {
+        return &relativeName;
+    }
+
 private:
-    std::string filePath, name;
+    std::string filePath, relativeName, name;
     GLuint textureMesh;
 };

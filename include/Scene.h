@@ -74,6 +74,18 @@ public:
 		selectedObject = nullptr;
 	}
 
+	void deleteMaterial(std::string name)
+	{
+		for(auto it = materials.begin(); it !=  materials.end(); ++it)
+		{
+			if ((*it)->name == name)
+			{	
+				materials.erase(it);
+				return;
+			}
+		}
+	}
+
 	void deleteSelected()
 	{
 		if (selectedObject)
@@ -81,7 +93,17 @@ public:
 			for(auto it = objects.begin(); it != objects.end(); ++it)
 			{
 				if ((*it) == selectedObject)
-				{
+				{	
+					std::vector<Mesh>* meshes = selectedObject->getMeshes();
+               		int n = (int)meshes->size();
+
+					for(int i=0; i < n; i++)
+					{	
+						Mesh* mesh = &(*meshes)[i];
+						if(mesh->mtl && mesh->mtlName != "Default")
+							deleteMaterial(mesh->mtlName);
+					}
+
 					objects.erase(it);
 					selectedObject = nullptr;
 					return;

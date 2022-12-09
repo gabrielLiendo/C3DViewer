@@ -3,6 +3,7 @@ class Object
 {
 public:
 	std::string name = "";
+	std::string path;
 
 	// Model Tranformation Components
 	glm::vec3 center, normalize, scale, translation, oldAngles, angles;
@@ -376,7 +377,6 @@ public:
 
 private:
 	// Object basic components
-	std::string path;
 	std::vector<Mesh> meshes;
 
 	// Model matrices

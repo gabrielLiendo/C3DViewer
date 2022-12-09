@@ -72,10 +72,7 @@ public:
         int b = (i & 0x00FF0000) >> 16;
         glm::vec3 pickingColor = glm::vec3(r / 255.0f, g / 255.0f, b / 255.0f);
 
-        // Load meshes and assign materials
-
-
-    
+        // Load meshes and assign materials    
         std::vector<Mesh> meshes = objLoader.loadMeshes(objFileName);
         assignMaterials(meshes, objFileName);
         scene->objects.push_back(std::make_shared<Object>(meshes, pickingColor, objFileName));
@@ -86,6 +83,115 @@ public:
         scene->selectedObject = scene->objects.back();
     }
     
+    std::shared_ptr<Material> searchMtl(std::string name)
+    {
+        int n = (int)scene->materials.size();
+        for(int i = 0; i < n; i++)
+        {
+            if(scene->materials[i]->name == name)
+                return scene->materials[i];
+        }
+    }
+
+    void saveObj(int selected)
+    {
+        std::string mtlPath = scene->objects[selected]->path;
+        mtlPath = mtlPath.substr(0, mtlPath.size() - 4) + ".mtl";
+
+        std::ifstream file = std::ifstream(mtlPath);
+
+        std::string line, prefix, mtlName, newfile = "";
+        std::stringstream ss;
+
+        float fvalue;
+        glm::vec3 vec;
+        std::string svalue;
+        bool kaWritten = false, kdWritten = false, ksWritten = false;
+
+        while (std::getline(file, line))
+		{
+			ss.clear();
+			ss.str(line);
+            ss >> prefix;
+
+			// Mtl found, save values
+			if (prefix == "newmtl")
+			{
+                ss >> mtlName;
+                newfile += "newmtl " + mtlName +"\n";
+                std::shared_ptr<Material> toSave = searchMtl(mtlName);
+
+                std::cout << "to save in " + toSave->name;
+
+                while (std::getline(file, line))
+		        {
+                    ss.clear();
+                    prefix.clear();
+                    ss.str(line);
+                    ss >> prefix;
+                    if (prefix == "Ns")
+			        {
+                       fvalue = *toSave->getShininess();
+                       newfile += "Ns "+ std::to_string(fvalue) + "\n";
+			        }
+                    else if(prefix == "Ka")
+                    {
+                        vec = *toSave->getAmbient();
+                        newfile += "Ka " + std::to_string(vec.x) + " " + std::to_string(vec.y) + " " + std::to_string(vec.z) + "\n";
+                    }
+                    else if(prefix == "Kd")
+                    {
+                        vec = *toSave->getDiffuse();
+                        newfile += "Kd " + std::to_string(vec.x) + " " + std::to_string(vec.y) + " " + std::to_string(vec.z) + "\n";
+                    }
+                    else if(prefix == "Ks")
+                    {
+                        vec = *toSave->getSpecular();
+                        newfile += "Ks " + std::to_string(vec.x) + " " + std::to_string(vec.y) + " " + std::to_string(vec.z) + "\n";
+                    }
+                    else if(prefix == "map_Ka")
+                    {
+                        svalue = *toSave->kaMap->getRelativeName();
+                        newfile += "map_Ka " + svalue + "\n";
+                        kaWritten = true;
+                    }
+                    else if(prefix == "map_Kd")
+                    {
+                        svalue = *toSave->kdMap->getRelativeName();
+                        newfile += "map_Kd " + svalue + "\n";
+                        kdWritten = true;
+                    }
+                    else if(prefix == "map_Ks")
+                    {
+                        svalue = *toSave->ksMap->getRelativeName();
+                        newfile += "map_Ks " + svalue + "\n";
+                        ksWritten = true;
+                    }
+                    else if (prefix == "newmtl")
+			        {
+                        int size = (int)line.size();
+						file.putback('\n');
+						for (int i = 0; i < size; i++)
+							file.putback(line[size - i - 1]);
+						break;
+                    }
+                    else
+                        newfile += line + "\n";
+                }
+            }
+            else 
+                newfile += line + "\n";
+        }
+        file.close();
+
+
+        std::ofstream newObj = std::ofstream(mtlPath);
+        newObj <<  newfile;
+        newObj.close();
+
+        std::cout << newfile << std::endl;
+    }
+    
     std::shared_ptr<Texture> loadTexture()
     {
         char const* lFilterPatterns[2] = { "*.png", "*.jpg" };
@@ -94,9 +200,9 @@ public:
         if (!textureFileName)
             return nullptr;
 
-        std::string texturePath = textureFileName; 
+        std::string texturePath = textureFileName;
         std::string textureName= texturePath.substr(texturePath.find_last_of("/\\") + 1, texturePath.size()); 
-		return std::make_shared<Texture>(texturePath, textureName);
+		return std::make_shared<Texture>(texturePath, textureName, textureName);
     }
 
     // Save the current scene in a .txt

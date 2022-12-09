@@ -184,12 +184,9 @@ public:
         }
         file.close();
 
-
         std::ofstream newObj = std::ofstream(mtlPath);
         newObj <<  newfile;
         newObj.close();
-
-        std::cout << newfile << std::endl;
     }
     
     std::shared_ptr<Texture> loadTexture()

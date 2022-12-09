@@ -368,8 +368,8 @@ public:
 			for(int j = 0; j < m; j++)
 			{	
 				glm::vec3 normal = glm::normalize(meshes[i].vertices[j].normal);
-				meshes[i].vertices[j].textCoord.x = glm::clamp(atan2(normal.x, normal.z)/(2*PI) + 0.5, 0.0, 1.0);
-				meshes[i].vertices[j].textCoord.y = glm::clamp(asin(normal.y)/PI + 0.5, 0.0, 1.0);
+				meshes[i].vertices[j].textCoord.x = atan2(normal.x, normal.z)/(2*PI) + 0.5;
+				meshes[i].vertices[j].textCoord.y = asin(normal.y)/PI + 0.5;
  			}
 			meshes[i].resetData();
 		}
